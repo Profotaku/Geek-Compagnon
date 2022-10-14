@@ -1,0 +1,15 @@
+Flask==2.2.2
+Flask_Caching==2.0.1
+SQLAlchemy==1.4.41
+SQLAlchemy-Searchable==1.4.1
+Flask-WTF==1.0.1
+WTForms==3.0.1
+Flask-Mailman==0.3.0
+Flask-CORS==3.0.10
+Flask-Bcrypt==1.0.1
+Flask_Dropzone==1.6.0
+Flask-Login==0.6.2
+Huey==2.4.3
+Psycopg2==2.9.4
+flask-ipban==1.1.5
+pg8000==1.29.2

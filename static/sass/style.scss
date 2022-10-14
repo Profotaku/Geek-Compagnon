@@ -1,0 +1,46 @@
+@charset "utf-8";
+
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+
+// Set your brand colors
+$violet-light: #af60b8;
+$violet-dark: #4f005a;
+$rose-light: #fbbcff;
+$rose-dark: #955d9d;
+$bleu-light: #8ac5ff;
+$bleu-dark: #0068b2;
+$intermediate-light: #acb7ff;
+$intermediate-dark: #495aa0;
+
+body {
+    background-color: $intermediate-light;
+}
+
+.hero-head {
+    background-color: $violet-light;
+}
+.hero-body {
+    background-color: $intermediate-light;
+}
+a.navbar-item:hover {
+    background-color: $rose-light !important;
+}
+.navbar-item{
+    font-size: 1.25em;
+}
+.icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+// Import only what you need from Bulma
+@import "../../static/css/bulma/sass/utilities/_all.sass";
+@import "../../static/css/bulma/sass/base/_all.sass";
+@import "../../static/css/bulma/sass/elements/button.sass";
+@import "../../static/css/bulma/sass/elements/container.sass";
+@import "../../static/css/bulma/sass/elements/title.sass";
+@import "../../static/css/bulma/sass/form/_all.sass";
+@import "../../static/css/bulma/sass/components/navbar.sass";
+@import "../../static/css/bulma/sass/layout/hero.sass";
+@import "../../static/css/bulma/sass/layout/section.sass";

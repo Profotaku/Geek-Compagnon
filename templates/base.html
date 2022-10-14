@@ -1,0 +1,88 @@
+    <!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}" />
+    <title>Geek-Compagnon</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/color-scheme.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    {% block head %}
+    {% endblock %}
+</head>
+
+<body style="overflow: hidden;">
+    <section class="hero is-primary is-fullheight">
+        <div class="hero-head">
+            <nav class="navbar is-spaced">
+                <div class="container">
+                    <div class="navbar-burger burger" onclick="document.querySelector('.navbar-menu').classList.toggle('is-active');">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div id="navbarMenuHeroA" class="navbar-menu">
+                        <div class="navbar-end">
+                            <a href="{{ url_for('index') }}" class="navbar-item">
+                                <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Icône Geek-Compagnon">
+                            </a>
+                            {% if not current_user.is_authenticated %}
+                            <a href="" class="navbar-item">
+                                <span class="icon is-medium is-left">
+                                  <i class="fas fa-sign-in-alt is-primary"></i>
+                                </span>
+                                <span>Connexion</span>
+                            </a>
+                            {% endif %}
+                            {% if current_user.is_authenticated %}
+                            <a href="" class="navbar-item">
+                                <span class="icon is-medium is-left">
+                                  <i class="fas fa-user is-primary"></i>
+                                </span>
+                                <span>Profil</span>
+                            </a>
+                            {% endif %}
+                            <a href="" class="navbar-item">
+                                <span class="icon is-medium is-left">
+                                  <i class="fas fa-book-open is-primary"></i>
+                                </span>
+                                <span>Glossaire</span>
+                            </a>
+                            <a href="" class="navbar-item">
+                                <span class="icon is-medium is-left">
+                                  <i class="fas fa-cogs is-primary"></i>
+                                </span>
+                                <span>Paramètres</span>
+                            </a>
+                            <a href="" class="navbar-item">
+                                <span class="icon is-large is-left">
+                                  <i class="fas fa-pen-to-square is-primary"></i>
+                                </span>
+                                <span>Contribuer!</span>
+                            </a>
+                            <form method="post" action=""
+                            <p class="control has-icons-right">
+                                <input class="input is-medium is-rounded" type="text" placeholder="Rechercher...">
+                                <span class="icon is-medium is-right">
+                                    <i class="fas fa-magnifying-glass is-align-content-center is-center"></i>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="hero-body">
+            <div class="container has-text-centered">
+               {% block content %}
+               {% endblock %}
+            </div>
+        </div>
+    </section>
+</body>
+<footer>
+</footer>
+</html>
