@@ -32,7 +32,7 @@ make_searchable(Base.metadata)  # this is needed for the search to work
 app = Flask(__name__)
 app.config.from_mapping(config)
 cache = Cache(app)
-engine = sa.create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+engine = sa.create_engine(app.config['SQLALCHEMY_DATABASE_URI'], pool_size=30, max_overflow=0)
 sa.orm.configure_mappers()
 ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
 ip_ban.init_app(app)
@@ -58,7 +58,7 @@ class Utilisateurs(Base):
     pseudo = sa.Column(sa.String, primary_key=True, nullable=False)
     mail = sa.Column(sa.String, unique=True, nullable=False)
     hash_mdp = sa.Column(sa.String, nullable=False)
-    url_image = sa.Column(sa.String, nullable=False, default='default.jpg')
+    url_image = sa.Column(sa.String, nullable=False, default='default-profile.jpg')
     experience = sa.Column(sa.Integer, nullable=False, default=0)
     notification = sa.Column(sa.Boolean, nullable=False, default=False)
     date_creation = sa.Column(sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
@@ -388,14 +388,15 @@ class Notes_Utilisateurs(Base):
         return f"Notes_Utilisateurs('{self.id_notes}'+{self.pseudo}+{self.nom_types_media}')"
 
 
-
 @app.route('/')
+@cache.cached(timeout=24*60*60)
 def index():
-    return render_template('base.html')
+    nb_user = session.query(Utilisateurs).count()
+    return render_template('index.html', nb_user=nb_user)
 
-@app.route('/livesearch', methods=['POST'])
+@app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
-    title = "Toaru"
+    title = "Haruhi"
     #escape the user input to prevent sql injection
     #search = request.form.get('search')
 
@@ -403,9 +404,10 @@ def livesearch():
         return render_template('base.html')
     else:
         print(title)
-        result = session.query(Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Noms_Alternatifs.nom_alternatif)\
+        result = session.query(Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Noms_Alternatifs.nom_alternatif, Types_Media.nom_types_media, Etre_Compose.ordre, Projets_Medias.id_projets_medias, Projets_Medias.nom_types_media)\
             .select_from(Produits_Culturels)\
-            .outerjoin(Nommer_C, Noms_Alternatifs)\
+            .join(Types_Media)\
+            .outerjoin(Nommer_C, Noms_Alternatifs, Etre_Compose, Projets_Medias)\
             .filter(or_(Fiches.nom.match(title), Noms_Alternatifs.nom_alternatif.match(title)))\
             .filter(Produits_Culturels.id_fiches == Fiches.id_fiches) \
             .distinct(Produits_Culturels.id_produits_culturels).all()

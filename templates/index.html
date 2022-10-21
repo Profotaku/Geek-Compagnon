@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block head %}
+
+{% endblock %}
+{% block navbar %}
+    <figure id="banner-container">
+        <img src="{{ url_for('static', filename='images/index/banner.jpg') }}" id="banner" alt="bannière prospective">
+    </figure>
+{% endblock %}
+{% block content %}
+    <div class="container">
+    <div class='slot-container'>
+        <div class="slot">
+        <div class="box">
+            <ul class="items">
+                <li><img src="https://picsum.photos/200?random=1"></li>
+                <li><img src="https://picsum.photos/200?random=2"></li>
+                <li><img src="https://picsum.photos/200?random=3"></li>
+                <li><img src="https://picsum.photos/200?random=4"></li>
+                <li><img src="https://picsum.photos/200?random=5"></li>
+                <li><img src="https://picsum.photos/200?random=6"></li>
+                <li><img src="https://picsum.photos/200?random=7"></li>
+            </ul>
+        </div>
+            <div class="box">
+            <ul class="items">
+                <li><img src="https://picsum.photos/200?random=8"></li>
+                <li><img src="https://picsum.photos/200?random=9"></li>
+                <li><img src="https://picsum.photos/200?random=10"></li>
+                <li><img src="https://picsum.photos/200?random=11"></li>
+                <li><img src="https://picsum.photos/200?random=12"></li>
+                <li><img src="https://picsum.photos/200?random=13"></li>
+                <li><img src="https://picsum.photos/200?random=14"></li>
+            </ul>
+        </div>
+            <div class="box">
+            <ul class="items">
+                <li><img src="https://picsum.photos/200?random=15"></li>
+                <li><img src="https://picsum.photos/200?random=16"></li>
+                <li><img src="https://picsum.photos/200?random=17"></li>
+                <li><img src="https://picsum.photos/200?random=18"></li>
+                <li><img src="https://picsum.photos/200?random=19"></li>
+                <li><img src="https://picsum.photos/200?random=20"></li>
+                <li><img src="https://picsum.photos/200?random=21"></li>
+            </ul>
+        </div>
+    </div>
+        <button class="spin">Spin</button>
+    </div>
+        <figure class="image">
+            <img class="fiche-responsive is-square fiche-responsive-style-1" src="{{ url_for('static', filename='images/index/grand-bleu.jpg') }}" alt="Affiche Grand Bleu">
+        </figure>
+        <figure class="image">
+            <img class="fiche-responsive is-square fiche-responsive-style-2" src="{{ url_for('static', filename='images/index/grand-bleu.jpg') }}" alt="Affiche Grand Bleu">
+        </figure>
+        <figure class="image">
+            <img class="fiche-responsive is-square fiche-responsive-style-3" src="{{ url_for('static', filename='images/index/grand-bleu.jpg') }}" alt="Affiche Grand Bleu">
+        </figure>
+    </div>
+    <span>Nombre d'utilisateur:</span>
+    {{ nb_user|int }}
+{% endblock %}
+
+{% block footerscript %}
+    <script src={{ url_for('static', filename='js/slot.js') }}></script>
+{% endblock %}
