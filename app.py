@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import sqlalchemy_searchable
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_caching import Cache
 import sqlalchemy as sa  # ORM
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import orm, or_, and_, select, join, outerjoin
+from sqlalchemy import orm, or_, and_, select, join, outerjoin, func
 from sqlalchemy_searchable import make_searchable, search
 from flask_wtf import FlaskForm  # CSRF protection
 from flask_mailman import Mail  # API for sending emails
@@ -14,8 +14,18 @@ from flask_login import LoginManager  # user session management
 from huey import RedisHuey, crontab  # task queue
 from flask_ipban import IpBan  # IP ban
 import datetime
-
+from sqlalchemy import literal_column
+from sqlalchemy.sql.operators import op
+import os
+import sqlalchemy.sql.functions
+import recommandation
 from sqlalchemy_utils.types.pg_composite import psycopg2
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import LabelEncoder
+import pandas as pd
+from sklearn.preprocessing import MultiLabelBinarizer
 
 config = {
     "DEBUG": True,  # some Flask specific configs
@@ -23,7 +33,7 @@ config = {
     "CACHE_DEFAULT_TIMEOUT": 86400,  # 24 hours cache timeout
     'SERVER_NAME': 'geek-compagnon.io:5000',
     'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-    'SQLALCHEMY_DATABASE_URI': 'postgresql://Matt:Haruhi2006-2010@localhost:5432/Geek-Compagnon',
+    'SQLALCHEMY_DATABASE_URI': 'postgresql://claire:XR9V9vAwXX@192.168.1.9:5432/gk',
 }
 
 Base = declarative_base()
@@ -106,6 +116,7 @@ class Fiches(Base):
     url_image = sa.Column(sa.String, nullable=False, default='default.jpg')
     adulte = sa.Column(sa.Boolean, nullable=False, default=False)
     info = sa.Column(sa.String, nullable=False, default='')
+    concepteur = sa.Column(sa.String, nullable=False, default='')
 
     def __repr__(self):
         return f"Fiches('{self.nom}+{self.synopsis}')"
@@ -279,10 +290,10 @@ class Etre_Identifie(Base):
 class Etre_Defini(Base):
     __tablename__ = 'etre_defini'
     id_produits_culturels = sa.Column(sa.Integer, sa.ForeignKey('produits_culturels.id_produits_culturels'), primary_key=True, nullable=False)
-    nom_genre = sa.Column(sa.String, sa.ForeignKey('genres.nom_genre'), primary_key=True, nullable=False)
+    nom_genres = sa.Column(sa.String, sa.ForeignKey('genres.nom_genres'), primary_key=True, nullable=False)
 
     def __repr__(self):
-        return f"Etre_Defini('{self.id_produits_culturels}'+{self.nom_genre}')"
+        return f"Etre_Defini('{self.id_produits_culturels}'+{self.nom_genres}')"
 
 class Etre_Commente_T(Base):
     __tablename__ = 'etre_comment_t'
@@ -387,6 +398,69 @@ class Notes_Utilisateurs(Base):
     def __repr__(self):
         return f"Notes_Utilisateurs('{self.id_notes}'+{self.pseudo}+{self.nom_types_media}')"
 
+#create a recommandation algorithm with sklearn k nearest neighbors base on data on database and return a list of recommandation
+def recommandations(id_produit: int, nb_recommandations: int):
+    #create a content based recommandation algorithm
+    #get produit culturel, fiche, noms alternatif, genres, type media from id_produits_culturels in database
+    base = (
+        session.query(
+            Produits_Culturels.id_produits_culturels,
+            Produits_Culturels.date_sortie,
+            Fiches.nom,
+            Fiches.synopsis,
+            Fiches.adulte,
+            Fiches.concepteur,
+            func.array_agg(func.distinct(Noms_Alternatifs.nom_alternatif)),
+            Types_Media.nom_types_media,
+            func.array_agg(func.distinct(Genres.nom_genres)),
+        )
+        .select_from(Produits_Culturels)
+        .join(Fiches)
+        .join(Etre_Defini) #ou outerjoin ?
+        .join(Types_Media)
+        .join(Genres) #ou outerjoin ?
+        .outerjoin(Nommer_C)
+        .outerjoin(Noms_Alternatifs)
+        .group_by(
+            Produits_Culturels.id_produits_culturels,
+            Fiches.id_fiches,
+            Types_Media.nom_types_media,
+        )
+        .all()
+    )
+    #create a dataframe with pandas
+    df = pd.DataFrame(base, columns=["id","date_sortie", "nom", "synopsis", "adulte", "concepteur", "noms_alternatifs", "nom_types_media", "genres"])
+    # Sélectionner les colonnes qui contiennent les features à utiliser pour la recommandation
+    features = ['nom', 'concepteur', 'synopsis', 'nom_types_media', 'genres', 'noms_alternatifs']
+    data = df[features]
+
+    # Remplacer les valeurs null par une chaîne vide
+    data = data.fillna('')
+
+    data['genres'] = data['genres'].apply(lambda x: ' '.join(x) if type(x) == (list or None) else x)
+    data['noms_alternatifs'] = data['noms_alternatifs'].apply(lambda x: ' '.join(x) if type(x) == list and x is not None else x)
+    # Concaténer toutes les features en une seule colonne pour utiliser la similarité de chaîne de caractères
+    data['combined_features'] = data[features].apply(lambda x: ' '.join(x), axis=1)
+
+    # Initialiser l'objet KNN avec la distance de similarité de chaîne de caractères
+    knn = NearestNeighbors(metric='cosine', algorithm='brute')
+    knn.fit(data['combined_features'])
+
+    # Trouver les k plus proches voisins de l'élément donné
+    distances, indices = knn.kneighbors(data[data['nom'] == "La Mélancolie de Haruhi Suzumiya"]['combined_features'], n_neighbors=nb_recommandations + 1)
+    indices = indices.flatten()
+    distances = distances.flatten()
+
+    # Retourner les k plus proches voisins sauf l'élément lui-même
+    return data.iloc[indices[1:]].reset_index(drop=True)
+
+
+
+
+
+
+
+
 
 @app.route('/')
 @cache.cached(timeout=24*60*60)
@@ -414,3 +488,7 @@ def livesearch():
         for r in result:
             print(r)
         return "ok"
+@app.route('/recommandation', methods=['GET','POST'])
+def recommandation():
+    rec = recommandations(2, 1)
+    return jsonify(rec)
