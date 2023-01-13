@@ -26,6 +26,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import LabelEncoder
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
+from flask_assets import Bundle, Environment
 
 config = {
     "DEBUG": True,  # some Flask specific configs
@@ -36,7 +37,7 @@ config = {
     'SQLALCHEMY_DATABASE_URI': 'postgresql://claire:XR9V9vAwXX@192.168.1.9:5432/gk',
 }
 
-Base = declarative_base()
+Base = sqlalchemy.orm.declarative_base()
 login_manager = LoginManager()
 make_searchable(Base.metadata)  # this is needed for the search to work
 app = Flask(__name__)
@@ -52,7 +53,10 @@ mail = Mail(app)
 cors = CORS(app)
 bcrypt = Bcrypt(app)
 login_manager.init_app(app)
-
+assets = Environment(app)
+css = Bundle("src/main.css", output="dist/main.css")
+assets.register("css", css)
+css.build()
 
 @app.errorhandler(413)
 def too_large(e):
@@ -466,8 +470,10 @@ def recommandations(id_produit: int, nb_recommandations: int):
 @cache.cached(timeout=24*60*60)
 def index():
     nb_user = session.query(Utilisateurs).count()
-    return render_template('index.html', nb_user=nb_user)
-
+    return render_template('public/index.html', nb_user=nb_user)
+@app.route('/test')
+def test():
+    return render_template('public/test.html')
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
     title = "Haruhi"
@@ -475,7 +481,7 @@ def livesearch():
     #search = request.form.get('search')
 
     if title == '':
-        return render_template('base.html')
+        return render_template('public/base.html')
     else:
         print(title)
         result = session.query(Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Noms_Alternatifs.nom_alternatif, Types_Media.nom_types_media, Etre_Compose.ordre, Projets_Medias.id_projets_medias, Projets_Medias.nom_types_media)\
