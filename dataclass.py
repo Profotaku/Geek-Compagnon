@@ -12,6 +12,8 @@ class Utilisateurs(Base):
     date_creation = sa.Column(sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
     admin = sa.Column(sa.Boolean, nullable=False, default=False)
     fondateur = sa.Column(sa.Boolean, nullable=False, default=False)
+    desactive = sa.Column(sa.Boolean, nullable=False, default=False)
+    verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Utilisateur('{self.pseudo}')"
@@ -129,6 +131,7 @@ class Commentaires(Base):
     contenu = sa.Column(sa.String, nullable=False)
     spoiler = sa.Column(sa.Boolean, nullable=False, default=False)
     adulte = sa.Column(sa.Boolean, nullable=False, default=False)
+    signale = sa.Column(sa.Boolean, nullable=False, default=False)
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
 
     def __repr__(self):
@@ -289,6 +292,7 @@ class Posseder_C(Base):
     note = sa.Column(sa.SMALLINT, nullable=True)
     avis_popularite = sa.Column(sa.String(7), nullable=True)
     avis_cote = sa.Column(sa.String(7), nullable=True)
+    souhaite = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Posseder_C('{self.id_produits_culturels}'+{self.pseudo}')"

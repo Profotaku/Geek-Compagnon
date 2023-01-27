@@ -19,3 +19,4 @@ sqlalchemy_utils==0.39.0
 scipy==1.10.0
 scikit-learn==1.2.1
 pandas==1.5.3
+spacy==3.5.0
