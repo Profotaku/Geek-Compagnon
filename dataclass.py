@@ -1,7 +1,8 @@
 import sqlalchemy as sa
 Base = sa.orm.declarative_base()
 import datetime
-class Utilisateurs(Base):
+from flask_login import UserMixin
+class Utilisateurs(Base, UserMixin):
     __tablename__ = 'utilisateurs'
     pseudo = sa.Column(sa.String, primary_key=True, nullable=False)
     mail = sa.Column(sa.String, unique=True, nullable=False)
@@ -17,6 +18,8 @@ class Utilisateurs(Base):
 
     def __repr__(self):
         return f"Utilisateur('{self.pseudo}')"
+    def get_id(self):
+        return self.pseudo
 
 class Types_Media(Base):
     __tablename__ = 'types_media'
