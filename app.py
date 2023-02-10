@@ -97,9 +97,9 @@ def livesearch():
         for r in result:
             print(r)
         return "ok"
-@app.route('/recommandation', methods=['GET','POST'])
-def recommandation():
-    return recommandations.recommandations(2,1)
+@app.route('/recommandation/<int:id_fiche>/', methods=['GET'])
+def recommandation(id_fiche):
+    return recommandations.recommandations(id_fiche,5)
 @app.route('/connexion' , methods=['GET', 'POST'])
 def login():
     client = request.args.get('client')
@@ -124,6 +124,7 @@ def logout():
 @app.route('/protected_route', methods=['GET', 'POST'])
 @require_token()
 def protected_route():
-    return jsonify({'message': 'This is only available for people with valid tokens.'})
+    #return userid in json
+    return jsonify({'userid': current_user.pseudo})
 
 

@@ -1,3 +1,5 @@
+from flask import jsonify
+
 from config import Config
 from  dataclass import *
 import sqlalchemy as sa
@@ -88,4 +90,4 @@ def recommandations(id_produit: int, nb_recommandations: int):
     # Récupérer les k plus proches voisins
     recommandations = df2.iloc[indices]
 
-    return recommandations['id'].tolist()
+    return jsonify({'recommandations': recommandations['id'].tolist()})
