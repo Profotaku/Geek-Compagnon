@@ -108,7 +108,7 @@
         </div>
 
         {#EAN13#}
-
+        <div>Ajouter EAN13</div>
         <div class="flex flex-wrap">
           <div class="w-full md:w-1/2 p-2">
             <input type="text" class="form-input w-full border border-gray-400 rounded-lg p-2" id="input-1">
@@ -197,42 +197,27 @@
 
 let inputCounter = 2;
 
-document.querySelector('.add-input').addEventListener('click', (event) => {
-    const parent = event.target.parentNode.parentNode;
-    {#ajouter nouvel input#}
+const addInputHandler = (event) => {
+    const parent = event.target.parentNode;
     const input = document.createElement('input');
     input.type = 'text';
-    input.classList.add('form-input', 'w-full', 'border', 'border-gray-400', 'rounded-lg', 'p-2');
+    input.classList.add('form-input', 'w-full', 'border', 'border-gray-400', 'rounded-lg', 'p-2', 'm-2');
     input.id = `input-${inputCounter}`;
     parent.insertAdjacentElement('beforeend', input);
 
-    {#ajouter nouveau bouton#}
     const button = document.createElement('button');
     button.innerText = 'Ajouter';
     button.classList.add('bg-blue-500', 'text-white', 'p-2', 'rounded-lg', 'hover:bg-blue-600', 'add-input');
     button.id = `add-button-${inputCounter}`;
     parent.insertAdjacentElement('beforeend', button);
 
-    button.addEventListener('click', (event) => {
-        const parent = event.target.parentNode.parentNode;
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.classList.add('form-input', 'w-full', 'border', 'border-gray-400', 'rounded-lg', 'p-2', 'm-2');
-        input.id = `input-${inputCounter}`;
-        parent.insertAdjacentElement('beforeend', input);
+    button.addEventListener('click', addInputHandler);
 
-        const button = document.createElement('button');
-        button.innerText = 'Ajouter';
-        button.classList.add('bg-blue-500', 'text-white', 'p-2', 'rounded-lg', 'hover:bg-blue-600', 'add-input');
-        button.id = `add-button-${inputCounter}`;
-        parent.insertAdjacentElement('beforeend', button);
-
-        inputCounter++;
-
-        button.addEventListener('click', addInputHandler);
-    });
     inputCounter++;
-});
+};
+
+document.querySelector('.add-input').addEventListener('click', addInputHandler);
+
 
 {# select multiple genre #}
     const select = document.querySelector('#select-genre');
