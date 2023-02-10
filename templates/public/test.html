@@ -124,10 +124,9 @@
         <label for="select-genre" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selectionner des genres</label>
         <select multiple id="select-genre" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
           <option selected>Selection de genre</option>
-          <option value="US">United States</option>
-          <option value="CA">Canada</option>
-          <option value="FR">France</option>
-          <option value="DE">Germany</option>
+          {% for genre in genres %}
+            <option value="{{ genre.nom_genres }}">{{ genre.nom_genres }}</option>
+            {% endfor %}
         </select>
         <div id="show-selected-genre"></div>
 

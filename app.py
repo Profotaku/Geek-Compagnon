@@ -75,7 +75,7 @@ def index():
     return render_template('public/index.html', nb_user=nb_user, connected=current_user.is_authenticated)
 @app.route('/test')
 def test():
-    genres = session.execute(select(Genres).order_by(Genres.nom_genres)).all()
+    genres = session.execute(select(Genres.nom_genres).order_by(Genres.nom_genres)).all()
     return render_template('public/test.html', genres=genres)
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
