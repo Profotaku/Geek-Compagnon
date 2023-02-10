@@ -6,9 +6,10 @@
     <title>Page test</title>
     <link href="{{url_for('static',filename='css/main.css')}}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.3/flowbite.min.css" rel="stylesheet" />
+    <script src="jquery-3.6.1.min.js"></script>
 </head>
 <body class="flex justify-center">
-    <form class="grid w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4">
+    <form class="grid grid-cols-1 w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4 mb-6">
         <h1 class="text-xl font-semibold">Ajouter une fiche</h1>
         {#Radio bouton#}
         <div class="grid grid-cols-6 p-2 mb-2">
@@ -93,17 +94,55 @@
         {#Culturel only#}
 
 
-        <a href="#" class="mt-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Valider la fiche</a>
+
+        <div class="grid grid-col-2">
+            <div class="flex flex-wrap items-center">
+              <input id="genre-tag" class="bg-gray-200 rounded-full px-3 py-1 mr-2" type="text" placeholder="Ajouter un tag">
+              <button id="create-tag-button" class="bg-blue-500 text-white py-2 px-4 rounded-full">Créer</button>
+            </div>
+        <div id="genre-tag-list" class="flex flex-wrap"></div>
+
+        <div class="flex flex-wrap mt-2" id="genre-tag-list"></div>
+        </div>
+
+        <a href="#" class="mt-6 mb-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Valider la fiche</a>
+
+
+
+
+
+        <div class="relative inline-block text-left">
+          <div>
+            <span id="dropdown-button" class="rounded-md bg-white border border-gray-400 text-left">
+              <span id="selected-options-multiple-option" class="flex items-center px-3 py-2"></span>
+              <span class="flex-1 text-right">
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </span>
+            </span>
+          </div>
+          <div id="dropdown-content" class="origin-top-right absolute right-0 mt-2 rounded-md bg-white border border-gray-400 py-1 hidden">
+            <label class="block hover:bg-gray-100 px-3 py-2">
+              <input class="form-check" type="checkbox" value="option1">
+              <span class="ml-2">Option 1</span>
+            </label>
+            <label class="block hover:bg-gray-100 px-3 py-2">
+              <input class="form-check" type="checkbox" value="option2">
+              <span class="ml-2">Option 2</span>
+            </label>
+            <label class="block hover:bg-gray-100 px-3 py-2">
+              <input class="form-check" type="checkbox" value="option3">
+              <span class="ml-2">Option 3</span>
+            </label>
+          </div>
+        </div>
+
+
+
     </form>
     {#tag 1#}
-<div class="grid grid-col-2">
-    <div class="flex flex-wrap items-center">
-      <input id="genre-tag" class="bg-gray-200 rounded-full px-3 py-1 mr-2" type="text" placeholder="Ajouter un tag">
-      <button id="create-tag-button" class="bg-blue-500 text-white py-2 px-4 rounded-full">Créer</button>
-    </div>
-    <div id="genre-tag-list" class="flex flex-wrap"></div>
 
-<div class="flex flex-wrap mt-2" id="genre-tag-list"></div>
 
     {#tag 2#}
 
@@ -113,40 +152,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.2/flowbite.min.js"></script>
 </body>
 <script>
-        const input = document.getElementById("genre-tag");
-const tagList = document.getElementById("genre-tag-list");
-
-input.addEventListener("keyup", function(event) {
-  if (event.key === "Enter") {
-    // créer un élément de tag
-    const tag = document.createElement("span");
-    tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
-    tag.textContent = input.value;
-
-    // créer un bouton de suppression
-    const button = document.createElement("button");
-    button.classList.add("text-red-500", "hover:text-red-700");
-    button.innerHTML = `
-      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-      </svg>
-    `;
-    button.addEventListener("click", function() {
-        tagList.removeChild(tag);
-    });
-
-    // ajouter le bouton de suppression au tag
-    tag.appendChild(button);
-
-    // ajouter le tag à la liste
-    tagList.appendChild(tag);
-
-    // réinitialiser l'input
-    input.value = "";
-  }
-});
-
-const createTagButton = document.getElementById("create-tag-button");
+    const input = document.getElementById("genre-tag");
+    const tagList = document.getElementById("genre-tag-list");
 
 input.addEventListener("keyup", function(event) {
   if (event.key === "Enter") {
@@ -154,13 +161,17 @@ input.addEventListener("keyup", function(event) {
   }
 });
 
+const createTagButton = document.getElementById("create-tag-button");
 createTagButton.addEventListener("click", function() {
     createTag();
 });
 
 function createTag(){
   const tagValue = input.value.trim();
-  if(!tagValue) return;
+  if(!tagValue) {
+    alert("Le tag ne peut pas être vide.");
+    return;
+  }
     // créer un élément de tag
     const tag = document.createElement("span");
     tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
@@ -187,5 +198,7 @@ function createTag(){
     // réinitialiser l'input
     input.value = "";
 }
+{##}
+
 </script>
 
