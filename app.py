@@ -71,11 +71,12 @@ def load_user(pseudo):
 
 @app.route('/')
 def index():
-    nb_user = session.execute(select(Utilisateurs).count()).scalar()
+    nb_user = session.query(Utilisateurs).count()
     return render_template('public/index.html', nb_user=nb_user, connected=current_user.is_authenticated)
 @app.route('/test')
 def test():
-    return render_template('public/test.html')
+    genres = session.execute(select(Genres).order_by(Genres.nom_genres)).all()
+    return render_template('public/test.html', genres=genres)
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
     title = "Haruhi"
@@ -102,14 +103,17 @@ def recommandation():
 @app.route('/connexion' , methods=['GET', 'POST'])
 def login():
     client = request.args.get('client')
-    if client == 'app':
-        return function_login.login_app(bcrypt, session, auth_manager)
+    method = request.method
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    if request.method == 'POST':
-        return function_login.login_web(bcrypt, session)
+    if client == 'app' and method == 'POST':
+        return function_login.login_app_post(bcrypt, session, auth_manager)
+    elif client == 'app' and method == 'GET':
+        return function_login.login_app_get()
+    elif method == 'POST':
+        return function_login.login_web_post(bcrypt, session)
     else:
-        return render_template('public/login.html')
+        return function_login.login_web_get()
 @app.route('/deconnexion')
 @login_required
 def logout():
@@ -123,4 +127,3 @@ def protected_route():
     return jsonify({'message': 'This is only available for people with valid tokens.'})
 
 
-#TODO : demander à maxime comment il faut pour gerer jwt/header de requete
