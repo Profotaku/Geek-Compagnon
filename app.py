@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import sqlalchemy_searchable
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 from flask_caching import Cache
 import sqlalchemy as sa  # ORM
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import orm, or_, and_, select, join, outerjoin
 from sqlalchemy_searchable import make_searchable, search
-from flask_wtf import FlaskForm  # CSRF protection
+from flask_wtf.csrf import CSRFProtect # CSRF protection
 from flask_mailman import Mail  # API for sending emails
 from flask_cors import CORS  # prevent CORS attacks
 from flask_bcrypt import Bcrypt  # hash passwords
@@ -27,10 +27,13 @@ import sklearn
 from sklearn.preprocessing import MultiLabelBinarizer
 from flask_assets import Bundle, Environment
 from sklearn.pipeline import Pipeline
+from flask_login import login_user, logout_user, current_user, login_required
+from flask_pyjwt import AuthManager, require_token
 
 from config import Config
 from dataclass import *
 import recommandations
+import function_login
 
 Base = sqlalchemy.orm.declarative_base()
 login_manager = LoginManager()
@@ -38,7 +41,7 @@ make_searchable(Base.metadata)  # this is needed for the search to work
 app = Flask(__name__)
 app.config.from_object(Config)
 cache = Cache(app)
-engine = sa.create_engine(app.config['SQLALCHEMY_DATABASE_URI'], pool_size=30, max_overflow=0)
+engine = sa.create_engine(Config.SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
 sa.orm.configure_mappers()
 ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
 ip_ban.init_app(app)
@@ -46,12 +49,16 @@ ip_ban.ip_whitelist_add('127.0.0.1')
 session = orm.scoped_session(orm.sessionmaker(bind=engine))
 mail = Mail(app)
 cors = CORS(app)
+csrf = CSRFProtect(app)
 bcrypt = Bcrypt(app)
 login_manager.init_app(app)
 assets = Environment(app)
+auth_manager = AuthManager(app)
 css = Bundle("src/main.css", output="dist/main.css")
 assets.register("css", css)
 css.build()
+app.secret_key = Config.SECRET_KEY
+
 
 
 @app.errorhandler(413)
@@ -60,14 +67,12 @@ def too_large(e):
 
 @login_manager.user_loader
 def load_user(pseudo):
-    # since the user_id is just the primary key of our user table, use it in the query for the user
-    return Utilisateurs.query.get(str(pseudo))
+    return session.execute(select(Utilisateurs).where(Utilisateurs.pseudo == pseudo)).scalar()
 
 @app.route('/')
-@cache.cached(timeout=24*60*60)
 def index():
-    nb_user = session.query(Utilisateurs).count()
-    return render_template('public/index.html', nb_user=nb_user)
+    nb_user = session.execute(select(Utilisateurs).count()).scalar()
+    return render_template('public/index.html', nb_user=nb_user, connected=current_user.is_authenticated)
 @app.route('/test')
 def test():
     return render_template('public/test.html')
@@ -81,16 +86,41 @@ def livesearch():
         return render_template('public/base.html')
     else:
         print(title)
-        result = session.query(Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Noms_Alternatifs.nom_alternatif, Types_Media.nom_types_media, Etre_Compose.ordre, Projets_Medias.id_projets_medias, Projets_Medias.nom_types_media)\
+        result = session.execute(select((Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Noms_Alternatifs.nom_alternatif, Types_Media.nom_types_media, Etre_Compose.ordre, Projets_Medias.id_projets_medias, Projets_Medias.nom_types_media)\
             .select_from(Produits_Culturels)\
             .join(Types_Media)\
             .outerjoin(Nommer_C, Noms_Alternatifs, Etre_Compose, Projets_Medias)\
             .filter(or_(Fiches.nom.match(title), Noms_Alternatifs.nom_alternatif.match(title)))\
             .filter(Produits_Culturels.id_fiches == Fiches.id_fiches) \
-            .distinct(Produits_Culturels.id_produits_culturels).all()
+            .distinct(Produits_Culturels.id_produits_culturels).all()))
         for r in result:
             print(r)
         return "ok"
 @app.route('/recommandation', methods=['GET','POST'])
 def recommandation():
     return recommandations.recommandations(2,1)
+@app.route('/connexion' , methods=['GET', 'POST'])
+def login():
+    client = request.args.get('client')
+    if client == 'app':
+        return function_login.login_app(bcrypt, session, auth_manager)
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        return function_login.login_web(bcrypt, session)
+    else:
+        return render_template('public/login.html')
+@app.route('/deconnexion')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+#ceci est simplement un exemple de route protégée par un token jwt
+@app.route('/protected_route', methods=['GET', 'POST'])
+@require_token()
+def protected_route():
+    return jsonify({'message': 'This is only available for people with valid tokens.'})
+
+
+#TODO : demander à maxime comment il faut pour gerer jwt/header de requete
