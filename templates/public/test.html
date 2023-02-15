@@ -30,16 +30,29 @@
         </div>
         {#Fin radio bouton#}
 
-        {# Affichage conditionnel média & transmédia#}
+        {# Only média & transmédia#}
         <div id="test-media" class="hidden mb-6">
             <label for="succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Succés</label>
             <input id="succes" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
+        {# Fin only média & transmédia#}
 
         <div class="mb-6">
             <label for="nom-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nom</label>
             <input type="text" id="base-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
+
+        {# Nom alternatif - Créer tag simple #}
+        <div class="grid grid-col-2">
+            <div class="flex flex-wrap items-center">
+              <input id="alternative-name-tag" class="bg-gray-200 rounded-full px-3 py-1 mr-2" type="text" placeholder="Ajouter un nom alternatif">
+              <button id="create-tag-button" class="bg-blue-500 text-white py-2 px-4 rounded-full">Créer</button>
+            </div>
+            <div id="alternative-name-tag-list" class="flex flex-wrap"></div>
+
+            <div class="flex flex-wrap mt-2" id="alternative-name-tag-list"></div>
+        </div>
+
         {# Date de sortie element culturel #}
         <div id="only-culturel" class="hidden mb-6">
             <label for="releaseDate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de sortie</label>
@@ -79,40 +92,17 @@
           <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Contenu adulte</span>
         </label>
 
-        {# Dropdown #}
-        <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">Dropdown button <svg class="w-4 h-4 ml-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
-        <!-- Dropdown menu -->
-        <div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
-            <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-              <li>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Dashboard</a>
-              </li>
-              <li>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</a>
-              </li>
-              <li>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Earnings</a>
-              </li>
-              <li>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign out</a>
-              </li>
-            </ul>
-        </div>
-
-
-        {# Créer tag simple #}
-        <div class="grid grid-col-2">
-            <div class="flex flex-wrap items-center">
-              <input id="alternative-name-tag" class="bg-gray-200 rounded-full px-3 py-1 mr-2" type="text" placeholder="Ajouter un nom alternatif">
-              <button id="create-tag-button" class="bg-blue-500 text-white py-2 px-4 rounded-full">Créer</button>
-            </div>
-            <div id="alternative-name-tag-list" class="flex flex-wrap"></div>
-
-            <div class="flex flex-wrap mt-2" id="alternative-name-tag-list"></div>
-        </div>
+        {# Genre média only média#}
+        <label for="media-type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type de média</label>
+        <select id="media-type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg hidden focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+          <option value="livre">Livre</option>
+          <option value="film">Film</option>
+          <option value="serie">Série</option>
+          <option value="jeu-video">Jeu vidéo</option>
+        </select>
 
         {#EAN13#}
-        <div>Ajouter EAN13</div>
+        <div class="mt-6">Ajouter EAN13</div>
         <div class="flex flex-wrap">
           <div class="w-full md:w-1/2 p-2">
             <input type="text" class="form-input w-full border border-gray-400 rounded-lg p-2" id="input-1">
@@ -266,28 +256,32 @@ function filterFunction() {
 }
 
 
-
+{#Affichage conditionnel selon radio bouton#}
 function radioChange(){
 var radioType = document.querySelector('input[name="radio-type"]:checked').value
     if(radioType == 'Médias'){
         $('#test-media').removeClass('hidden');
         $('#only-culturel').addClass('hidden');
+        $('#media-type').removeClass('hidden');
 
     }
     else if(radioType == 'Transmédia'){
         console.log('hello');
         $('#test-media').removeClass('hidden');
         $('#only-culturel').addClass('hidden');
+        $('#media-type').addClass('hidden');
 
     }
     else if(radioType == 'Culturel'){
         $('#test-media').addClass('hidden');
         $('#only-culturel').removeClass('hidden');
+        $('#media-type').addClass('hidden');
 
     }
     else{
         $('#test-media').addClass('hidden');
         $('#only-culturel').addClass('hidden');
+        $('#media-type').addClass('hidden');
 
     }
 }
