@@ -6,33 +6,44 @@
     <title>Page test</title>
     <link href="{{url_for('static',filename='css/main.css')}}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.3/flowbite.min.css" rel="stylesheet" />
-    <script src="jquery-3.6.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
 </head>
 <body class="flex justify-center">
     <form class="grid grid-cols-1 w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4 mb-6">
         <h1 class="text-xl font-semibold">Ajouter une fiche</h1>
         {#Radio bouton#}
-        <div class="grid grid-cols-6 p-2 mb-2">
+        <div id="radio-type" class="grid grid-cols-6 p-2 mb-2">
             <div class="flex items-center col-span-1">
-                <input id="default-radio-1" type="radio" value="1" name="default-radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <input id="default-radio-1" type="radio" value="Médias" name="radio-type" onchange="radioChange()" w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                 <label for="default-radio-1" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Médias</label>
             </div>
 
             <div class="flex items-center col-span-1">
-                <input  id="default-radio-2" type="radio" value="2" name="default-radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <input  id="default-radio-2" type="radio" value="Transmédia" name="radio-type" onchange="radioChange()" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                 <label for="default-radio-2" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Transmédia</label>
             </div>
 
             <div class="flex items-center col-span-1">
-                <input  id="default-radio-3" type="radio" value="3" name="default-radio" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <input  id="default-radio-3" type="radio" value="Culturel" name="radio-type" onchange="radioChange()" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                 <label for="default-radio-3" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Culturel</label>
             </div>
         </div>
         {#Fin radio bouton#}
 
+        {# Affichage conditionnel média & transmédia#}
+        <div id="test-media" class="hidden mb-6">
+            <label for="succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Succés</label>
+            <input id="succes" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+
         <div class="mb-6">
             <label for="nom-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nom</label>
             <input type="text" id="base-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        {# Date de sortie element culturel #}
+        <div id="only-culturel" class="hidden mb-6">
+            <label for="releaseDate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de sortie</label>
+            <input id="releaseDate" type="date" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
 
         <div class="mb-6">
@@ -88,13 +99,6 @@
             </ul>
         </div>
 
-        {#Culturel only#}
-        <div class="mb-6">
-            <label for="concepteur-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de sortie</label>
-            <input type="date" id="infos-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-        </div>
-        {#Culturel only#}
-
 
         {# Créer tag simple #}
         <div class="grid grid-col-2">
@@ -125,10 +129,17 @@
         <input type="search" id="genre-search" onkeyup="filterFunction()">
         <select multiple id="select-genre" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             {% for genre in genres %}
-            <option value="{{ genre.nom_genres }}">{{ genre.nom_genres }}</option>
+                <option value="{{ genre.nom_genres }}">
+                    <label for="">{{ genre.nom_genres }}</label>
+                </option>
             {% endfor %}
         </select>
         <div id="show-selected-genre"></div>
+
+</div>
+
+
+
 
 {#btn envoie#}
         <a href="#" class="mt-6 mb-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Valider la fiche</a>
@@ -141,6 +152,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.2/flowbite.min.js"></script>
 </body>
 <script>
+    $.ready($('input[name="radio-type"]').prop('checked', false));
 {#script tag#}
     const input = document.getElementById("alternative-name-tag");
     const tagList = document.getElementById("alternative-name-tag-list");
@@ -192,8 +204,8 @@
         input.value = "";
         event.preventDefault();
     }
-{#add ean13 field#}
 
+{#add ean13 field#}
 let inputCounter = 2;
 
 const addInputHandler = (event) => {
@@ -211,6 +223,7 @@ const addInputHandler = (event) => {
     parent.insertAdjacentElement('beforeend', button);
 
     button.addEventListener('click', addInputHandler);
+    event.preventDefault();
 
     inputCounter++;
 };
@@ -219,8 +232,8 @@ document.querySelector('.add-input').addEventListener('click', addInputHandler);
 
 
 {# select multiple genre #}
-    const select = document.querySelector('#select-genre');
-    const selectedOptions = document.querySelector('#show-selected-genre');
+const select = document.querySelector('#select-genre');
+const selectedOptions = document.querySelector('#show-selected-genre');
 
 select.addEventListener('change', (event) => {
   selectedOptions.innerHTML = '';
@@ -229,9 +242,10 @@ select.addEventListener('change', (event) => {
     span.classList.add('bg-gray-200', 'rounded-full', 'px-2', 'py-1', 'mr-2');
     span.innerText = option.text;
     selectedOptions.appendChild(span);
+    event.preventDefault();
+
   }
 });
-
 {# filtre #}
 function filterFunction() {
   var input, filter, ul, li, a, i;
@@ -249,6 +263,33 @@ function filterFunction() {
       a[i].style.display = "none";
     }
   }
+}
+
+
+
+function radioChange(){
+var radioType = document.querySelector('input[name="radio-type"]:checked').value
+    if(radioType == 'Médias'){
+        $('#test-media').removeClass('hidden');
+        $('#only-culturel').addClass('hidden');
+
+    }
+    else if(radioType == 'Transmédia'){
+        console.log('hello');
+        $('#test-media').removeClass('hidden');
+        $('#only-culturel').addClass('hidden');
+
+    }
+    else if(radioType == 'Culturel'){
+        $('#test-media').addClass('hidden');
+        $('#only-culturel').removeClass('hidden');
+
+    }
+    else{
+        $('#test-media').addClass('hidden');
+        $('#only-culturel').addClass('hidden');
+
+    }
 }
 
 </script>
