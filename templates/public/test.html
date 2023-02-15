@@ -122,9 +122,9 @@
         {#Dropdown tag genre#}
 
         <label for="select-genre" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selectionner des genres</label>
+        <input type="search" id="genre-search" onkeyup="filterFunction()">
         <select multiple id="select-genre" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-          <option selected>Selection de genre</option>
-          {% for genre in genres %}
+            {% for genre in genres %}
             <option value="{{ genre.nom_genres }}">{{ genre.nom_genres }}</option>
             {% endfor %}
         </select>
@@ -231,6 +231,25 @@ select.addEventListener('change', (event) => {
     selectedOptions.appendChild(span);
   }
 });
+
+{# filtre #}
+function filterFunction() {
+  var input, filter, ul, li, a, i;
+  input = document.getElementById("genre-search");
+    console.log(input);
+
+  filter = input.value.toUpperCase();
+  div = document.getElementById("select-genre");
+  a = div.getElementsByTagName("option");
+  for (i = 0; i < a.length; i++) {
+    txtValue = a[i].textContent || a[i].innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      a[i].style.display = "";
+    } else {
+      a[i].style.display = "none";
+    }
+  }
+}
 
 </script>
 
