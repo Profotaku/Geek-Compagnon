@@ -29,6 +29,7 @@ from flask_assets import Bundle, Environment
 from sklearn.pipeline import Pipeline
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_pyjwt import AuthManager, require_token
+from flask_talisman import Talisman # security headers
 
 from config import Config
 from dataclass import *
@@ -47,6 +48,15 @@ ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
 ip_ban.init_app(app)
 ip_ban.ip_whitelist_add('127.0.0.1')
 session = orm.scoped_session(orm.sessionmaker(bind=engine))
+csp = {
+    'default-src': '\'self\'',
+    'img-src': [ '\'self\'', 'picsum.photos', 'fastly.picsum.photos',  'anilist.co'],
+    'script-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'],
+    'style-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'],
+    'font-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'],
+
+}
+talisman = Talisman(app, strict_transport_security=True, force_https=True, content_security_policy=csp)
 mail = Mail(app)
 cors = CORS(app)
 csrf = CSRFProtect(app)
@@ -102,7 +112,12 @@ def recommandation(id_fiche):
     return recommandations.recommandations(id_fiche,5)
 @app.route('/connexion' , methods=['GET', 'POST'])
 def login():
+    print("ok")
     client = request.args.get('client')
+    if request.form.get('pseudo') is not None:
+        print("pseudo : " + request.form.get('pseudo'))
+        print("password : " + request.form.get('password'))
+        print("csrf_token : " + request.form.get('csrf_token'))
     method = request.method
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -126,5 +141,9 @@ def logout():
 def protected_route():
     #return userid in json
     return jsonify({'userid': current_user.pseudo})
+
+@app.route('/navbar', methods=['GET'])
+def navbar():
+    return render_template('public/navbar.html', connected=current_user.is_authenticated)
 
 

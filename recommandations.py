@@ -13,6 +13,14 @@ from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
 def recommandations(id_produit: int, nb_recommandations: int):
     #create a content based recommandation algorithm
     #get produit culturel, fiche, noms alternatif, genres, type media from id_produits_culturels in database
+    #if the id_produits_culturels is not in the database, return an error
+
+    if not session.query(Produits_Culturels).filter_by(id_produits_culturels=id_produit).first():
+        return jsonify({"error": "La fiche produit exigée n'est pas présente dans nos données"}), 404
+
+    if nb_recommandations > 10:
+        return jsonify({"error": "le nombre de recommandations est superieur à 10"}), 400
+
     base = (
         session.query(
             Produits_Culturels.id_produits_culturels,

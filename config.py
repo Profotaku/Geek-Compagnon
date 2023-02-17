@@ -13,4 +13,5 @@ class Config:
     JWT_REFRESHMAXAGE = 604800
     JWT_ISSUER = "Geek-Compagnon"
     JWT_AUTHTYPE = "HS256"
-    WTF_CSRF_SECRET_KEY = '&8mN%Ux%38#RC788^a2cDJL!L'
+    WTF_CSRF_SECRET_KEY = '&8mN%Ux%38#RC788^a2cDJL!L',
+    JSON_AS_ASCII = False
