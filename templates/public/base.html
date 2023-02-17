@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
     <script src={{ url_for('static', filename='js/particles.min.js') }}></script>
     <link href="{{url_for('static',filename='css/main.css')}}" rel="stylesheet">
+    <link href="{{url_for('static',filename='css/custom.css')}}" rel="stylesheet">
+    <link href="{{url_for('static',filename='css/bulma.css')}}" rel="stylesheet">
+
 
     {% assets 'css' %}
       <link rel="stylesheet" href="{{ ASSET_URL }}">
