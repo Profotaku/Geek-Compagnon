@@ -20,6 +20,7 @@ module.exports = {
      './template/public/**/*.html',
      './template/public/*.html',
      './static/css/*.css',
+      './static/css/main.css',
      './static/js/*.{js,jsx,ts,tsx,vue}',
    ],
   },
