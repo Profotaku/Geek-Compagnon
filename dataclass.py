@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from sqlalchemy import orm
 Base = sa.orm.declarative_base()
 import datetime
 from flask_login import UserMixin

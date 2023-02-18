@@ -4,6 +4,7 @@ from config import Config
 from  dataclass import *
 import sqlalchemy as sa
 import pandas as pd
+from sqlalchemy import orm
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 engine = sa.create_engine(Config.SQLALCHEMY_DATABASE_URI  , pool_size=30, max_overflow=0)
