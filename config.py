@@ -15,3 +15,6 @@ class Config:
     JWT_AUTHTYPE = "HS256"
     WTF_CSRF_SECRET_KEY = '&8mN%Ux%38#RC788^a2cDJL!L',
     JSON_AS_ASCII = False
+    SESSION_TYPE = 'filesystem'
+    SESSION_FILE_THRESHOLD = 500
+    JWT_SESSION_COOKIE = False

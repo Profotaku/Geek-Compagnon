@@ -16,6 +16,7 @@ class Utilisateurs(Base, UserMixin):
     fondateur = sa.Column(sa.Boolean, nullable=False, default=False)
     desactive = sa.Column(sa.Boolean, nullable=False, default=False)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
+    otp_secret = sa.Column(sa.String, nullable=True)
 
     def __repr__(self):
         return f"Utilisateur('{self.pseudo}')"

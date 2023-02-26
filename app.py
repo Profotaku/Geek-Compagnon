@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+import flask
 import sqlalchemy_searchable
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_file
 from flask_caching import Cache
 import sqlalchemy as sa  # ORM
 from sqlalchemy.ext.declarative import declarative_base
@@ -28,13 +29,19 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from flask_assets import Bundle, Environment
 from sklearn.pipeline import Pipeline
 from flask_login import login_user, logout_user, current_user, login_required
-from flask_pyjwt import AuthManager, require_token
+from flask_pyjwt import AuthManager, require_token, current_token
 from flask_talisman import Talisman # security headers
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from flask_session import Session
+import io
+
 
 from config import Config
 from dataclass import *
 import recommandations
 import function_login
+import pyotp
+import pyqrcode
 
 Base = sqlalchemy.orm.declarative_base()
 login_manager = LoginManager()
@@ -64,12 +71,12 @@ bcrypt = Bcrypt(app)
 login_manager.init_app(app)
 assets = Environment(app)
 auth_manager = AuthManager(app)
+jwt = JWTManager(app)
+Session(app)
 css = Bundle("src/main.css", output="dist/main.css")
 assets.register("css", css)
 css.build()
 app.secret_key = Config.SECRET_KEY
-
-
 
 @app.errorhandler(413)
 def too_large(e):
@@ -112,12 +119,7 @@ def recommandation(id_fiche):
     return recommandations.recommandations(id_fiche,5)
 @app.route('/connexion' , methods=['GET', 'POST'])
 def login():
-    print("ok")
     client = request.args.get('client')
-    if request.form.get('pseudo') is not None:
-        print("pseudo : " + request.form.get('pseudo'))
-        print("password : " + request.form.get('password'))
-        print("csrf_token : " + request.form.get('csrf_token'))
     method = request.method
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -137,13 +139,31 @@ def logout():
 
 #ceci est simplement un exemple de route protégée par un token jwt
 @app.route('/protected_route', methods=['GET', 'POST'])
-@require_token()
+@jwt_required()
 def protected_route():
     #return userid in json
-    return jsonify({'userid': current_user.pseudo})
+    current_u = get_jwt_identity()
+    return jsonify({'userid': current_u})
 
+@app.route('/renew_jwt', methods=['GET'])
+@jwt_required(refresh=True)
+def renew_jwt():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    return jsonify(access_token=access_token)
 @app.route('/navbar', methods=['GET'])
 def navbar():
     return render_template('public/navbar.html', connected=current_user.is_authenticated)
+
+@app.route('/test-totp', methods=['GET', 'POST'])
+def test_totp():
+    otp_secret = "ECTKRITZUCRCVGJTTAWAR2AE3MVNWJQR"
+    totp = pyotp.TOTP(otp_secret)
+    qr = pyqrcode.create(pyotp.totp.TOTP(otp_secret).provisioning_uri("matthieus701@gmail.com", issuer_name="Geek Compagnon"))
+    qr_image = io.BytesIO()
+    qr.png(qr_image, scale=5)
+    qr_image.seek(0)
+    #return file img
+    return send_file(qr_image, mimetype='image/png')
 
 
