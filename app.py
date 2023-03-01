@@ -10,36 +10,30 @@ from sqlalchemy_searchable import make_searchable, search
 from flask_wtf.csrf import CSRFProtect # CSRF protection
 from flask_mailman import Mail  # API for sending emails
 from flask_cors import CORS  # prevent CORS attacks
-from flask_bcrypt import Bcrypt  # hash passwords
+import bcrypt
 from flask_login import LoginManager  # user session management
 from huey import RedisHuey, crontab  # task queue
 from flask_ipban import IpBan  # IP ban
 from sqlalchemy import literal_column
 from sqlalchemy.sql.operators import op
-import os
 import sqlalchemy.sql.functions
-from sqlalchemy_utils.types.pg_composite import psycopg2
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.preprocessing import LabelEncoder
-import pandas as pd
-import sklearn
-from sklearn.preprocessing import MultiLabelBinarizer
 from flask_assets import Bundle, Environment
-from sklearn.pipeline import Pipeline
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_pyjwt import AuthManager, require_token, current_token
 from flask_talisman import Talisman # security headers
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from flask_session import Session
+from flask_dropzone import Dropzone
 import io
+import os
 
 
-from config import Config
+from config import *
+import config
 from dataclass import *
 import recommandations
 import function_login
+import function_register
 import pyotp
 import pyqrcode
 
@@ -47,9 +41,9 @@ Base = sqlalchemy.orm.declarative_base()
 login_manager = LoginManager()
 make_searchable(Base.metadata)  # this is needed for the search to work
 app = Flask(__name__)
-app.config.from_object(Config)
+app.config.from_pyfile("config.py")
 cache = Cache(app)
-engine = sa.create_engine(Config.SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
+engine = sa.create_engine(SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
 sa.orm.configure_mappers()
 ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
 ip_ban.init_app(app)
@@ -57,26 +51,28 @@ ip_ban.ip_whitelist_add('127.0.0.1')
 session = orm.scoped_session(orm.sessionmaker(bind=engine))
 csp = {
     'default-src': '\'self\'',
-    'img-src': [ '\'self\'', 'picsum.photos', 'fastly.picsum.photos',  'anilist.co'],
-    'script-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'],
-    'style-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'],
-    'font-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'],
+    'script-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'code.jquery.com',  'unpkg.com', '\'unsafe-inline\'', '\'unsafe-eval\''],
+    'style-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'unpkg.com', '\'unsafe-inline\'', '\'unsafe-eval\'', 'fonts.googleapis.com'],
+    'font-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.gstatic.com'],
+    'img-src': ['\'self\'', 'picsum.photos', 'fastly.picsum.photos', 'anilist.co', 'data:'],
+
 
 }
 talisman = Talisman(app, strict_transport_security=True, force_https=True, content_security_policy=csp)
 mail = Mail(app)
 cors = CORS(app)
 csrf = CSRFProtect(app)
-bcrypt = Bcrypt(app)
 login_manager.init_app(app)
 assets = Environment(app)
 auth_manager = AuthManager(app)
 jwt = JWTManager(app)
 Session(app)
+dropzone = Dropzone(app)
 css = Bundle("src/main.css", output="dist/main.css")
 assets.register("css", css)
 css.build()
-app.secret_key = Config.SECRET_KEY
+app.secret_key = SECRET_KEY
+
 
 @app.errorhandler(413)
 def too_large(e):
@@ -124,11 +120,11 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     if client == 'app' and method == 'POST':
-        return function_login.login_app_post(bcrypt, session, auth_manager)
+        return function_login.login_app_post(session, auth_manager)
     elif client == 'app' and method == 'GET':
         return function_login.login_app_get()
     elif method == 'POST':
-        return function_login.login_web_post(bcrypt, session)
+        return function_login.login_web_post(session)
     else:
         return function_login.login_web_get()
 @app.route('/deconnexion')
@@ -166,4 +162,43 @@ def test_totp():
     #return file img
     return send_file(qr_image, mimetype='image/png')
 
+
+@app.route('/inscription', methods=['GET', 'POST'])
+def inscription():
+    if request.method == 'POST':
+        return function_register.inscription_post(session)
+    else:
+        return function_register.inscription_get()
+
+@app.route('/confirm_mail/<token>', methods=['GET'])
+def confirm_mail(token):
+    mail_checked = function_register.confirm_token(token)
+    if mail_checked is False:
+        flash("Le lien est invalide ou a expiré", "danger")
+        return redirect(url_for('inscription'))
+    else:
+        hash_mail = bcrypt.hashpw(mail_checked.encode('utf-8'), BCRYPT_UNIQUE_SALT.encode('utf-8')).decode('utf-8')
+        user = session.query(Utilisateurs).filter_by(hash_mail=hash_mail).first()
+        user.verifie = True
+        session.commit()
+        flash("Votre compte a bien été validé, vous pouvez à présent profiter du site!", "success")
+        return redirect(url_for('login'))
+
+@app.route('/ajouter-fiche', methods=['POST'])
+def ajouter_fiche():
+    file = request.files['file']
+    nom_input = request.form.get('nom-input')
+    print(file)
+    print(nom_input)
+    file_start = file.read(8)
+    file.seek(0)
+    for image_type, signature in Image_Signature():
+        if file_start.startswith(signature):
+            return "ok"
+
+
+    return "ok"
+
+if __name__ == "__main__":
+    app.run(port=7777, ssl_context=("SSLcertificate.crt", "SSLprivatekey.key"), host="0.0.0.0", debug=True)
 

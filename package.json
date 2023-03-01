@@ -1,8 +1,26 @@
 {
+  "name": "n-app",
+  "version": "1.0.0",
+  "scripts": {
+    "watch": "tailwindcss -i ./static/src/main.css -o ./static/css/main.css --watch"
+  },
   "devDependencies": {
     "tailwindcss": "^3.2.7"
   },
   "dependencies": {
     "flowbite": "^1.6.3"
-  }
+  },
+  "description": "SIte web de GK",
+  "main": "tailwind.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Profotaku/Geek-Compagnon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Profotaku/Geek-Compagnon/issues"
+  },
+  "homepage": "https://github.com/Profotaku/Geek-Compagnon#readme"
 }

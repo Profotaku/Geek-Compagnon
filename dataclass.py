@@ -6,7 +6,7 @@ from flask_login import UserMixin
 class Utilisateurs(Base, UserMixin):
     __tablename__ = 'utilisateurs'
     pseudo = sa.Column(sa.String, primary_key=True, nullable=False)
-    mail = sa.Column(sa.String, unique=True, nullable=False)
+    hash_mail = sa.Column(sa.String, unique=True, nullable=False)
     hash_mdp = sa.Column(sa.String, nullable=False)
     url_image = sa.Column(sa.String, nullable=False, default='default-profile.jpg')
     experience = sa.Column(sa.Integer, nullable=False, default=0)
