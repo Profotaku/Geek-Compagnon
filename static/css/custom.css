@@ -7,9 +7,9 @@ body{
     background-image: url("../images/background.png");
 }
 
-nav{
-    background-color: #af60b8;
-}
+/*nav{*/
+/*    background-color: #af60b8;*/
+/*}*/
 #onglets ul li:hover, #btn-connection:hover {
     transition-duration: 0.1s;
     text-shadow: #3c3c3c 2px 1px 2px;
