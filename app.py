@@ -55,8 +55,6 @@ csp = {
     'style-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'unpkg.com', '\'unsafe-inline\'', '\'unsafe-eval\'', 'fonts.googleapis.com'],
     'font-src': ['\'self\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.gstatic.com'],
     'img-src': ['\'self\'', 'picsum.photos', 'fastly.picsum.photos', 'anilist.co', 'data:'],
-
-
 }
 talisman = Talisman(app, strict_transport_security=True, force_https=True, content_security_policy=csp)
 mail = Mail(app)
