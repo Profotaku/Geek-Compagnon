@@ -1,22 +1,20 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">{#
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.3/flowbite.min.css" rel="stylesheet"/>#}
     <link rel="stylesheet" href="../static/css/custom.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <link href="{{ url_for('static',filename='css/main.css') }}" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.3/flowbite.min.css" rel="stylesheet"/>
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"
             integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
     <title>Navbar test</title>
 </head>
 <body>
-
-
-<nav class="border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-900">
+<nav class="bg-chartmagenta-400 dark:bg-chartmagenta-800 border-gray-200 px-2 sm:px-4 py-2.5 ">
     <div class="container flex flex-wrap items-center justify-between mx-auto text-white">
         {# Logo #}
         <a href="{{ url_for('index') }}" class="navbar-item flex items-center">
@@ -24,26 +22,26 @@
         </a>
 
         {# Onglets #}
-        <div id="onglets" class="items-center justify-between hidden w-1/3 md:flex" id="mobile-menu-language-select">
-            <ul class="flex flex-col p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 justify-between text-white">
+        <div id="onglets" class="items-center no-underline text-white hidden w-1/3 md:flex" id="mobile-menu-language-select">
+            <ul class="flex flex-col p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 justify-between">
                 <li>
-                    <a href="#" class="block py-2 pl-3 pr-4 text-white rounded md:bg-transparent md:p-0 dark:text-white" aria-current="page">
+                    <a href="#" class="block py-2 pl-3 pr-4 text-white hover:text-chartpink-200 rounded md:p-0 no-underline" aria-current="page">
                         <span class="w-1/3 h-1/2 ">
                           <i class="fa-regular fa-pen-to-square"></i>
                         </span>
-                        <span class="">Contribuer !</span>
+                        <span class="hover:text-slate-100">Contribuer !</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="block py-2 pl-3 pr-4 rounded md:hover:bg-transparent md:hover:text-white md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
-                       <span class="w-1/3 h-1/2 ">
+                    <a href="#" class="block py-2 pl-3 pr-4 text-white hover:text-chartpink-200 rounded md:p-0 no-underline">
+                       <span class="w-1/3 h-1/2">
                             <i class="fa-regular fa-comments"></i>
                         </span>
                         Forum
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="block py-2 pl-3 pr-4 rounded hover:bg-gray-100 md:hover:bg-transparent md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">
+                    <a href="#" class="block py-2 pl-3 pr-4 text-white hover:text-chartpink-200 rounded md:p-0 no-underline">
                         <span class="w-1/3 h-1/2 ">
                           <i class="fa-regular fa-rectangle-list"></i>
                         </span>
@@ -57,7 +55,7 @@
         {# condition connection#}
         {% if not connected %}
             <div class="flex items-center md:order-2">
-                <a id="btn-connection" href="{{ url_for('login') }}" class="navbar-item">
+                <a id="btn-connection" href="{{ url_for('login') }}" class="navbar-item text-white no-underline">
                     <span class="icon is-medium is-left">
                       <i class="fas fa-sign-in-alt is-primary"></i>
                     </span>

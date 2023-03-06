@@ -1,16 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  mode: 'jit',
-  content: [
-    './templates/**/*.html',
-    './static/src/**/*.js'
-  ],
-  theme: {
-    extend: {},
-    colors: {
-      transparent: 'transparent',
-      current: 'currentColor',
-      'chartmagenta': {
+    mode: 'jit',
+    darkMode: 'media',
+    content: [
+        './templates/**/*.html',
+        './static/src/**/*.js'
+    ],
+    theme: {
+        extend: {},
+        colors: {
+            transparent: 'transparent',
+            current: 'currentColor',
+            'chartmagenta': {
           100: '#e5d6e7',
           200: '#cbadcf',
           300: '#b284b8',
@@ -20,7 +21,7 @@ module.exports = {
           700: '#3f1944',
           800: '#200c22',
       },
-      'chartblue' : {
+            'chartblue' : {
           100: '#ddeafa',
           200: '#bad5f4',
           300: '#98bfef',
@@ -30,7 +31,7 @@ module.exports = {
           700: '#2a4b72',
           800: '#152539',
       },
-      'chartpink' : {
+            'chartpink' : {
           100: '#f4e8f5',
           200: '#e9d1eb',
           300: '#ddb9e2',
@@ -40,7 +41,7 @@ module.exports = {
           700: '#644667',
           800: '#322333',
       },
-      'chartpurple' : {
+            'chartpurple' : {
           100: '#e4e7f6',
           200: '#cacfed',
           300: '#afb7e4',
@@ -50,17 +51,17 @@ module.exports = {
           700: '#3d4469',
           800: '#1f2234',
       },
+        },
+        mode: 'jit',
+        purge: [
+            './template/public/**/*.html',
+            './template/public/*.html',
+            './static/css/*.css',
+            './static/css/main.css',
+            './static/js/*.{js,jsx,ts,tsx,vue}',
+        ],
     },
-    mode: 'jit',
-    purge: [
-     './template/public/**/*.html',
-     './template/public/*.html',
-     './static/css/*.css',
-      './static/css/main.css',
-     './static/js/*.{js,jsx,ts,tsx,vue}',
-   ],
-  },
-  plugins: [
-    require('flowbite/plugin')
-  ],
+    plugins: [
+        require('flowbite/plugin')
+    ],
 }
