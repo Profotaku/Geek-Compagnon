@@ -11,12 +11,12 @@
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 </head>
 <body class="flex justify-center">
-    <form class="grid grid-cols-1 w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4 mb-6" method="post" action="{{ url_for('ajouter_fiche') }}">
+    <form class="grid grid-cols-1 w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4 mb-6" method="post" action="{{ url_for('ajouter_fiche') }}" id="globalform">
         <h1 class="text-xl font-semibold">Ajouter une fiche</h1>
         {#Radio bouton#}
         <div id="radio-type" class="grid grid-cols-6 p-2 mb-2">
             <div class="flex items-center col-span-1">
-                <input id="default-radio-1" type="radio" value="Médias" name="radio-type" onchange="radioChange()" w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600>
+                <input id="default-radio-1" type="radio" value="Médias" name="radio-type" onchange="radioChange()" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                 <label for="default-radio-1" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Médias</label>
             </div>
 
@@ -34,7 +34,7 @@
         {# Only média & transmédia#}
         <div id="test-media" class="hidden mb-6">
             <label for="succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Succés</label>
-            <input id="succes" name="succes" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <input id="succes" name="succes-input" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
         {# Fin only média & transmédia#}
 
@@ -78,7 +78,7 @@
         {# Média et transmedia only#}
         <div class="mb-6">
             <label for="titre-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Titre</label>
-            <input type="date" id="titre-input" name="titre-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <input type="text" id="titre-input" name="titre-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
 
         <div class="mb-6">
@@ -130,7 +130,7 @@
     {#btn envoie#}
     <a class="mt-6 mb-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="upload-btn" href="#">Valider la fiche</a>
     </form>
-        {{ dropzone.config(custom_init='dz = this;document.getElementById("upload-btn").addEventListener("click", function handler(e) {if(document.getElementById("nom-input").value != 0){alert("ok");dz.processQueue();}});', id='dz', custom_options='autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 1, redirectView: "test"' ) }}
+        {{ dropzone.config(custom_init='dz = this;document.getElementById("upload-btn").addEventListener("click", function handler(e) {if(document.getElementById("nom-input").value != 0){dz.processQueue();}});', id='dz', custom_options='autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 1, redirectView: "test"' ) }}
         {{ dropzone.create(action=url_for('ajouter_fiche'), id='dz') }}
 
 

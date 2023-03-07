@@ -319,9 +319,9 @@ class Donner(Base):
     def __repr__(self):
         return f"Donner('{self.pseudo}'+{self.id_moyennes}')"
 
-class Nombre_Possession(Base):
-    __tablename__ = 'nombre_possession'
-    id_nombre_possession = sa.Column(sa.Integer, primary_key=True, nullable=False)
+class Nombre_Possessions(Base):
+    __tablename__ = 'nombre_possessions'
+    id_nombre_possessions = sa.Column(sa.Integer, primary_key=True, nullable=False)
     nombre_possession = sa.Column(sa.Integer, nullable=False)
     nom_types_media = sa.Column(sa.String, sa.ForeignKey('types_media.nom_types_media'), nullable=False)
 
@@ -331,7 +331,7 @@ class Nombre_Possession(Base):
 class Avoir_Nombre_Possession(Base):
     __tablename__ = 'avoir_nombre_possession'
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), primary_key=True, nullable=False)
-    id_nombre_possession = sa.Column(sa.Integer, sa.ForeignKey('nombre_possession.id_nombre_possession'), primary_key=True, nullable=False)
+    id_nombre_possessions = sa.Column(sa.Integer, sa.ForeignKey('nombre_possessions.id_nombre_possessions'), primary_key=True, nullable=False)
 
     def __repr__(self):
         return f"Avoir_Nombre_Possession('{self.pseudo}'+{self.id_nombre_possession}')"

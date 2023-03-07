@@ -5,6 +5,7 @@ from config import *
 from mailjet_rest import Client
 from itsdangerous import URLSafeTimedSerializer
 import bcrypt
+from sqlalchemy import func
 
 
 def inscription_post(session):
@@ -29,6 +30,40 @@ def inscription_post(session):
     user = Utilisateurs(pseudo=pseudo, hash_mdp=hash_mdp, hash_mail=hash_mail)
     session.add(user)
     session.commit()
+    #Get all type media
+    type_media = session.query(Types_Media).all()
+    #For each type media, create a new Nombre_Possession and Avoir_Nombre_Possession
+    for type in type_media:
+        nb_possession = Nombre_Possessions(id_nombre_possessions=(session.query(func.max(Nombre_Possessions.id_nombre_possessions)).scalar() or 0)+1, nombre_possession=0, nom_types_media=type.nom_types_media)
+        session.add(nb_possession)
+        session.commit()
+        avoir_nb_possession = Avoir_Nombre_Possession(pseudo=pseudo, id_nombre_possessions=session.query(func.max(Nombre_Possessions.id_nombre_possessions)).scalar())
+        session.add(avoir_nb_possession)
+        session.commit()
+    #For each type media, create a new Moyennes et Donner
+    for type in type_media:
+        moyennes = Moyennes(id_moyennes=(session.query(func.max(Moyennes.id_moyennes)).scalar() or 0)+1, moyenne=0, nom_types_media=type.nom_types_media)
+        session.add(moyennes)
+        session.commit()
+        donner = Donner(pseudo=pseudo, id_moyennes=session.query(func.max(Moyennes.id_moyennes)).scalar())
+        session.add(donner)
+        session.commit()
+    #For each type media, create a new Notes et Notes_Utilisateurs
+    for type in type_media:
+        notes = Notes(id_notes=(session.query(func.max(Notes.id_notes)).scalar() or 0)+1, note_0=0, note_1=0, note_2=0, note_3=0, note_4=0, note_5=0, note_6=0, note_7=0, note_8=0, note_9=0, note_10=0)
+        session.add(notes)
+        session.commit()
+        notes_utilisateurs = Notes_Utilisateurs(pseudo=pseudo, id_notes=session.query(func.max(Notes.id_notes)).scalar(), nom_types_media=type.nom_types_media)
+        session.add(notes_utilisateurs)
+        session.commit()
+
+
+
+
+
+
+
+
     #email confirmation
     token = generate_confirmation_token(email)
     confirm_url = url_for('confirm_mail', token=token, _external=True)

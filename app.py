@@ -184,15 +184,45 @@ def confirm_mail(token):
 
 @app.route('/ajouter-fiche', methods=['POST'])
 def ajouter_fiche():
-    file = request.files['file']
+    r = request
     nom_input = request.form.get('nom-input')
-    print(file)
-    print(nom_input)
-    file_start = file.read(8)
-    file.seek(0)
-    for image_type, signature in Image_Signature():
-        if file_start.startswith(signature):
-            return "ok"
+    synopsis_input = request.form.get('synopsis-input')
+    infos_input = request.form.get('infos-input')
+    concepteur_input = request.form.get('concepteur-input')
+    adulte_checkbox = request.form.get('adulte-checkbox')
+    current_user_id = None
+    if current_user:
+        current_user_id = current_user.id_utilisateurs
+
+    jwt_user_id = get_jwt_identity()
+    if jwt_user_id:
+        current_user_id = jwt_user_id
+
+    contributeur = current_user_id or "Un contributeur anonyme"
+    url_image = request.files['file']
+
+    radio_type = request.form.get('radio-type')
+
+    alternative_name_tag = request.form.getlist('alternative-name-tag')
+
+    date_sortie_input = request.form.get('date-sortie-input') #uniquement pour produits culturels
+
+    ean_inputs = []
+    i = 1
+    while f'ean-input-{i}' in request.form:
+        ean_inputs.append(request.form[f'ean-input-{i}'])
+        i += 1
+    select_genre = request.form.getlist('select-genre')
+
+    titre_input = request.form.get('titre-input')
+    description_input = request.form.get('description-input')
+
+    #print all data
+    print(url_image)
+
+
+
+
 
 
     return "ok"
