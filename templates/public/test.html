@@ -149,11 +149,7 @@
     const input = document.getElementById("alternative-name-tag");
     const tagList = document.getElementById("alternative-name-tag-list");
 
-{# input.addEventListener("keyup", function(event) {
-      if (event.key === "Enter") {
-        createTag();
-      }
-    }); #}
+    var nbTag = 0;
 
     const createTagButton = document.getElementById("create-tag-button");
     createTagButton.addEventListener("click",
@@ -171,7 +167,10 @@
       // créer un élément de tag
       const tag = document.createElement("span");
       tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
-      tag.attr('name', 'test');
+      tag.setAttribute('id', 'alternative-name-'+nbTag);
+      tag.setAttribute('name', 'alternative-name-'+nbTag);
+
+      {#tag.attr('name', 'test');#}
       tag.textContent = tagValue;
 
         // créer un bouton de suppression
@@ -182,6 +181,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         `;
+
+        nbTag++;
 
         button.addEventListener("click", function() {
             tagList.removeChild(tag);
@@ -240,6 +241,7 @@ select.addEventListener('change', (event) => {
 
   }
 });
+
 {# filtre #}
 function filterFunction() {
   var input, filter, ul, li, a, i;
@@ -258,7 +260,6 @@ function filterFunction() {
     }
   }
 }
-
 
 {#Affichage conditionnel selon radio bouton#}
 function radioChange(){
@@ -288,6 +289,19 @@ var radioType = document.querySelector('input[name="radio-type"]:checked').value
         $('#media-type').addClass('hidden');
     }
 }
+
+{# Upload des images #}
+    const link = document.querySelector('#upload-btn');
+    const form = document.querySelector('#globalform');
+
+    // Ajouter un event listener pour le clic sur le lien
+    link.addEventListener('click', (event) => {
+      // Empêcher le comportement par défaut du lien (l'ouverture de la page liée)
+      event.preventDefault();
+
+      // Soumettre le formulaire associé
+      form.submit();
+      });
 </script>
 <script>
     dz.on("sending", function(file, xhr, formData) {
