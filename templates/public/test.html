@@ -33,10 +33,16 @@
         {#Fin radio bouton#}
         {# Only média & transmédia#}
         <div id="test-media" class="hidden mb-6">
-            <label for="succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Succés</label>
-            <input id="succes" name="succes-input" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <label for="nom-succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nom du succés</label>
+            <input id="nom-succes" name="nom-succes-input" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+
+        <div id="test-media" class="hidden mb-6">
+            <label for="description-succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description du succés</label>
+            <input id="description-succes" name="description-succes-input" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
         {# Fin only média & transmédia#}
+
 
         <div class="mb-6">
             <label for="nom-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nom</label>
@@ -95,7 +101,7 @@
 
         {# Genre média only média#}
         <label for="media-type-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type de média</label>
-        <select id="media-type-input" name="media-type-input" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg hidden focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <select id="media-type-input" name="media-type-input" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
           <option value="livre">Livre</option>
           <option value="film">Film</option>
           <option value="serie">Série</option>
@@ -165,6 +171,7 @@
       // créer un élément de tag
       const tag = document.createElement("span");
       tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
+      tag.attr('name', 'test');
       tag.textContent = tagValue;
 
         // créer un bouton de suppression
