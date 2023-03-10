@@ -24,6 +24,7 @@ from flask_talisman import Talisman # security headers
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from flask_session import Session
 from flask_dropzone import Dropzone
+from flask_compress import Compress
 import io
 import os
 
@@ -42,6 +43,7 @@ login_manager = LoginManager()
 make_searchable(Base.metadata)  # this is needed for the search to work
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
+compresseur = Compress(app)
 cache = Cache(app)
 engine = sa.create_engine(SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
 sa.orm.configure_mappers()
