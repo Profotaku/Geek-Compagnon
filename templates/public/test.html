@@ -82,13 +82,13 @@
         </div>
 
         {# Média et transmedia only#}
-        <div class="mb-6">
-            <label for="titre-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Titre</label>
+        <div class="mb-6 media-only hidden">
+            <label for="titre-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Titre du succès</label>
             <input type="text" id="titre-input" name="titre-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
 
-        <div class="mb-6">
-            <label for="description-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+        <div class="mb-6 media-only hidden">
+            <label for="description-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description du succès</label>
             <textarea type="date" id="description-input" name="description-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
         </div>
         {# Fin média et transmedia only#}
@@ -164,11 +164,10 @@
         }
 
       // créer un élément de tag
-      const tag = document.createElement("input");
+      const tag = document.createElement("div");
       tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
       tag.setAttribute('id', 'alternative-name-'+nbTag);
       tag.setAttribute('name', 'alternative-name-'+nbTag);
-      tag.setAttribute('disabled', true);
 
       tag.textContent = tagValue;
       tag.setAttribute('value', tagValue);
@@ -199,10 +198,10 @@
         event.preventDefault();
     }
 
-{#add ean13 field#}
-let inputCounter = 2;
+    {#add ean13 field#}
+    let inputCounter = 2;
 
-const addInputHandler = (event) => {
+    const addInputHandler = (event) => {
     const parent = event.target.parentNode;
     const input = document.createElement('input');
     input.type = 'text';
@@ -265,20 +264,19 @@ function filterFunction() {
 function radioChange(){
 var radioType = document.querySelector('input[name="radio-type"]:checked').value
     if(radioType == 'Médias'){
-        $('#test-media').removeClass('hidden');
+        $('.media-only').removeClass('hidden');
         $('#only-culturel').addClass('hidden');
         $('#media-type').removeClass('hidden');
 
     }
     else if(radioType == 'Transmédia'){
-        console.log('hello');
-        $('#test-media').removeClass('hidden');
+        $('.media-only').removeClass('hidden');
         $('#only-culturel').addClass('hidden');
         $('#media-type').addClass('hidden');
 
     }
     else if(radioType == 'Culturel'){
-        $('#test-media').addClass('hidden');
+        $('.media-only').addClass('hidden');
         $('#only-culturel').removeClass('hidden');
         $('#media-type').addClass('hidden');
 
