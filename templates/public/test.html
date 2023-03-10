@@ -121,7 +121,6 @@
 
 
         {#Dropdown tag genre#}
-
         <label for="select-genre" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selectionner des genres</label>
         <input type="search" id="genre-search" onkeyup="filterFunction()">
         <select multiple id="select-genre" name="select-genre" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -165,13 +164,14 @@
         }
 
       // créer un élément de tag
-      const tag = document.createElement("span");
+      const tag = document.createElement("input");
       tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
       tag.setAttribute('id', 'alternative-name-'+nbTag);
       tag.setAttribute('name', 'alternative-name-'+nbTag);
+      tag.setAttribute('disabled', true);
 
-      {#tag.attr('name', 'test');#}
       tag.textContent = tagValue;
+      tag.setAttribute('value', tagValue);
 
         // créer un bouton de suppression
         const button = document.createElement("button");
