@@ -123,7 +123,7 @@
         {#Dropdown tag genre#}
         <label for="select-genre" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selectionner des genres</label>
         <input type="search" id="genre-search" onkeyup="filterFunction()">
-        <select multiple id="select-genre" name="select-genre" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <select multiple id="select-genre" name="select-genre[]" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             {% for genre in genres %}
                 <option value="{{ genre.nom_genres }}">
                     <label for="">{{ genre.nom_genres }}</label>
@@ -309,7 +309,8 @@ var radioType = document.querySelector('input[name="radio-type"]:checked').value
       // Ajouter les autres champs du formulaire à la requête
       formData.append("nom-input", nom_input);
     });
-$("#submit").click(function(event) {
+
+    $("#submit").click(function(event) {
       // Empêcher la soumission du formulaire
       event.preventDefault();
 
