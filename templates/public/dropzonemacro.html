@@ -1,0 +1,63 @@
+{% macro dz(url='', max_files=None, max_file_size=None, accepted_files=None, default_message="Veuillez déposer votre image",  csrf_token=None, preview_size_w=300, preview_size_h=430, label="Image") %}
+    {% set id = "dropz" %}
+    {% set name = "dropz" %}
+    {% if csrf_token %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {% endif %}
+    <div class="mt-6">{{label}}</div>
+    <div id="{{ id }}" class="dz-clickable">
+        <div class="dz-message">
+            <span>{{ default_message }}</span>
+        </div>
+    </div>
+    <script>
+        $(function() {
+            var drz = new Dropzone("#{{ id }}", {
+                url: "{{ url }}",
+                maxFiles: {% if max_files %}{{ max_files }}{% else %}null{% endif %},
+                maxFilesize: {% if max_file_size %}{{ max_file_size }}{% else %}null{% endif %},
+                acceptedFiles: "{% if accepted_files %}{{ accepted_files }}{% else %}null{% endif %}",
+                addRemoveLinks: true,
+                dictRemoveFile: "Supprimer",
+                createImageThumbnails: true,
+                thumbnailWidth: {{ preview_size_w }},
+                thumbnailHeight: {{ preview_size_h }},
+                dictDefaultMessage: "{{ default_message }}",
+                autoProcessQueue: false,
+                dictInvalidFileType: "Vous ne pouvez pas envoyer ce type de fichier, seules les images jpg, jpeg et png sont acceptées",
+                dictFileTooBig: "Le fichier est trop volumineux, la taille maximale est de {{ max_file_size }} Mo",
+                dictMaxFilesExceeded: "Vous ne pouvez pas envoyer plus de {{ max_files }} fichiers",
+                dictError: "Une erreur est survenue lors de l'envoi du fichier",
+                dictFallbackText: "Votre navigateur ne supporte pas le téléchargement de fichiers par glisser-déposer",
+                dictFallbackMessage: "Votre navigateur ne supporte pas le téléchargement de fichiers par glisser-déposer",
+                dictCancelUpload: "Annuler l'envoi",
+                dictCancelUploadConfirmation: "Voulez-vous vraiment annuler l'envoi du fichier ?",
+                dictUploadCanceled: "L'envoi du fichier a été annulé",
+
+
+            });
+            t = document.getElementById("{{ id }}");
+            t.classList.add("dropzone");
+            //document.getElementById("upload-btn").addEventListener("click", function handler(e) {drz.processQueue();});
+            document.querySelector("#upload-btn").addEventListener("click", function(event) {
+                event.preventDefault();
+                var myForm = document.getElementById("formfiche");
+                var formData = new FormData(myForm);
+                drz.files.forEach(function (file) {
+                    formData.append("file", file);
+                });
+                fetch("{{ url }}", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    console.log(data.message);
+                })
+            });
+
+        });
+    </script>
+{% endmacro %}

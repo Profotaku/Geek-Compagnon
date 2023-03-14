@@ -20,3 +20,7 @@ a:hover {
 .btn:hover {
   @apply bg-chartmagenta-600;
 }
+
+.dropzone .dz-preview .dz-error-message {
+    top: 150px!important;
+}

@@ -7,17 +7,24 @@
     <link href="{{url_for('static',filename='css/main.css')}}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.3/flowbite.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    {{ dropzone.load_css() }}
+    {{ dropzone.load_js() }}
 </head>
 <body class="flex justify-center">
-    <form class="grid grid-cols-1 w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4 mb-6" method="post" action="{{ url_for('ajouter_fiche') }}" id="globalform">
+    <form class="grid grid-cols-1 w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4 mb-6" id="formfiche" method="post" action="{{ url_for('ajouter_fiche') }}">
         <h1 class="text-xl font-semibold">Ajouter une fiche</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         {#Radio bouton#}
         <div id="radio-type" class="grid grid-cols-6 p-2 mb-2">
             <div class="flex items-center col-span-1">
-                <input id="default-radio-1" type="radio" value="Médias" name="radio-type" onchange="radioChange()" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                <label for="default-radio-1" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Médias</label>
+                <input id="default-radio-1" type="radio" value="Média" name="radio-type" onchange="radioChange()" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <label for="default-radio-1" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Média</label>
             </div>
 
             <div class="flex items-center col-span-1">
@@ -52,12 +59,10 @@
         {# Nom alternatif - Créer tag simple #}
         <div class="grid grid-col-2">
             <div class="flex flex-wrap items-center">
-              <input id="alternative-name-tag" name="alternative-name-tag" class="bg-gray-200 rounded-full px-3 py-1 mr-2" type="text" placeholder="Ajouter un nom alternatif">
+              <input id="alternative-name-tag" class="bg-gray-200 rounded-full px-3 py-1 mr-2" type="text" placeholder="Ajouter un nom alternatif">
               <button id="create-tag-button" class="bg-blue-500 text-white py-2 px-4 rounded-full">Créer</button>
             </div>
-            <div id="alternative-name-tag-list" class="flex flex-wrap"></div>
-
-            <div class="flex flex-wrap mt-2" id="alternative-name-tag-list"></div>
+            <div id="alternative-name-tag-list" class="flex flex-wrap relative"></div>
         </div>
 
         {# Date de sortie element culturel #}
@@ -102,28 +107,35 @@
         {# Genre média only média#}
         <label for="media-type-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type de média</label>
         <select id="media-type-input" name="media-type-input" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-          <option value="livre">Livre</option>
-          <option value="film">Film</option>
-          <option value="serie">Série</option>
-          <option value="jeu-video">Jeu vidéo</option>
+            {% for typemedia in typesmedia %}
+            <option value="{{ typemedia.nom_types_media }}">{{ typemedia.nom_types_media }}</option>
+            {% endfor %}
         </select>
 
         {#EAN13#}
         <div class="mt-6">Ajouter EAN13</div>
         <div class="flex flex-wrap">
           <div class="w-full md:w-1/2 p-2">
-            <input type="text" class="form-input w-full border border-gray-400 rounded-lg p-2" id="ean-input-1" name="ean-input-1">
+            <input type="text" class="form-input w-full border border-gray-400 rounded-lg p-2" id="ean-input-0" name="ean-input-0">
           </div>
           <div class="w-full md:w-1/2 p-2">
-            <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 add-input" id="add-button-1">Ajouter</button>
+            <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 add-input" id="add-button-0">Ajouter</button>
           </div>
         </div>
+
+    {#Dropzone#}
+    {# Import Macro #}
+    {% from 'public/dropzonemacro.html' import dz %}
+    {# Use Macro #}
+    {{ dz(url=url_for("ajouter_fiche"), max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message, label="Visuel promotionnel") }}
+
+
 
 
         {#Dropdown tag genre#}
         <label for="select-genre" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selectionner des genres</label>
         <input type="search" id="genre-search" onkeyup="filterFunction()">
-        <select multiple id="select-genre" name="select-genre[]" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <select multiple id="select-genre" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             {% for genre in genres %}
                 <option value="{{ genre.nom_genres }}">
                     <label for="">{{ genre.nom_genres }}</label>
@@ -133,10 +145,11 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div id="show-selected-genre"></div>
     {#btn envoie#}
-    <a class="mt-6 mb-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="upload-btn" href="#">Valider la fiche</a>
+    <button class="mt-6 mb-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="upload-btn">Valider la fiche</button>
     </form>
-        {{ dropzone.config(custom_init='dz = this;document.getElementById("upload-btn").addEventListener("click", function handler(e) {if(document.getElementById("nom-input").value != 0){dz.processQueue();}});', id='dz', custom_options='autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 1, redirectView: "test"' ) }}
-        {{ dropzone.create(action=url_for('ajouter_fiche'), id='dz') }}
+
+
+
 
 
 
@@ -156,50 +169,102 @@
             createTag();
         });
 
-    function createTag(){
-      const tagValue = input.value.trim();
-      if(!tagValue) {
-            alert("Le tag ne peut pas être vide.");
-            return;
+function createTag(){
+	const tagValue = input.value.trim();
+	if(!tagValue) {
+	    alert("Le tag ne peut pas être vide.");
+	    return;
         }
+    // créer un élément de tag
+    const tag = document.createElement("input");
+    tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
+    tag.setAttribute('id', 'alternative-name-'+nbTag);
+    tag.setAttribute('name', 'alternative-name-'+nbTag);
+    tag.setAttribute('type', 'text');
+    tag.setAttribute('readonly', 'readonly');
 
-      // créer un élément de tag
-      const tag = document.createElement("div");
-      tag.classList.add("bg-blue-200", "text-blue-800", "rounded-full", "px-3", "py-1", "mr-2", "font-medium");
-      tag.setAttribute('id', 'alternative-name-'+nbTag);
-      tag.setAttribute('name', 'alternative-name-'+nbTag);
+    tag.textContent = tagValue;
+    tag.setAttribute('value', tagValue);
 
-      tag.textContent = tagValue;
-      tag.setAttribute('value', tagValue);
 
-        // créer un bouton de suppression
-        const button = document.createElement("button");
-        button.classList.add("text-red-500", "hover:text-red-700");
-        button.innerHTML = `
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        `;
+    let spanElement = document.createElement("span");
 
-        nbTag++;
+    // Ajouter la classe "absolute inset-y-0 left-0 flex items-center pl-2" à l'élément span
+    spanElement.classList.add("absolute", "inset-y-0", "left-0", "flex", "items-center", "pl-2");
 
-        button.addEventListener("click", function() {
-            tagList.removeChild(tag);
-        });
+    // ajouter id au span
+    spanElement.setAttribute('id', 'removespan-'+nbTag);
 
-        // ajouter le bouton de suppression au tag
-        tag.appendChild(button);
+    // Créer un nouvel élément bouton
+    let buttonElement = document.createElement("button");
 
-        // ajouter le tag à la liste
-        tagList.appendChild(tag);
+    // Ajouter la classe "text-red-500 hover:text-red-700" à l'élément bouton
+    buttonElement.classList.add("text-red-500", "hover:text-red-700");
 
-        // réinitialiser l'input
-        input.value = "";
-        event.preventDefault();
+    // Créer un nouvel élément SVG
+    let svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+    // Ajouter la classe "h-4 w-4" à l'élément SVG
+    svgElement.classList.add("h-4", "w-4");
+
+    // Ajouter l'attribut "fill" à l'élément SVG
+    svgElement.setAttribute("fill", "none");
+
+    // Ajouter l'attribut "stroke" à l'élément SVG
+    svgElement.setAttribute("stroke", "currentColor");
+
+    // Ajouter l'attribut "viewBox" à l'élément SVG
+    svgElement.setAttribute("viewBox", "0 0 24 24");
+
+    // Ajouter l'attribut "xmlns" à l'élément SVG
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    // Créer un nouvel élément path à l'intérieur de l'élément SVG
+    let pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+    // Ajouter les attributs "stroke-linecap", "stroke-linejoin" et "stroke-width" à l'élément path
+    pathElement.setAttribute("stroke-linecap", "round");
+    pathElement.setAttribute("stroke-linejoin", "round");
+    pathElement.setAttribute("stroke-width", "2");
+
+    // Ajouter l'attribut "d" à l'élément path
+    pathElement.setAttribute("d", "M6 18L18 6M6 6l12 12");
+
+    // Ajouter l'élément path à l'élément SVG
+    svgElement.appendChild(pathElement);
+
+    // Ajouter l'élément SVG à l'élément bouton
+    buttonElement.appendChild(svgElement);
+
+    // Ajouter l'élément bouton à l'élément span
+    spanElement.appendChild(buttonElement);
+
+    // Ajouter l'élément span à l'élément parent
+    tagList.appendChild(spanElement);
+
+    var removespan = document.getElementById("removespan-"+(nbTag));
+
+    // ajouter le bouton de suppression à coté de l'input
+    tagList.appendChild(tag);
+
+    removespan.addEventListener("click", function(event) {
+        base = event.target.parentNode.parentNode.id;
+        //get only number from id
+        var id = base.replace( /^\D+/g, '');
+        var r = document.getElementById("removespan-"+(id));
+        var a = document.getElementById("alternative-name-"+(id))
+        r.remove()
+        a.remove()
+    });
+
+    nbTag++;
+    // réinitialiser l'input
+    input.value = "";
+    event.preventDefault();
     }
 
     {#add ean13 field#}
-    let inputCounter = 2;
+    let inputCounter = 1;
 
     const addInputHandler = (event) => {
     const parent = event.target.parentNode;
@@ -229,16 +294,22 @@ document.querySelector('.add-input').addEventListener('click', addInputHandler);
 const select = document.querySelector('#select-genre');
 const selectedOptions = document.querySelector('#show-selected-genre');
 
-select.addEventListener('change', (event) => {
-  selectedOptions.innerHTML = '';
-  for (const option of select.selectedOptions) {
-    const span = document.createElement('span');
-    span.classList.add('bg-gray-200', 'rounded-full', 'px-2', 'py-1', 'mr-2');
-    span.innerText = option.text;
-    selectedOptions.appendChild(span);
-    event.preventDefault();
-
-  }
+select.addEventListener('click', (event) => {
+    for (const option of select.selectedOptions) {
+        const value = option.value.replace(/\s+/g, '-');
+        const existingInput = selectedOptions.querySelector(`input[name="genre-${value}"]`);
+        if (existingInput) {
+            existingInput.remove();
+            return;
+        }
+        const input = document.createElement('input');
+        input.classList.add('bg-gray-200', 'rounded-full', 'px-2', 'py-1', 'mr-2', 'genre-' + value);
+        input.value = option.text;
+        input.name = 'genre-' + value;
+        input.readOnly = true;
+        selectedOptions.appendChild(input);
+        event.preventDefault();
+    }
 });
 
 {# filtre #}
@@ -287,35 +358,5 @@ var radioType = document.querySelector('input[name="radio-type"]:checked').value
         $('#media-type').addClass('hidden');
     }
 }
-
-{# Upload des images #}
-    const link = document.querySelector('#upload-btn');
-    const form = document.querySelector('#globalform');
-
-    // Ajouter un event listener pour le clic sur le lien
-    link.addEventListener('click', (event) => {
-      // Empêcher le comportement par défaut du lien (l'ouverture de la page liée)
-      event.preventDefault();
-
-      // Soumettre le formulaire associé
-      form.submit();
-      });
-</script>
-<script>
-    dz.on("sending", function(file, xhr, formData) {
-      // Récupérer les autres champs du formulaire
-      var nom_input = $("#nom-input").val();
-
-      // Ajouter les autres champs du formulaire à la requête
-      formData.append("nom-input", nom_input);
-    });
-
-    $("#submit").click(function(event) {
-      // Empêcher la soumission du formulaire
-      event.preventDefault();
-
-      // Soumettre les fichiers téléchargés
-      dz.processQueue();
-    });
 </script>
 </html>

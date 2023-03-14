@@ -1,13 +1,26 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap'); /* static/src/main.css */
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap'); /* import test pour verifier le watch */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #333;
-  background-color: #f7f7f7;
+a {
+  @apply text-chartblue-700 underline;
+}
+
+a:hover {
+  @apply text-chartblue-800;
+}
+
+/* test styles pour les boutons */
+.btn {
+  @apply inline-block py-4 px-6 font-bold uppercase bg-chartmagenta-500 text-white rounded-lg cursor-pointer;
+}
+
+.btn:hover {
+  @apply bg-chartmagenta-600;
+}
+
+.dropzone .dz-preview .dz-error-message {
+    top: 150px!important;
 }

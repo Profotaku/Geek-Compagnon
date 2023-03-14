@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import flask
 import sqlalchemy_searchable
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_file, make_response
 from flask_caching import Cache
 import sqlalchemy as sa  # ORM
 from sqlalchemy.ext.declarative import declarative_base
@@ -24,7 +24,7 @@ from flask_talisman import Talisman # security headers
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from flask_session import Session
 from flask_dropzone import Dropzone
-from flask_compress import Compress
+from flask_squeeze import Squeeze
 import io
 import os
 
@@ -35,6 +35,7 @@ from dataclass import *
 import recommandations
 import function_login
 import function_register
+import function_addfiche
 import pyotp
 import pyqrcode
 
@@ -43,7 +44,7 @@ login_manager = LoginManager()
 make_searchable(Base.metadata)  # this is needed for the search to work
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
-compresseur = Compress(app)
+squeeze= Squeeze(app)
 cache = Cache(app)
 engine = sa.create_engine(SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
 sa.orm.configure_mappers()
@@ -89,7 +90,13 @@ def index():
 @app.route('/test')
 def test():
     genres = session.execute(select(Genres.nom_genres).order_by(Genres.nom_genres)).all()
-    return render_template('public/test.html', genres=genres)
+    typesmedia = session.execute(select(Types_Media.nom_types_media).order_by(Types_Media.nom_types_media)).all()
+    max_files = config.DROPZONE_MAX_FILES
+    max_file_size = config.DROPZONE_MAX_FILE_SIZE
+    accepted_files = config.DROPZONE_ALLOWED_FILE_TYPE
+    default_message = config.DROPZONE_DEFAULT_MESSAGE
+
+    return render_template('public/test.html', genres=genres, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
     title = "Haruhi"
@@ -186,48 +193,24 @@ def confirm_mail(token):
 
 @app.route('/ajouter-fiche', methods=['POST'])
 def ajouter_fiche():
-    r = request
-    nom_input = request.form.get('nom-input')
-    synopsis_input = request.form.get('synopsis-input')
-    infos_input = request.form.get('infos-input')
-    concepteur_input = request.form.get('concepteur-input')
-    adulte_checkbox = request.form.get('adulte-checkbox')
-    current_user_id = None
-    if current_user:
-        current_user_id = current_user.id_utilisateurs
-
-    jwt_user_id = get_jwt_identity()
-    if jwt_user_id:
-        current_user_id = jwt_user_id
-
-    contributeur = current_user_id or "Un contributeur anonyme"
-    url_image = request.files['file']
-
     radio_type = request.form.get('radio-type')
-
-    alternative_name_tag = request.form.getlist('alternative-name-tag')
-
-    date_sortie_input = request.form.get('date-sortie-input') #uniquement pour produits culturels
-
-    ean_inputs = []
-    i = 1
-    while f'ean-input-{i}' in request.form:
-        ean_inputs.append(request.form[f'ean-input-{i}'])
-        i += 1
-    select_genre = request.form.getlist('select-genre')
-
-    titre_input = request.form.get('titre-input')
-    description_input = request.form.get('description-input')
-
-    #print all data
-    print(url_image)
+    if radio_type == "Culturel":
+        return function_addfiche.ajouter_fiche_culturel(session)
+    elif radio_type == "Média":
+        return function_addfiche.ajouter_fiche_media(session)
+    elif radio_type == "Transmédia":
+        return function_addfiche.ajouter_fiche_transmedia(session)
+    else:
+        return make_response(jsonify({'message': 'Type de fiche inconnu'}), 400)
 
 
 
 
 
 
-    return "ok"
+
+
+
 
 if __name__ == "__main__":
     app.run(port=7777, ssl_context=("SSLcertificate.crt", "SSLprivatekey.key"), host="0.0.0.0", debug=True)

@@ -982,10 +982,6 @@ input[type="range"]::-ms-fill-lower{
   margin-right: 0.5rem;
 }
 
-.mt-2{
-  margin-top: 0.5rem;
-}
-
 .mt-4{
   margin-top: 1rem;
 }
@@ -1239,6 +1235,10 @@ input[type="range"]::-ms-fill-lower{
   padding-left: 2.5rem;
 }
 
+.pl-2{
+  padding-left: 0.5rem;
+}
+
 .pl-3{
   padding-left: 0.75rem;
 }
@@ -1356,6 +1356,10 @@ a:hover{
 .btn:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(95 38 102 / var(--tw-bg-opacity));
+}
+
+.dropzone .dz-preview .dz-error-message {
+  top: 150px!important;
 }
 
 .after\:absolute::after{
