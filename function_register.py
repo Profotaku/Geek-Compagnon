@@ -72,7 +72,7 @@ def inscription_post(session):
         'Messages': [
             {
                 "From": {
-                    "Email": "no-reply@geek-compagnon.io",
+                    "Email": "matthieus701@gmail.com",
                     "Name": "No-reply Geek-Compagnon"
                 },
                 "To": [
