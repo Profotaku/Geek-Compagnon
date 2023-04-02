@@ -994,6 +994,10 @@ input[type="range"]::-ms-fill-lower{
   margin-top: 3rem;
 }
 
+.mt-2{
+  margin-top: 0.5rem;
+}
+
 .mt-4{
   margin-top: 1rem;
 }
@@ -1122,10 +1126,6 @@ input[type="range"]::-ms-fill-lower{
   flex-wrap: wrap;
 }
 
-.content-between{
-  align-content: space-between;
-}
-
 .items-center{
   align-items: center;
 }
@@ -1151,6 +1151,10 @@ input[type="range"]::-ms-fill-lower{
 .divide-gray-100 > :not([hidden]) ~ :not([hidden]){
   --tw-divide-opacity: 1;
   border-color: rgb(243 244 246 / var(--tw-divide-opacity));
+}
+
+.justify-self-start{
+  justify-self: start;
 }
 
 .justify-self-center{
@@ -1368,6 +1372,10 @@ input[type="range"]::-ms-fill-lower{
   vertical-align: baseline;
 }
 
+.font-orbitron{
+  font-family: Orbitron, sans-serif;
+}
+
 .text-base{
   font-size: 1rem;
   line-height: 1.5rem;
@@ -1453,6 +1461,18 @@ input[type="range"]::-ms-fill-lower{
 
 .filter{
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+/*import font orbitron*/
+
+@font-face {
+  font-family: 'Orbitron';
+
+  src: url('../font/Orbitron.ttf') format('truetype');
+
+  font-weight: normal;
+
+  font-style: normal;
 }
 
 a{
@@ -1741,6 +1761,11 @@ a:hover{
   .dark\:hover\:bg-gray-700:hover{
     --tw-bg-opacity: 1;
     background-color: rgb(55 65 81 / var(--tw-bg-opacity));
+  }
+
+  .dark\:hover\:text-chartmagenta-200:hover{
+    --tw-text-opacity: 1;
+    color: rgb(203 173 207 / var(--tw-text-opacity));
   }
 
   .dark\:hover\:text-white:hover{
