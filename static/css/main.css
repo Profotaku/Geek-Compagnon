@@ -1427,10 +1427,6 @@ input[type="range"]::-ms-fill-lower{
   text-decoration-line: none;
 }
 
-.accent-pink-500{
-  accent-color: #E74694;
-}
-
 .shadow{
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
@@ -1578,10 +1574,6 @@ a:hover{
 .focus\:border-blue-500:focus{
   --tw-border-opacity: 1;
   border-color: rgb(63 131 248 / var(--tw-border-opacity));
-}
-
-.focus\:accent-pink-500:focus{
-  accent-color: #E74694;
 }
 
 .focus\:outline-none:focus{
