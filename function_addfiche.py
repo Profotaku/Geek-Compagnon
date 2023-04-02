@@ -1,52 +1,94 @@
+
+from PIL import Image
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, make_response
 from dataclass import *
+import re
+import os
 from config import *
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func
 from flask_login import current_user
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 def ajouter_fiche_culturel(session):
-    nom_input = request.form.get('nom-input')
-    synopsis_input = request.form.get('synopsis-input')
-    infos_input = request.form.get('infos-input')
-    concepteur_input = request.form.get('concepteur-input')
-    adulte_checkbox = request.form.get('adulte-checkbox')
-    media_type_input = request.form.get('media-type-input')
+    nom_input = request.form.get('nom-input') if request.form.get('nom-input') != "" else None
+    synopsis_input = request.form.get('synopsis-input') if request.form.get('synopsis-input') != "" else None
+    infos_input = request.form.get('infos-input') if request.form.get('infos-input') != "" else None
+    concepteur_input = request.form.get('concepteur-input') if request.form.get('concepteur-input') != "" else None
+    adulte_checkbox = bool(request.form.get('adulte-checkbox'))
+    media_type_input = request.form.get('media-type-input') if request.form.get('media-type-input') != "" else None
     current_user_id = None
     if current_user.is_authenticated:
         current_user_id = current_user.id_utilisateurs
 
+    #check if nom_input is None
+    if nom_input is None:
+        return make_response(jsonify({'message': "Le nom de la fiche n'est pas saisie" }), 400)
+
+    #check if media_type_input is in database
+    if media_type_input is not None:
+        media_type = session.query(Types_Media).filter_by(nom_types_media=media_type_input).first()
+        if media_type is None:
+            return make_response(jsonify({'message': "Le type de média n'est pas dans la base de données" }), 400)
+    else:
+        return make_response(jsonify({'message': "Le type de média n'est pas saisie" }), 400)
 
 
-    url_image = request.files['file']
+    #check if request file exist
+    if 'visual' in request.files:
+        url_image = request.files['visual']
+        file_signature = url_image.read(8)
+        #check signature of file detect if it's png or jpg
+        if not file_signature.startswith(Image_Signature.JPEG) and not file_signature.startswith(Image_Signature.PNG):
+            return make_response(jsonify({'message': "Le fichier n'est pas une image dans un format accepté" }), 400)
+        if file_signature.startswith(Image_Signature.PNG):
+            #convert png to jpg
+            url_image = Image.open(url_image)
+            url_image = url_image.convert('RGB')
+
 
     date_sortie_input = request.form.get('date-sortie-input')
 
+    if date_sortie_input == '':
+        date_sortie_input = None
+
+    is_limited_inputs = [
+        value
+        for name, value in request.form.items()
+        if name.startswith('is-limited-input-')
+    ]
+    is_collector_inputs = [
+        value
+        for name, value in request.form.items()
+        if name.startswith('is-collector-input-')
+    ]
     ean_inputs = []
 
     # boucle sur chaque champ de saisie dans le formulaire
     for name, value in request.form.items():
         # vérifie si le champ commence par "ean-input-"
         if name.startswith('ean-input-'):
+            # delete dashes in ean if exist
+            value = value.replace('-', '')
             # vérifie si la valeur saisie correspond à un code EAN-13 ou à un code ISBN-13
             if len(value) == 13 and value.isdigit():
                 # la valeur saisie correspond à un code EAN-13 valide
                 ean = value
-            elif len(value) == 9 and value.isdigit():
-                # la valeur saisie correspond à un code ISBN-10 valide
-                isbn_prefix = '978'
-                isbn = isbn_prefix + value
+            elif len(value) == 10 and value.isdigit():
+
+                isbn = f'978{value}'
 
                 # conversion de l'ISBN-10 en ISBN-13
                 digits = [int(d) for d in isbn]
                 factor = [1, 3] * 6
-                sum_ = sum([d * f for d, f in zip(digits, factor)])
+                sum_ = sum(d * f for d, f in zip(digits, factor))
                 check_digit = (10 - (sum_ % 10)) % 10
                 ean = isbn + str(check_digit)
+            elif value == '':
+                continue
             else:
                 # la valeur saisie n'est pas un code EAN-13 ni un code ISBN-13 valide
-                print(f"Erreur : la valeur {value} n'est pas un code EAN-13 ni un code ISBN-13 valide.")
-                continue
+                return make_response(
+                    jsonify({'message': f"Le code EAN-13 ayant pour valeur {value}n'est pas d'une longueur valide."}), 400)
+
 
             # extrait les 12 premiers chiffres du code EAN-13
             ean_digits = [int(d) for d in ean[:-1]]
@@ -55,13 +97,15 @@ def ajouter_fiche_culturel(session):
             sum_ = sum(ean_digits[::2]) + sum(ean_digits[1::2]) * 3
             check_digit = (10 - (sum_ % 10)) % 10
 
-            # vérification de la somme de contrôle
             if check_digit != int(ean[-1]):
                 # si la somme de contrôle ne correspond pas, affiche un message d'erreur
-                print(f"Erreur : la somme de contrôle pour {ean} est incorrecte.")
-            else:
-                # sinon, ajoute le code EAN-13 dans la liste
-                ean_inputs.append(ean)
+                return make_response(
+                    jsonify({'message': f'Le code EAN-13 ayant pour valeur {ean} est invalide.'}), 400,)
+            # sinon, ajoute le code EAN-13 dans la liste
+            #get number in name
+            number = re.search(r'\d+', name).group()
+            #add in ean list ean and is_limited and is_collector
+            ean_inputs.append([ean, is_limited_inputs[int(number)], is_collector_inputs[int(number)]])
 
     alternative_names = [
         value
@@ -82,6 +126,10 @@ def ajouter_fiche_culturel(session):
             if genre is not None:
                 # si le genre existe déjà, ajoute l'identifiant du genre dans la liste
                 genres.append(value)
+            else:
+                # si le genre n'existe pas, make response
+                return make_response(jsonify({'message': f"Le genre {value} n'existe pas dans la base de données ou n'est pas associé à ce type de média" }), 400)
+
 
     session.close()
     insertion = session.begin()
@@ -100,8 +148,8 @@ def ajouter_fiche_culturel(session):
         #create tables EAN13
         for ean_input in ean_inputs:
             #check if ean already exist and not in the table
-            if ean_input != "" and session.query(EAN13).filter(EAN13.ean13 == ean_input).first() is None:
-                ean = EAN13(ean13=ean_input, limite=False, collector=False)
+            if ean_input[0] != "" and session.query(EAN13).filter(EAN13.ean13 == ean_input[0]).first() is None:
+                ean = EAN13(ean13=ean_input[0], limite=bool(ean_input[1]), collector=bool(ean_input[2]))
                 session.add(ean)
                 session.commit()
 
@@ -113,8 +161,27 @@ def ajouter_fiche_culturel(session):
                 session.add(nom_alternatif)
                 session.commit()
 
+        #crete sub folder in /static/images/fiches/ in function of the id of the fiche
+        id_fiche = (session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1
+        #check if folder exist
+        if not os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/images/fiches/', str(id_fiche))):
+            os.mkdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/images/fiches/', str(id_fiche)))
+        relative_path = None
+        #save image in the relative folder
+        if 'visual' in request.files:
+            url_image.seek(0)
+            url_image.save(os.path.join(f'static/images/fiches/{str(id_fiche)}/', "visual.jpg"))
+            #open image for optimization
+            saved_image = Image.open(f'static/images/fiches/{str(id_fiche)}/visual.jpg')
+            #save in same path with optimization
+            wpercent = (460 / float(saved_image.size[0]))
+            hsize = int((float(saved_image.size[1]) * float(wpercent)))
+            saved_image.thumbnail((460, hsize), Image.LANCZOS)
+            saved_image.save(f'static/images/fiches/{str(id_fiche)}/visual.jpg', optimize=True, quality=95, progressive=True)
+            relative_path = os.path.join('static/images/fiches/', str(id_fiche), "visual.jpg")
+
         #create table Fiche
-        fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1, nom=nom_input, synopsis=synopsis_input, cmpt_note=0, moy_note=0, cmpt_favori=0, consultation=0, contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input, concepteur=concepteur_input)
+        fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1, nom=nom_input, synopsis=synopsis_input, cmpt_note=0, moy_note=0, cmpt_favori=0, consultation=0, contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input, concepteur=concepteur_input, url_image=relative_path)
         session.add(fiche)
         session.commit()
 
@@ -146,7 +213,8 @@ def ajouter_fiche_culturel(session):
     except:
         # En cas d'erreur, annulez la transaction
         insertion.rollback()
-        raise
+        print(Exception)
+        make_response(jsonify({'message': 'Les données saisie semble être invalides, veuillez les vérifier. Contacter un administrateur si besoin'}), 400)
     finally:
         # Fermez la session
         session.close()
@@ -154,5 +222,40 @@ def ajouter_fiche_culturel(session):
     return make_response(jsonify({'message': 'Tout marche bien'}), 200)
 
 
+def ajouter_fiche_media(session):
+    nom_input = request.form.get('nom-input') if request.form.get('nom-input') != "" else None
+    synopsis_input = request.form.get('synopsis-input') if request.form.get('synopsis-input') != "" else None
+    infos_input = request.form.get('infos-input') if request.form.get('infos-input') != "" else None
+    concepteur_input = request.form.get('concepteur-input') if request.form.get('concepteur-input') != "" else None
+    adulte_checkbox = bool(request.form.get('adulte-checkbox'))
+    media_type_input = request.form.get('media-type-input') if request.form.get('media-type-input') != "" else None
 
+    current_user_id = None
+    if current_user.is_authenticated:
+        current_user_id = current_user.id_utilisateurs
+
+    #check if nom_input is None
+    if nom_input is None:
+        return make_response(jsonify({'message': "Le nom de la fiche n'est pas saisie" }), 400)
+
+    #check if media_type_input is in database
+    if media_type_input is not None:
+        media_type = session.query(Types_Media).filter_by(nom_types_media=media_type_input).first()
+        if media_type is None:
+            return make_response(jsonify({'message': "Le type de média n'est pas dans la base de données" }), 400)
+    else:
+        return make_response(jsonify({'message': "Le type de média n'est pas saisie" }), 400)
+
+    if 'visual' in request.files:
+        url_image = request.files['visual']
+        file_signature = url_image.read(8)
+        #check signature of file detect if it's png or jpg
+        if not file_signature.startswith(Image_Signature.JPEG) and not file_signature.startswith(Image_Signature.PNG):
+            return make_response(jsonify({'message': "Le fichier n'est pas une image dans un format accepté" }), 400)
+        if file_signature.startswith(Image_Signature.PNG):
+            #convert png to jpg
+            url_image = Image.open(url_image)
+            url_image = url_image.convert('RGB')
+
+    return make_response(jsonify({'message': "Tout marche bien" }), 200)
 

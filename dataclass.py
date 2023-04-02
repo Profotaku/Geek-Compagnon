@@ -52,13 +52,13 @@ class Fiches(Base):
     __tablename__ = 'fiches'
     id_fiches = sa.Column(sa.Integer, primary_key=True, nullable=False)
     nom = sa.Column(sa.String, nullable=False)
-    synopsis = sa.Column(sa.String, nullable=False)
+    synopsis = sa.Column(sa.String, nullable=False, default='TBA')
     cmpt_note = sa.Column(sa.Integer, nullable=False, default=0)
     moy_note = sa.Column(sa.Float, nullable=False, default=0)
     cmpt_favori = sa.Column(sa.Integer, nullable=False, default=0)
     consultation = sa.Column(sa.Integer, nullable=False, default=0)
     contributeur = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
-    url_image = sa.Column(sa.String, nullable=False, default='default.jpg')
+    url_image = sa.Column(sa.String, nullable=False, default='/static/images/fiches/default.png')
     adulte = sa.Column(sa.Boolean, nullable=False, default=False)
     info = sa.Column(sa.String, nullable=False, default='')
     concepteur = sa.Column(sa.String, nullable=False, default='')
@@ -152,7 +152,7 @@ class Avoir(Base):
 class Produits_Culturels(Base):
     __tablename__ = 'produits_culturels'
     id_produits_culturels = sa.Column(sa.Integer, primary_key=True, nullable=False)
-    date_sortie = sa.Column(sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    date_sortie = sa.Column(sa.DateTime, nullable=True, default="01/01/1900")
     id_notes = sa.Column(sa.Integer, sa.ForeignKey('notes.id_notes'), nullable=False)
     id_avis = sa.Column(sa.Integer, sa.ForeignKey('avis.id_avis'), nullable=False)
     nom_types_media = sa.Column(sa.String, sa.ForeignKey('types_media.nom_types_media'), nullable=False)

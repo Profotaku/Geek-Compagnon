@@ -9,17 +9,19 @@
     <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
     {{ dropzone.load_css() }}
     {{ dropzone.load_js() }}
+    <script>localStorage.setItem("eventListenerAdded", false);</script>
+    {# Import Macro #}
+    {% from 'public/dropzonemacro.html' import dz %}
 </head>
 <body class="flex justify-center">
     <form class="grid grid-cols-1 w-1/2 border-2 border-gray-100 rounded-lg shadow-sm p-4 mt-4 mb-6" id="formfiche" method="post" action="{{ url_for('ajouter_fiche') }}">
         <h1 class="text-xl font-semibold">Ajouter une fiche</h1>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    {{ message }}
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <hr>
+        <div class="bg-red-200 rounded-md p-6" id="error-container" style="display: none">
+          <h2 class="text-lg font-medium mb-4" id="error-title"></h2>
+          <p class="text-gray-700 leading-relaxed" id="error-description">
+          </p>
+        </div>
         {#Radio bouton#}
         <div id="radio-type" class="grid grid-cols-6 p-2 mb-2">
             <div class="flex items-center col-span-1">
@@ -38,16 +40,10 @@
             </div>
         </div>
         {#Fin radio bouton#}
-        {# Only média & transmédia#}
-        <div id="test-media" class="hidden mb-6">
-            <label for="nom-succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nom du succés</label>
-            <input id="nom-succes" name="nom-succes-input" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-        </div>
 
-        <div id="test-media" class="hidden mb-6">
-            <label for="description-succes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description du succés</label>
-            <input id="description-succes" name="description-succes-input" type="text" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-        </div>
+
+
+
         {# Fin only média & transmédia#}
 
 
@@ -96,10 +92,14 @@
             <label for="description-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description du succès</label>
             <textarea type="date" id="description-input" name="description-input" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
         </div>
+
+        {# Use Macro #}
+        {{ dz(url=url_for("ajouter_fiche"), var_name="success" , max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message, label="Visuel promotionnel", id="dropz-success", class="media-only mt-6 hidden") }}
         {# Fin média et transmedia only#}
 
         <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" value="adulte-checkbox" class="sr-only peer">
+          <input type="checkbox" name="adulte-checkbox" class="sr-only peer">
+            <input type="hidden" name="adulte-checkbox" value="" class="sr-only peer">
           <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
           <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Contenu adulte</span>
         </label>
@@ -116,28 +116,28 @@
         <div class="mt-6">Ajouter EAN13</div>
         <div class="flex flex-wrap justify-between">
           <div class="w-full md:w-1/2 p-2 grid">
-              <input type="text" class="form-input w-1/1 border border-gray-400 rounded-lg p-2 m-2" id="ean-input-0" name="ean-input-0" pattern="^\d{10}(\d{3})?$">
+              <input type="text" class="form-input w-1/1 border border-gray-400 rounded-lg p-2 m-2" id="ean-input-0" name="ean-input-0" pattern="\b\d(?:-?\d){9,12}\b">
               <div class="mb-3 flex justify-around">
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" value="is-limited-input-0" class="sr-only peer">
+                <input type="checkbox" name="is-limited-input-0" class="sr-only peer">
+                <input type="hidden" name="is-limited-input-0" class="sr-only peer" value="">
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                 <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Produit d'édition limitée</span>
               </label>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" value="is-collector-input-0" class="sr-only peer">
+                <input type="checkbox" name="is-collector-input-0" class="sr-only peer">
+                <input type="hidden" name="is-collector-input-0" class="sr-only peer" value="">
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                 <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Produit d'édition collector</span>
               </label>
               </div>
-              <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 add-input" id="add-button-0">Ajouter</button>
+              <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 add-input" id="add-button-0">Ajouter un nouveau</button>
           </div>
         </div>
 
     {#Dropzone#}
-    {# Import Macro #}
-    {% from 'public/dropzonemacro.html' import dz %}
     {# Use Macro #}
-    {{ dz(url=url_for("ajouter_fiche"), max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message, label="Visuel promotionnel") }}
+    {{ dz(url=url_for("ajouter_fiche"), max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message, label="Visuel promotionnel", id="dropz-visual") }}
 
 
 
@@ -146,9 +146,9 @@
         <label for="select-genre" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selectionner des genres</label>
         <input type="search" id="genre-search" onkeyup="filterFunction()">
         <select multiple id="select-genre" class="mb-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            {% for genre in genres %}
-                <option value="{{ genre.nom_genres }}">
-                    <label for="">{{ genre.nom_genres }}</label>
+            {% for genre, media  in etre_associes %}
+                <option value="{{ genre }}" class="{{ media }} options-select-genre">
+                    <label for="">{{ genre }}</label>
                 </option>
             {% endfor %}
         </select>
@@ -277,70 +277,87 @@ function createTag(){
     let inputCounter = 1;
 
     const addInputHandler = (event) => {
-    const parent = event.target.parentNode;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.classList.add('form-input', 'w-1/1', 'border', 'border-gray-400', 'rounded-lg', 'p-2', 'm-2');
-    input.id = `ean-input-${inputCounter}`;
-    input.name = `ean-input-${inputCounter}`;
-    parent.insertAdjacentElement('beforeend', input);
+        if (document.getElementById("ean-input-"+(inputCounter-1).toString()).value !== "" ){
+            const parent = event.target.parentNode;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.classList.add('form-input', 'w-1/1', 'border', 'border-gray-400', 'rounded-lg', 'p-2', 'm-2');
+            input.id = `ean-input-${inputCounter}`;
+            input.name = `ean-input-${inputCounter}`;
+            parent.insertAdjacentElement('beforeend', input);
 
-    const checkboxContainer = document.createElement('div');
-    checkboxContainer.classList.add('mb-3', 'flex', 'justify-around');
-    parent.insertAdjacentElement('beforeend', checkboxContainer);
+            const checkboxContainer = document.createElement('div');
+            checkboxContainer.classList.add('mb-3', 'flex', 'justify-around');
+            parent.insertAdjacentElement('beforeend', checkboxContainer);
 
-    const limitedCheckbox = document.createElement('label');
-    limitedCheckbox.classList.add('relative', 'inline-flex', 'items-center', 'cursor-pointer');
+            const limitedCheckbox = document.createElement('label');
+            limitedCheckbox.classList.add('relative', 'inline-flex', 'items-center', 'cursor-pointer');
 
-    const limitedCheckboxInput = document.createElement('input');
-    limitedCheckboxInput.type = 'checkbox';
-    limitedCheckboxInput.value = `is-limited-input-${inputCounter}`;
-    limitedCheckboxInput.classList.add('sr-only', 'peer');
+            const limitedCheckboxInput = document.createElement('input');
+            limitedCheckboxInput.type = 'checkbox';
+            limitedCheckboxInput.name = `is-limited-input-${inputCounter}`;
+            limitedCheckboxInput.classList.add('sr-only', 'peer');
 
-    const limitedCheckboxDiv = document.createElement('div');
-    limitedCheckboxDiv.classList.add('w-11', 'h-6', 'bg-gray-200', 'peer-focus:outline-none', 'peer-focus:ring-4', 'peer-focus:ring-blue-300', 'dark:peer-focus:ring-blue-800', 'rounded-full', 'peer', 'dark:bg-gray-700', 'peer-checked:after:translate-x-full', 'peer-checked:after:border-white', 'after:content-[""]', 'after:absolute', 'after:top-[2px]', 'after:left-[2px]', 'after:bg-white', 'after:border-gray-300', 'after:border', 'after:rounded-full', 'after:h-5', 'after:w-5', 'after:transition-all', 'dark:border-gray-600', 'peer-checked:bg-blue-600');
+            const limitedHiddenInput = document.createElement('input');
+            limitedHiddenInput.type = 'hidden';
+            limitedHiddenInput.name = `is-limited-input-${inputCounter}`;
+            limitedHiddenInput.value = '';
+            limitedHiddenInput.classList.add('sr-only', 'peer');
 
-    const limitedCheckboxLabel = document.createElement('span');
-    limitedCheckboxLabel.classList.add('ml-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-gray-300');
-    limitedCheckboxLabel.innerText = "Produit d'édition limitée";
+            const limitedCheckboxDiv = document.createElement('div');
+            limitedCheckboxDiv.classList.add('w-11', 'h-6', 'bg-gray-200', 'peer-focus:outline-none', 'peer-focus:ring-4', 'peer-focus:ring-blue-300', 'dark:peer-focus:ring-blue-800', 'rounded-full', 'peer', 'dark:bg-gray-700', 'peer-checked:after:translate-x-full', 'peer-checked:after:border-white', 'after:content-[""]', 'after:absolute', 'after:top-[2px]', 'after:left-[2px]', 'after:bg-white', 'after:border-gray-300', 'after:border', 'after:rounded-full', 'after:h-5', 'after:w-5', 'after:transition-all', 'dark:border-gray-600', 'peer-checked:bg-blue-600');
 
-    limitedCheckbox.appendChild(limitedCheckboxInput);
-    limitedCheckbox.appendChild(limitedCheckboxDiv);
-    limitedCheckbox.appendChild(limitedCheckboxLabel);
+            const limitedCheckboxLabel = document.createElement('span');
+            limitedCheckboxLabel.classList.add('ml-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-gray-300');
+            limitedCheckboxLabel.innerText = "Produit d'édition limitée";
 
-    checkboxContainer.insertAdjacentElement('beforeend', limitedCheckbox);
+            limitedCheckbox.appendChild(limitedCheckboxInput);
+            limitedCheckbox.appendChild(limitedHiddenInput);
+            limitedCheckbox.appendChild(limitedCheckboxDiv);
+            limitedCheckbox.appendChild(limitedCheckboxLabel);
 
-    const collectorCheckbox = document.createElement('label');
-    collectorCheckbox.classList.add('relative', 'inline-flex', 'items-center', 'cursor-pointer');
+            checkboxContainer.insertAdjacentElement('beforeend', limitedCheckbox);
 
-    const collectorCheckboxInput = document.createElement('input');
-    collectorCheckboxInput.type = 'checkbox';
-    collectorCheckboxInput.value = `is-collector-input-${inputCounter}`;
-    collectorCheckboxInput.classList.add('sr-only', 'peer');
+            const collectorCheckbox = document.createElement('label');
+            collectorCheckbox.classList.add('relative', 'inline-flex', 'items-center', 'cursor-pointer');
 
-    const collectorCheckboxDiv = document.createElement('div');
-    collectorCheckboxDiv.classList.add('w-11', 'h-6', 'bg-gray-200', 'peer-focus:outline-none', 'peer-focus:ring-4', 'peer-focus:ring-blue-300', 'dark:peer-focus:ring-blue-800', 'rounded-full', 'peer', 'dark:bg-gray-700', 'peer-checked:after:translate-x-full', 'peer-checked:after:border-white', 'after:content-[""]', 'after:absolute', 'after:top-[2px]', 'after:left-[2px]', 'after:bg-white', 'after:border-gray-300', 'after:border', 'after:rounded-full', 'after:h-5', 'after:w-5', 'after:transition-all', 'dark:border-gray-600', 'peer-checked:bg-blue-600');
+            const collectorCheckboxInput = document.createElement('input');
+            collectorCheckboxInput.type = 'checkbox';
+            collectorCheckboxInput.name = `is-collector-input-${inputCounter}`;
+            collectorCheckboxInput.classList.add('sr-only', 'peer');
 
-    const collectorCheckboxLabel = document.createElement('span');
-    collectorCheckboxLabel.classList.add('ml-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-gray-300');
-    collectorCheckboxLabel.innerText = "Produit d'édition collector";
+            const collectorHiddenInput = document.createElement('input');
+            collectorHiddenInput.type = 'hidden';
+            collectorHiddenInput.name = `is-collector-input-${inputCounter}`;
+            collectorHiddenInput.value = '';
+            collectorHiddenInput.classList.add('sr-only', 'peer');
 
-    collectorCheckbox.appendChild(collectorCheckboxInput);
-    collectorCheckbox.appendChild(collectorCheckboxDiv);
-    collectorCheckbox.appendChild(collectorCheckboxLabel);
+            const collectorCheckboxDiv = document.createElement('div');
+            collectorCheckboxDiv.classList.add('w-11', 'h-6', 'bg-gray-200', 'peer-focus:outline-none', 'peer-focus:ring-4', 'peer-focus:ring-blue-300', 'dark:peer-focus:ring-blue-800', 'rounded-full', 'peer', 'dark:bg-gray-700', 'peer-checked:after:translate-x-full', 'peer-checked:after:border-white', 'after:content-[""]', 'after:absolute', 'after:top-[2px]', 'after:left-[2px]', 'after:bg-white', 'after:border-gray-300', 'after:border', 'after:rounded-full', 'after:h-5', 'after:w-5', 'after:transition-all', 'dark:border-gray-600', 'peer-checked:bg-blue-600');
 
-    checkboxContainer.insertAdjacentElement('beforeend', collectorCheckbox);
+            const collectorCheckboxLabel = document.createElement('span');
+            collectorCheckboxLabel.classList.add('ml-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-gray-300');
+            collectorCheckboxLabel.innerText = "Produit d'édition collector";
 
-    const button = document.createElement('button');
-    button.innerText = 'Ajouter';
-    button.classList.add('bg-blue-500', 'text-white', 'p-2', 'rounded-lg', 'hover:bg-blue-600', 'add-input');
-    button.id = `add-button-${inputCounter}`;
-    parent.insertAdjacentElement('beforeend', button);
+            collectorCheckbox.appendChild(collectorCheckboxInput);
+            collectorCheckbox.appendChild(collectorHiddenInput);
+            collectorCheckbox.appendChild(collectorCheckboxDiv);
+            collectorCheckbox.appendChild(collectorCheckboxLabel);
 
-    button.addEventListener('click', addInputHandler);
-    event.preventDefault();
+            checkboxContainer.insertAdjacentElement('beforeend', collectorCheckbox);
 
-    inputCounter++;
+            const button = document.createElement('button');
+            button.innerText = 'Ajouter un nouveau';
+            button.classList.add('bg-blue-500', 'text-white', 'p-2', 'rounded-lg', 'hover:bg-blue-600', 'add-input');
+            button.id = `add-button-${inputCounter}`;
+            parent.insertAdjacentElement('beforeend', button);
+
+            button.addEventListener('click', addInputHandler);
+
+
+            inputCounter++;
+        }
+        event.preventDefault();
 };
 
 document.querySelector('.add-input').addEventListener('click', addInputHandler);
@@ -372,7 +389,6 @@ select.addEventListener('click', (event) => {
 function filterFunction() {
   var input, filter, ul, li, a, i;
   input = document.getElementById("genre-search");
-    console.log(input);
 
   filter = input.value.toUpperCase();
   div = document.getElementById("select-genre");
@@ -394,25 +410,67 @@ var radioType = document.querySelector('input[name="radio-type"]:checked').value
         $('.media-only').removeClass('hidden');
         $('#only-culturel').addClass('hidden');
         $('#media-type').removeClass('hidden');
+        $('#test-media').removeClass('hidden');
+        $('.test-media').removeClass('hidden');
 
     }
     else if(radioType == 'Transmédia'){
         $('.media-only').removeClass('hidden');
         $('#only-culturel').addClass('hidden');
         $('#media-type').addClass('hidden');
+        $('#test-media').removeClass('hidden');
+        $('.test-media').removeClass('hidden');
 
     }
     else if(radioType == 'Culturel'){
         $('.media-only').addClass('hidden');
         $('#only-culturel').removeClass('hidden');
         $('#media-type').addClass('hidden');
+        $('#test-media').addClass('hidden');
+        $('.test-media').addClass('hidden');
 
     }
     else{
         $('#test-media').addClass('hidden');
+        $('.test-media').addClass('hidden');
         $('#only-culturel').addClass('hidden');
         $('#media-type').addClass('hidden');
     }
 }
+
+{#Affichage conditionnel selon media type#}
+// Récupérer l'élément de sélection avec l'ID "media-type-input"
+const mediaTypeInput = document.querySelector("#media-type-input");
+
+// Ajouter un événement de sélection à l'élément de sélection
+function mediaTypeChange() {
+    //reset show selected genre
+    $('#show-selected-genre').empty();
+    // Récupérer la valeur sélectionnée
+    let selectedValue = mediaTypeInput.value;
+    // Recuperer seulement le premier mot
+    selectedValue = selectedValue.split(' ')[0];
+
+    // Récupérer tous les éléments HTML avec la classe "options-select-genre"
+    const optionsSelectGenre = document.querySelectorAll(".options-select-genre");
+
+    // Cacher tous les éléments HTML avec la classe "options-select-genre"
+    optionsSelectGenre.forEach(function(option) {
+        option.style.display = "none";
+    });
+
+    // Récupérer tous les éléments HTML avec la classe correspondant à la valeur sélectionnée
+    const selectedElements = document.querySelectorAll("." + selectedValue);
+
+    // Afficher tous les éléments HTML avec la classe correspondant à la valeur sélectionnée
+    selectedElements.forEach(function(element) {
+        element.style.display = "block";
+    });
+}
+
+mediaTypeChange();
+mediaTypeInput.addEventListener("change", function() {
+    mediaTypeChange();
+});
 </script>
 </html>

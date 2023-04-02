@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import flask
-import sqlalchemy_searchable
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_file, make_response
 from flask_caching import Cache
 import sqlalchemy as sa  # ORM
@@ -89,14 +88,14 @@ def index():
     return render_template('public/index.html', nb_user=nb_user, connected=current_user.is_authenticated)
 @app.route('/test')
 def test():
-    genres = session.execute(select(Genres.nom_genres).order_by(Genres.nom_genres)).all()
+    etre_associes = session.execute(select(Etre_Associe.nom_genres, Etre_Associe.nom_types_media).order_by(Etre_Associe.nom_genres)).all()
     typesmedia = session.execute(select(Types_Media.nom_types_media).order_by(Types_Media.nom_types_media)).all()
     max_files = config.DROPZONE_MAX_FILES
     max_file_size = config.DROPZONE_MAX_FILE_SIZE
     accepted_files = config.DROPZONE_ALLOWED_FILE_TYPE
     default_message = config.DROPZONE_DEFAULT_MESSAGE
 
-    return render_template('public/test.html', genres=genres, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
+    return render_template('public/test.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
     title = "Haruhi"

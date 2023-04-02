@@ -1,18 +1,16 @@
-{% macro dz(url='', max_files=None, max_file_size=None, accepted_files=None, default_message="Veuillez déposer votre image",  csrf_token=None, preview_size_w=300, preview_size_h=430, label="Image") %}
-    {% set id = "dropz" %}
-    {% set name = "dropz" %}
+{% macro dz(url='', var_name="drz", max_files=None, max_file_size=None, accepted_files=None, default_message="Veuillez déposer votre image",  csrf_token=None, preview_size_w=300, preview_size_h=430, label="Image", id="dropz", class="mt-6") %}
     {% if csrf_token %}
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     {% endif %}
-    <div class="mt-6">{{label}}</div>
-    <div id="{{ id }}" class="dz-clickable">
-        <div class="dz-message">
+    <div class="{{class}}">{{label}}</div>
+    <div id="{{ id }}" class="dz-clickable {{ class }}">
+        <div class="dz-message {{ class }}">
             <span>{{ default_message }}</span>
         </div>
     </div>
     <script>
         $(function() {
-            var drz = new Dropzone("#{{ id }}", {
+            var {{var_name}} = new Dropzone("#{{ id }}", {
                 url: "{{ url }}",
                 maxFiles: {% if max_files %}{{ max_files }}{% else %}null{% endif %},
                 maxFilesize: {% if max_file_size %}{{ max_file_size }}{% else %}null{% endif %},
@@ -38,26 +36,48 @@
             });
             t = document.getElementById("{{ id }}");
             t.classList.add("dropzone");
-            //document.getElementById("upload-btn").addEventListener("click", function handler(e) {drz.processQueue();});
-            document.querySelector("#upload-btn").addEventListener("click", function(event) {
+            const uploadBtn = document.querySelector("#upload-btn");
+            // Prevent multiple event listeners
+            if (localStorage.getItem("eventListenerAdded") === "false") {
+                uploadBtn.addEventListener("click", function(event) {
                 event.preventDefault();
                 var myForm = document.getElementById("formfiche");
                 var formData = new FormData(myForm);
-                drz.files.forEach(function (file) {
-                    formData.append("file", file);
+                document.getElementById("dropz-success").dropzone.files.forEach(function (file) {
+                  formData.append("success", file);
+                });
+                document.getElementById("dropz-visual").dropzone.files.forEach(function (file) {
+                  formData.append("visual", file);
                 });
                 fetch("{{ url }}", {
-                    method: "POST",
-                    body: formData
+                  method: "POST",
+                  body: formData
                 })
                 .then(function (response) {
+                  if (response.status === 400) {
+                    return response.json().then(function (data) {
+                      document.getElementById("error-title").innerHTML = "Les données saisies sont incorrectes";
+                      document.getElementById("error-description").innerHTML = data.message;
+                      document.getElementById("error-container").style.display = "block";
+                    });
+                  } else if (response.status === 500) {
+                    document.getElementById("error-title").innerHTML = "Erreur serveur";
+                    document.getElementById("error-description").innerHTML = "Une erreur est survenue sur le serveur. Veuillez réessayer plus tard.";
+                    document.getElementById("error-container").style.display = "block";
+                    throw new Error("Erreur serveur");
+                  } else {
                     return response.json();
-                })
-                .then(function (data) {
-                    console.log(data.message);
-                })
-            });
-
+                  }
+                });
+              });
+            }
+            else {
+                  {{ var_name }}.files.forEach(function (file) {
+                    formData.append("file1", file);
+                    console.log("formData")
+                });
+            }
+            localStorage.setItem("eventListenerAdded", true);
         });
     </script>
 {% endmacro %}
