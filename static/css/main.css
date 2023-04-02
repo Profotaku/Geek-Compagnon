@@ -962,6 +962,10 @@ input[type="range"]::-ms-fill-lower{
   margin-bottom: 0.5rem;
 }
 
+.mb-3{
+  margin-bottom: 0.75rem;
+}
+
 .mb-6{
   margin-bottom: 1.5rem;
 }
@@ -1118,6 +1122,10 @@ input[type="range"]::-ms-fill-lower{
   flex-wrap: wrap;
 }
 
+.content-between{
+  align-content: space-between;
+}
+
 .items-center{
   align-items: center;
 }
@@ -1128,6 +1136,10 @@ input[type="range"]::-ms-fill-lower{
 
 .justify-between{
   justify-content: space-between;
+}
+
+.justify-around{
+  justify-content: space-around;
 }
 
 .divide-y > :not([hidden]) ~ :not([hidden]){
@@ -1533,6 +1545,11 @@ a:hover{
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+.after\:content-\[\"\"\]::after{
+  --tw-content: "";
+  content: var(--tw-content);
 }
 
 .after\:content-\[\'\'\]::after{

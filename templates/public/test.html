@@ -67,8 +67,8 @@
 
         {# Date de sortie element culturel #}
         <div id="only-culturel" class="hidden mb-6">
-            <label for="releaseDate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de sortie</label>
-            <input id="releaseDate" name="releaseDate" type="date" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <label for="date-sortie-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date de sortie</label>
+            <input id="releaseDate" name="date-sortie-input" type="date" class="w-2/3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
 
         <div class="mb-6">
@@ -114,12 +114,22 @@
 
         {#EAN13#}
         <div class="mt-6">Ajouter EAN13</div>
-        <div class="flex flex-wrap">
-          <div class="w-full md:w-1/2 p-2">
-            <input type="text" class="form-input w-full border border-gray-400 rounded-lg p-2" id="ean-input-0" name="ean-input-0">
-          </div>
-          <div class="w-full md:w-1/2 p-2">
-            <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 add-input" id="add-button-0">Ajouter</button>
+        <div class="flex flex-wrap justify-between">
+          <div class="w-full md:w-1/2 p-2 grid">
+              <input type="text" class="form-input w-1/1 border border-gray-400 rounded-lg p-2 m-2" id="ean-input-0" name="ean-input-0" pattern="^\d{10}(\d{3})?$">
+              <div class="mb-3 flex justify-around">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" value="is-limited-input-0" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Produit d'édition limitée</span>
+              </label>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" value="is-collector-input-0" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Produit d'édition collector</span>
+              </label>
+              </div>
+              <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 add-input" id="add-button-0">Ajouter</button>
           </div>
         </div>
 
@@ -270,10 +280,56 @@ function createTag(){
     const parent = event.target.parentNode;
     const input = document.createElement('input');
     input.type = 'text';
-    input.classList.add('form-input', 'w-full', 'border', 'border-gray-400', 'rounded-lg', 'p-2', 'm-2');
+    input.classList.add('form-input', 'w-1/1', 'border', 'border-gray-400', 'rounded-lg', 'p-2', 'm-2');
     input.id = `ean-input-${inputCounter}`;
     input.name = `ean-input-${inputCounter}`;
     parent.insertAdjacentElement('beforeend', input);
+
+    const checkboxContainer = document.createElement('div');
+    checkboxContainer.classList.add('mb-3', 'flex', 'justify-around');
+    parent.insertAdjacentElement('beforeend', checkboxContainer);
+
+    const limitedCheckbox = document.createElement('label');
+    limitedCheckbox.classList.add('relative', 'inline-flex', 'items-center', 'cursor-pointer');
+
+    const limitedCheckboxInput = document.createElement('input');
+    limitedCheckboxInput.type = 'checkbox';
+    limitedCheckboxInput.value = `is-limited-input-${inputCounter}`;
+    limitedCheckboxInput.classList.add('sr-only', 'peer');
+
+    const limitedCheckboxDiv = document.createElement('div');
+    limitedCheckboxDiv.classList.add('w-11', 'h-6', 'bg-gray-200', 'peer-focus:outline-none', 'peer-focus:ring-4', 'peer-focus:ring-blue-300', 'dark:peer-focus:ring-blue-800', 'rounded-full', 'peer', 'dark:bg-gray-700', 'peer-checked:after:translate-x-full', 'peer-checked:after:border-white', 'after:content-[""]', 'after:absolute', 'after:top-[2px]', 'after:left-[2px]', 'after:bg-white', 'after:border-gray-300', 'after:border', 'after:rounded-full', 'after:h-5', 'after:w-5', 'after:transition-all', 'dark:border-gray-600', 'peer-checked:bg-blue-600');
+
+    const limitedCheckboxLabel = document.createElement('span');
+    limitedCheckboxLabel.classList.add('ml-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-gray-300');
+    limitedCheckboxLabel.innerText = "Produit d'édition limitée";
+
+    limitedCheckbox.appendChild(limitedCheckboxInput);
+    limitedCheckbox.appendChild(limitedCheckboxDiv);
+    limitedCheckbox.appendChild(limitedCheckboxLabel);
+
+    checkboxContainer.insertAdjacentElement('beforeend', limitedCheckbox);
+
+    const collectorCheckbox = document.createElement('label');
+    collectorCheckbox.classList.add('relative', 'inline-flex', 'items-center', 'cursor-pointer');
+
+    const collectorCheckboxInput = document.createElement('input');
+    collectorCheckboxInput.type = 'checkbox';
+    collectorCheckboxInput.value = `is-collector-input-${inputCounter}`;
+    collectorCheckboxInput.classList.add('sr-only', 'peer');
+
+    const collectorCheckboxDiv = document.createElement('div');
+    collectorCheckboxDiv.classList.add('w-11', 'h-6', 'bg-gray-200', 'peer-focus:outline-none', 'peer-focus:ring-4', 'peer-focus:ring-blue-300', 'dark:peer-focus:ring-blue-800', 'rounded-full', 'peer', 'dark:bg-gray-700', 'peer-checked:after:translate-x-full', 'peer-checked:after:border-white', 'after:content-[""]', 'after:absolute', 'after:top-[2px]', 'after:left-[2px]', 'after:bg-white', 'after:border-gray-300', 'after:border', 'after:rounded-full', 'after:h-5', 'after:w-5', 'after:transition-all', 'dark:border-gray-600', 'peer-checked:bg-blue-600');
+
+    const collectorCheckboxLabel = document.createElement('span');
+    collectorCheckboxLabel.classList.add('ml-3', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-gray-300');
+    collectorCheckboxLabel.innerText = "Produit d'édition collector";
+
+    collectorCheckbox.appendChild(collectorCheckboxInput);
+    collectorCheckbox.appendChild(collectorCheckboxDiv);
+    collectorCheckbox.appendChild(collectorCheckboxLabel);
+
+    checkboxContainer.insertAdjacentElement('beforeend', collectorCheckbox);
 
     const button = document.createElement('button');
     button.innerText = 'Ajouter';

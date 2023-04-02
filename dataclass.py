@@ -19,7 +19,7 @@ class Utilisateurs(Base, UserMixin):
     otp_secret = sa.Column(sa.String, nullable=True)
 
     def __repr__(self):
-        return f"Utilisateur('{self.pseudo}')"
+        return f"Utilisateurs('{self.pseudo}')"
     def get_id(self):
         return self.pseudo
 
@@ -57,7 +57,7 @@ class Fiches(Base):
     moy_note = sa.Column(sa.Float, nullable=False, default=0)
     cmpt_favori = sa.Column(sa.Integer, nullable=False, default=0)
     consultation = sa.Column(sa.Integer, nullable=False, default=0)
-    contributeur = sa.Column(sa.String, sa.ForeignKey('utilisateurs.Pseudo'), nullable=False)
+    contributeur = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
     url_image = sa.Column(sa.String, nullable=False, default='default.jpg')
     adulte = sa.Column(sa.Boolean, nullable=False, default=False)
     info = sa.Column(sa.String, nullable=False, default='')
@@ -89,8 +89,7 @@ class Avis(Base):
 
 class Noms_Alternatifs(Base):
     __tablename__ = 'noms_alternatifs'
-    id_noms_alternatifs = sa.Column(sa.Integer, primary_key=True, nullable=False)
-    nom_alternatif = sa.Column(sa.String, nullable=False)
+    nom_alternatif = sa.Column(sa.String, primary_key=True, nullable=False)
 
     def __repr__(self):
         return f"Noms_Alternatifs('{self.id_noms_alternatifs}')"
@@ -204,7 +203,7 @@ class Contenir(Base):
 class Nommer_T(Base):
     __tablename__ = 'nommer_t'
     id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedia.id_projets_transmedias'), primary_key=True, nullable=False)
-    id_noms_alternatifs = sa.Column(sa.Integer, sa.ForeignKey('noms_alternatifs.id_noms_alternatifs'), primary_key=True, nullable=False)
+    nom_alternatif = sa.Column(sa.String, sa.ForeignKey('noms_alternatifs.nom_alternatif'), primary_key=True, nullable=False)
 
     def __repr__(self):
         return f"Nommer_T('{self.id_projets_transmedias}'+{self.id_noms_alternatifs}')"
@@ -212,7 +211,7 @@ class Nommer_T(Base):
 class Nommer_M(Base):
     __tablename__ = 'nommer_m'
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
-    id_noms_alternatifs = sa.Column(sa.Integer, sa.ForeignKey('noms_alternatifs.id_noms_alternatifs'), primary_key=True, nullable=False)
+    nom_alternatif = sa.Column(sa.String, sa.ForeignKey('noms_alternatifs.nom_alternatif'), primary_key=True, nullable=False)
 
     def __repr__(self):
         return f"Nommer_M('{self.id_projets_medias}'+{self.id_noms_alternatifs}')"
@@ -220,7 +219,7 @@ class Nommer_M(Base):
 class Nommer_C(Base):
     __tablename__ = 'nommer_c'
     id_produits_culturels = sa.Column(sa.Integer, sa.ForeignKey('produits_culturels.id_produits_culturels'), primary_key=True, nullable=False)
-    id_noms_alternatifs = sa.Column(sa.Integer, sa.ForeignKey('noms_alternatifs.id_noms_alternatifs'), primary_key=True, nullable=False)
+    nom_alternatif = sa.Column(sa.String, sa.ForeignKey('noms_alternatifs.nom_alternatif'), primary_key=True, nullable=False)
 
     def __repr__(self):
         return f"Nommer_C('{self.id_produits_culturels}'+{self.id_noms_alternatifs}')"
