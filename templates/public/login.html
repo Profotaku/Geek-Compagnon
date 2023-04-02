@@ -20,35 +20,35 @@
                 <label for="pseudo" class="font-bold p-2 w-3/4 justify-self-center">
                     Username
                 </label>
-                <input type="text" placeholder="Entrez votre nom d'utilisateur" name="pseudo" class="mb-2 w-3/4 justify-self-center" required>
+                <input type="text" placeholder="Entrez votre nom d'utilisateur" name="pseudo" class="mb-2 w-3/4 justify-self-center  font-orbitron" required>
 
                 <label for="password" class="font-bold p-2 w-3/4 justify-self-center">
                     Password
                 </label>
-                <input type="password" placeholder="Entrez votre mot de passe" name="password" class="mb-2 w-3/4 justify-self-center" required>
+                <input type="password" placeholder="Entrez votre mot de passe" name="password" class="mb-2 w-3/4 justify-self-center  font-orbitron" required>
 
-                <label for="multifact" class="font-bold p-2 w-3/4 justify-self-center hidden">
+                <label for="multifact" class="font-bold p-2 w-3/4 justify-self-center  hidden">
                     Facteur de Double Authentification (Optionnel)
                 </label>
-                <input type="text" placeholder="Votre code temporaire" name="multifact" class="mb-2 w-3/4 justify-self-center hidden">
+                <input type="text" placeholder="Votre code temporaire" name="multifact" class="mb-2 w-3/4 justify-self-center  font-orbitron hidden">
 
                 <div class="mt-8 mb-1 flex justify-center">
                     <button type="submit"
-                            class="text-white bg-gradient-to-r from-chartblue-200 to-chartpurple-400 via-chartmagenta-400 focus:outline-none focus:ring-4 focus:ring-gray-300 font-bold hover:shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px] rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 w-64">
+                            class="text-white bg-gradient-to-r from-chartblue-200 to-chartpurple-400 via-chartmagenta-400 focus:outline-none focus:ring-4 focus:ring-gray-300 font-bold hover:shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px] rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 w-64  font-orbitron">
                         Login
                     </button>
                 </div>
-                <label class="md:text-center w-64 justify-self-center align-baseline">
+                <label class="md:text-center w-64 justify-self-center align-baseline ">
                     <input type="checkbox" class="mr-1" checked="checked" name="remember"> Se souvenir de moi
                 </label>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-                <div class="flex justify-center mt-12">
+                <div class="flex justify-center mt-12  font-orbitron">
                     <div class="m-2 p-2">
-                        <a class="text-gray-600 dark:text-white" href="#">Forgot password ?</a>
+                        <a class="text-gray-600 dark:text-white dark:hover:text-chartmagenta-200" href="#">Forgot password ?</a>
                     </div>
                     <div class="m-2 p-2">
-                        <a href="/inscription" class="text-gray-600 dark:text-white">
+                        <a href="/inscription" class="text-gray-600 dark:text-white dark:hover:text-chartmagenta-200">
                             Sign-in
                         </a>
                     </div>

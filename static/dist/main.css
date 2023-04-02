@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/*import font orbitron*/
+@font-face {
+  font-family: 'Orbitron';
+  src: url('../font/Orbitron.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 a {
   @apply text-chartblue-700 underline;
 }

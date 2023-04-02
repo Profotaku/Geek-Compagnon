@@ -4,30 +4,46 @@
     <link href="{{url_for('static',filename='css/main.css')}}" rel="stylesheet">
 {% endblock %}
 {% block content %}
- <form action="{{ url_for('inscription') }}" method="post">
-  <div class="container">
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        {% endif %}
-      {% endwith %}
-    <label for="pseudo"><b>Username</b></label>
-    <input type="text" placeholder="Entrez votre nom d'utilisateur" name="pseudo" required>
+    <div class="flex min-h-screen justify-center">
+        <form action="{{ url_for('inscription') }}" method="post" class="bg-gradient-to-tl from-chartblue-400 to-chartpurple-500 via-chartmagenta-500 w-full h-screen md:h-1/3 md:place-self-center md:w-1/2 bg-white dark:bg-chartblue-800 md:bg-white dark:md:bg-chartblue-800 md:rounded-tl-xl md:rounded-br-xl text-gray-800 dark:text-white p-3 grid grid-cols-1">
+          <div class="bg-white dark:bg-chartblue-800 md:rounded-tl-lg md:rounded-br-lg pt-8 px-8 pb-4 grid grid-cols-1">
+              {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                {% endif %}
+              {% endwith %}
+            <label for="pseudo" class="font-bold p-2 w-3/4 justify-self-center "><b>Username</b></label>
+            <input type="text" class="mb-2 w-3/4 justify-self-center  font-orbitron" placeholder="Entrez votre nom d'utilisateur" name="pseudo" required>
 
-    <label for="email"><b>Email</b></label>
-    <input type="text" placeholder="Entrez votre email" name="email" required>
+            <label for=" email" class="font-bold p-2 w-3/4 justify-self-center"><b>Email</b></label>
+            <input type="text" class="mb-2 w-3/4 justify-self-center  font-orbitron"  placeholder="Entrez votre email" name="email" required>
 
-    <label for="password"><b>Password</b></label>
-    <input type="password" placeholder="Entrez votre mot de passe" name="password" required>
+            <label for="password" class="font-bold p-2 w-3/4 justify-self-center "><b>Password</b></label>
+            <input type="password" class="mb-2 w-3/4 justify-self-center  font-orbitron"  placeholder="Entrez votre mot de passe" name="password" required>
 
-    <label for="passwordconfirm"><b>Confirm Password</b></label>
-    <input type="password" placeholder="Confirmez votre mot de passe" name="passwordconfirm" required>
+            <label for="passwordconfirm" class="font-bold p-2 w-3/4 justify-self-center"><b>Confirm Password</b></label>
+            <input type="password" class="mb-2 w-3/4 justify-self-center  font-orbitron"  placeholder="Confirmez votre mot de passe" name="passwordconfirm" required>
 
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <label class="md:text-center align-baseline mt-2 ml-2 mb-2 w-3/4 justify-self-start">
+                <input type="checkbox" class="mr-1" name="CGU" required> En cochant cette case, j'atteste avoir lu et accepter les <a href="#" class="font-bold dark:text-white dark:hover:text-chartmagenta-200">CGU</a>
+            </label>
 
-    <button type="submit">Inscription</button>
-  </div>
-</form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="mt-8 mb-1 flex justify-center font-orbitron">
+                <button type="submit" class="text-white bg-gradient-to-r from-chartblue-200 to-chartpurple-400 via-chartmagenta-400 focus:outline-none focus:ring-4 focus:ring-gray-300 font-bold hover:shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px] rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 w-64">Inscription</button>
+            </div>
+
+            <div class="flex justify-center  font-orbitron">
+                <div class="p-2">
+                    <a href="/connexion" class="text-gray-600 dark:text-white dark:hover:text-chartmagenta-200"">
+                        Connexion
+                    </a>
+                </div>
+            </div>
+          </div>
+        </form>
+    </div>
+
 {% endblock %}
