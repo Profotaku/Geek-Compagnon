@@ -8,6 +8,9 @@ module.exports = {
     ],
     theme: {
         extend: {},
+        fontFamily: {
+            orbitron: ['Orbitron', 'sans-serif'],
+        },
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
