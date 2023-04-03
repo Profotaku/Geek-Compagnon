@@ -2,8 +2,6 @@ var offset = 0;
 const boxes = document.querySelectorAll('.box')
 
 
-
-
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
