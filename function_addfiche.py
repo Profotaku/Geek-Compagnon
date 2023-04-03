@@ -33,8 +33,8 @@ def ajouter_fiche_culturel(session):
 
 
     #check if request file exist
-    if 'visual' in request.files:
-        url_image = request.files['visual']
+    if 'dropz-visual' in request.files:
+        url_image = request.files['dropz-visual']
         file_signature = url_image.read(8)
         #check signature of file detect if it's png or jpg
         if not file_signature.startswith(Image_Signature.JPEG) and not file_signature.startswith(Image_Signature.PNG):
@@ -168,7 +168,7 @@ def ajouter_fiche_culturel(session):
             os.mkdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/images/fiches/', str(id_fiche)))
         relative_path = None
         #save image in the relative folder
-        if 'visual' in request.files:
+        if 'dropz-visual' in request.files:
             url_image.seek(0)
             url_image.save(os.path.join(f'static/images/fiches/{str(id_fiche)}/', "visual.jpg"))
             #open image for optimization
@@ -246,8 +246,8 @@ def ajouter_fiche_media(session):
     else:
         return make_response(jsonify({'message': "Le type de média n'est pas saisie" }), 400)
 
-    if 'visual' in request.files:
-        url_image = request.files['visual']
+    if 'dropz-visual' in request.files:
+        url_image = request.files['dropz-visual']
         file_signature = url_image.read(8)
         #check signature of file detect if it's png or jpg
         if not file_signature.startswith(Image_Signature.JPEG) and not file_signature.startswith(Image_Signature.PNG):

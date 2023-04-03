@@ -43,12 +43,14 @@
                 event.preventDefault();
                 var myForm = document.getElementById("formfiche");
                 var formData = new FormData(myForm);
-                document.getElementById("dropz-success").dropzone.files.forEach(function (file) {
-                  formData.append("success", file);
-                });
-                document.getElementById("dropz-visual").dropzone.files.forEach(function (file) {
-                  formData.append("visual", file);
-                });
+                const dropzones = document.getElementsByClassName("dropzone")
+                for (let i = 0; i < dropzones.length; i++) {
+                  const dropzone = dropzones[i];
+                  dropzone.getAttribute("id")
+                    dropzone.dropzone.files.forEach(function (file) {
+                        formData.append(dropzone.getAttribute("id"), file);
+                    });
+                }
                 fetch("{{ url }}", {
                   method: "POST",
                   body: formData
