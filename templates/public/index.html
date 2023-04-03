@@ -8,57 +8,66 @@
     </figure>
 {% endblock %}
 {% block content %}
-    <div class="container">
-    <div class='slot-container'>
-        <div class="slot">
-        <div class="box">
-            <ul class="items">
-                <li><img src="https://picsum.photos/200?random=1"></li>
-                <li><img src="https://picsum.photos/200?random=2"></li>
-                <li><img src="https://picsum.photos/200?random=3"></li>
-                <li><img src="https://picsum.photos/200?random=4"></li>
-                <li><img src="https://picsum.photos/200?random=5"></li>
-                <li><img src="https://picsum.photos/200?random=6"></li>
-                <li><img src="https://picsum.photos/200?random=7"></li>
-            </ul>
+    <div class="grid grid-cols-1 flex justify-center">
+        <div class="col-span-1 font-orbitron font-bold text-lg text-center text-white">
+            <p class="text-3xl mb-4">Geek compagnon, l'assistant de collections</p>
+            <span class="text-lg">Let's collect, together</span>
         </div>
-            <div class="box">
-            <ul class="items">
-                <li><img src="https://picsum.photos/200?random=8"></li>
-                <li><img src="https://picsum.photos/200?random=9"></li>
-                <li><img src="https://picsum.photos/200?random=10"></li>
-                <li><img src="https://picsum.photos/200?random=11"></li>
-                <li><img src="https://picsum.photos/200?random=12"></li>
-                <li><img src="https://picsum.photos/200?random=13"></li>
-                <li><img src="https://picsum.photos/200?random=14"></li>
-            </ul>
+        <div class='col-span-1 flex justify-center my-4'>
+            <div class="slot bg-blue-100 dark:bg-gray-800 p-4 shadow-lg border-4 border-chartmagenta-500 dark:border-gray-900 rounded-3xl flex justify-center flex-col">
+                <div class="flex inline-flex">
+                    <div class="box m-2">
+                        <ul class="items">
+                            <li><img src="https://picsum.photos/200?random=1" class="rounded-full w-24 h-24 shadow-md"></li>
+                            <li><img src="https://picsum.photos/200?random=2" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=3" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=4" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=5" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=6" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=7" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                        </ul>
+                    </div>
+                    <div class="box m-2">
+                        <ul class="items">
+                            <li><img src="https://picsum.photos/200?random=8" class="rounded-full w-24 h-24 shadow-md"></li>
+                            <li><img src="https://picsum.photos/200?random=9" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=10" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=11" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=12" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=13" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=14" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                        </ul>
+                    </div>
+                    <div class="box m-2">
+                        <ul class="items">
+                            <li><img src="https://picsum.photos/200?random=15" class="rounded-full w-24 h-24 shadow-md"></li>
+                            <li><img src="https://picsum.photos/200?random=16" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=17" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=18" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=19" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=20" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                            <li><img src="https://picsum.photos/200?random=21" class="rounded-full w-24 h-24 shadow-md hidden"></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <button class="spin self-center mt-1 text-white align-middle h-10 w-1/3 bg-gradient-to-r from-chartblue-200 to-chartpurple-400 via-chartmagenta-400 focus:outline-none focus:ring-4 focus:ring-gray-300 font-bold hover:shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px] rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 w-64 font-orbitron">
+                    Spin
+                </button>
+            </div>
+
         </div>
-            <div class="box">
-            <ul class="items">
-                <li><img src="https://picsum.photos/200?random=15"></li>
-                <li><img src="https://picsum.photos/200?random=16"></li>
-                <li><img src="https://picsum.photos/200?random=17"></li>
-                <li><img src="https://picsum.photos/200?random=18"></li>
-                <li><img src="https://picsum.photos/200?random=19"></li>
-                <li><img src="https://picsum.photos/200?random=20"></li>
-                <li><img src="https://picsum.photos/200?random=21"></li>
-            </ul>
+        <div class="col-span-1 my-4 p-4 bg-chartpink-500 dark:bg-gray-800 dark:border-gray-900 text-white mx-16 rounded-tr-2xl rounded-bl-2xl border-4 border-chartmagenta-500">
+            <span>Nombre d'utilisateur:</span>
+            {{ nb_user|int }}
         </div>
     </div>
-        <button class="spin" style="color: green">Spin</button>
+    <div class="col-span-1 flex justify-center mt-6">
+        <a href="#">
+            <img src="../static/images/index/google-play-badge.png" class="w-full" alt="get it on google play">
+        </a>
     </div>
-        <figure class="image">
-            <img class="fiche-responsive is-square fiche-responsive-style-1" src="{{ url_for('static', filename='images/index/grand-bleu.jpg') }}" alt="Affiche Grand Bleu">
-        </figure>
-        <figure class="image">
-            <img class="fiche-responsive is-square fiche-responsive-style-2" src="{{ url_for('static', filename='images/index/grand-bleu.jpg') }}" alt="Affiche Grand Bleu">
-        </figure>
-        <figure class="image">
-            <img class="fiche-responsive is-square fiche-responsive-style-3" src="{{ url_for('static', filename='images/index/grand-bleu.jpg') }}" alt="Affiche Grand Bleu">
-        </figure>
-    </div>
-    <span>Nombre d'utilisateur:</span>
-    {{ nb_user|int }}
+
 {% endblock %}
 
 {% block footerscript %}
