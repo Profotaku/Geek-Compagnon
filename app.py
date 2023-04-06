@@ -35,6 +35,7 @@ import recommandations
 import function_login
 import function_register
 import function_addfiche
+import function_bibliotheque
 import pyotp
 import pyqrcode
 
@@ -88,6 +89,16 @@ def index():
     return render_template('public/index.html', nb_user=nb_user, connected=current_user.is_authenticated)
 @app.route('/test')
 def test():
+    etre_associes = session.execute(select(Etre_Associe.nom_genres, Etre_Associe.nom_types_media).order_by(Etre_Associe.nom_genres)).all()
+    typesmedia = session.execute(select(Types_Media.nom_types_media).order_by(Types_Media.nom_types_media)).all()
+    max_files = config.DROPZONE_MAX_FILES
+    max_file_size = config.DROPZONE_MAX_FILE_SIZE
+    accepted_files = config.DROPZONE_ALLOWED_FILE_TYPE
+    default_message = config.DROPZONE_DEFAULT_MESSAGE
+
+    return render_template('public/test.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
+@app.route('/contribuer')
+def contribuer():
     etre_associes = session.execute(select(Etre_Associe.nom_genres, Etre_Associe.nom_types_media).order_by(Etre_Associe.nom_genres)).all()
     typesmedia = session.execute(select(Types_Media.nom_types_media).order_by(Types_Media.nom_types_media)).all()
     max_files = config.DROPZONE_MAX_FILES
@@ -202,6 +213,11 @@ def ajouter_fiche():
     else:
         return make_response(jsonify({'message': 'Type de fiche inconnu'}), 400)
 
+@app.route('//bibliotheque?type=<idtype>&filtre=<idfiltre>&start=<numstart>', methods=['GET'])
+def bibliotheque(idtype, idfiltre, numstart):
+    client = request.args.get('client')
+    if client == 'app':
+        return function_bibliotheque.bibliotheque_app(session, idtype, idfiltre, numstart)
 
 
 
