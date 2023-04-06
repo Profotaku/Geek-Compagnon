@@ -106,7 +106,7 @@ def contribuer():
     accepted_files = config.DROPZONE_ALLOWED_FILE_TYPE
     default_message = config.DROPZONE_DEFAULT_MESSAGE
 
-    return render_template('public/test.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
+    return render_template('public/ajout-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
     title = "Haruhi"
@@ -213,7 +213,7 @@ def ajouter_fiche():
     else:
         return make_response(jsonify({'message': 'Type de fiche inconnu'}), 400)
 
-@app.route('//bibliotheque?type=<idtype>&filtre=<idfiltre>&start=<numstart>', methods=['GET'])
+@app.route('/bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
 def bibliotheque(idtype, idfiltre, numstart):
     client = request.args.get('client')
     if client == 'app':
