@@ -1,8 +1,12 @@
-version: "3.8"
+version: '3'
 services:
-  web:
-    build: .
+  flask-app:
+    build:
+      context: /share/CACHEDEV1_DATA/Web/Geek-Compagnon/
+      dockerfile: Dockerfile
     ports:
-      - "5000:5000"
-  redis:
-    image: "redis:alpine"
+      - "7777:7777"
+    volumes:
+      - .:/app
+    environment:
+      FLASK_DEBUG: 1

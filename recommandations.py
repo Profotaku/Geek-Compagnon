@@ -85,10 +85,10 @@ def recommandations(id_produit: int, nb_recommandations: int):
     cosine_sim = cosine_similarity(X)
 
     # Récupérer l'index du produit culturel
-    index = df2[df2['id'] == str(id_produit)].index[0]
+    index_cult = df2[df2['id'] == str(id_produit)].index[0]
 
     # Récupérer les distances entre le produit culturel et les autres produits culturels
-    distances = list(enumerate(cosine_sim[index]))
+    distances = list(enumerate(cosine_sim[index_cult]))
 
     # Trier les distances par ordre décroissant
     distances = sorted(distances, key=lambda x: x[1], reverse=True)
