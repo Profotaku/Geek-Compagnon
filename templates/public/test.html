@@ -94,7 +94,7 @@
         </div>
 
         {# Use Macro #}
-        {{ dz(url=url_for("ajouter_fiche"), var_name="success" , max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message, label="Visuel promotionnel", id="dropz-success", class="media-only mt-6 hidden") }}
+        {{ dz(url=url_for("ajouter_fiche"), var_name="success" , max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message, label="Icône de succès:", id="dropz-success", class="media-only mt-6 hidden") }}
         {# Fin média et transmedia only#}
 
         <label class="relative inline-flex items-center cursor-pointer">
@@ -387,15 +387,16 @@ select.addEventListener('click', (event) => {
 
 {# filtre #}
 function filterFunction() {
-  var input, filter, ul, li, a, i;
+  var input, filter, ul, li, a, i, type_media;
   input = document.getElementById("genre-search");
+  type_media = document.getElementById("media-type-input").value;
 
   filter = input.value.toUpperCase();
   div = document.getElementById("select-genre");
   a = div.getElementsByTagName("option");
   for (i = 0; i < a.length; i++) {
     txtValue = a[i].textContent || a[i].innerText;
-    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        if (txtValue.toUpperCase().indexOf(filter) > -1 && a[i].className.indexOf(type_media) > -1) {
       a[i].style.display = "";
     } else {
       a[i].style.display = "none";

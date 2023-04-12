@@ -164,9 +164,6 @@ def renew_jwt():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
-@app.route('/navbar', methods=['GET'])
-def navbar():
-    return render_template('public/navbar.html', connected=current_user.is_authenticated)
 
 @app.route('/test-totp', methods=['GET', 'POST'])
 def test_totp():
@@ -214,7 +211,8 @@ def ajouter_fiche():
         return make_response(jsonify({'message': 'Type de fiche inconnu'}), 400)
 
 @app.route('/bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
-def bibliotheque(idtype, idfiltre, numstart):
+@app.route('/bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
+def bibliotheque(idtype, numstart, idfiltre=""):
     client = request.args.get('client')
     if client == 'app':
         return function_bibliotheque.bibliotheque_app(session, idtype, idfiltre, numstart)

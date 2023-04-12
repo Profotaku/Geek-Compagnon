@@ -8,7 +8,7 @@ class Utilisateurs(Base, UserMixin):
     pseudo = sa.Column(sa.String, primary_key=True, nullable=False)
     hash_mail = sa.Column(sa.String, unique=True, nullable=False)
     hash_mdp = sa.Column(sa.String, nullable=False)
-    url_image = sa.Column(sa.String, nullable=False, default='default-profile.jpg')
+    url_image = sa.Column(sa.String, nullable=False, default='/static/images/default-profile.png')
     experience = sa.Column(sa.Integer, nullable=False, default=0)
     notification = sa.Column(sa.Boolean, nullable=False, default=False)
     date_creation = sa.Column(sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
@@ -53,8 +53,6 @@ class Fiches(Base):
     id_fiches = sa.Column(sa.Integer, primary_key=True, nullable=False)
     nom = sa.Column(sa.String, nullable=False)
     synopsis = sa.Column(sa.String, nullable=False, default='TBA')
-    cmpt_note = sa.Column(sa.Integer, nullable=False, default=0)
-    moy_note = sa.Column(sa.Float, nullable=False, default=0)
     cmpt_favori = sa.Column(sa.Integer, nullable=False, default=0)
     consultation = sa.Column(sa.Integer, nullable=False, default=0)
     contributeur = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
@@ -70,6 +68,7 @@ class Succes(Base):
     __tablename__ = 'succes'
     titre = sa.Column(sa.String, primary_key=True, nullable=False)
     description = sa.Column(sa.String, nullable=False)
+    url_image = sa.Column(sa.String, nullable=False, default='/static/images/fiches/default-success.png')
 
     def __repr__(self):
         return f"Succes('{self.Titre}')"
@@ -157,6 +156,7 @@ class Produits_Culturels(Base):
     id_avis = sa.Column(sa.Integer, sa.ForeignKey('avis.id_avis'), nullable=False)
     nom_types_media = sa.Column(sa.String, sa.ForeignKey('types_media.nom_types_media'), nullable=False)
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
+    verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Produits_Culturels('{self.ID_Produits_Culturels}')"
@@ -168,6 +168,8 @@ class Projets_Medias(Base):
     id_avis = sa.Column(sa.Integer, sa.ForeignKey('avis.id_avis'), nullable=False)
     nom_types_media = sa.Column(sa.String, sa.ForeignKey('types_media.nom_types_media'), nullable=False)
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
+    titre = sa.Column(sa.String, sa.ForeignKey('succes.titre'), nullable=False)
+    verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Projets_Medias('{self.id_projets_medias}')"
@@ -178,7 +180,8 @@ class Projets_Transmedias(Base):
     id_notes = sa.Column(sa.Integer, sa.ForeignKey('notes.id_notes'), nullable=False)
     id_avis = sa.Column(sa.Integer, sa.ForeignKey('avis.id_avis'), nullable=False)
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
-    titre = sa.Column(sa.String, sa.ForeignKey('Succes.titre'), nullable=False)
+    titre = sa.Column(sa.String, sa.ForeignKey('succes.titre'), nullable=False)
+    verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Projets_Medias('{self.ID_Projets_Transmedias}')"
@@ -188,6 +191,7 @@ class Etre_Compose(Base):
     id_produits_culturels = sa.Column(sa.Integer, sa.ForeignKey('produits_culturels.id_produits_culturels'), primary_key=True, nullable=False)
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
     ordre = sa.Column(sa.Integer, nullable=True)
+    verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Etre_Composes('{self.id_produits_culturels}'+{self.id_projets_medias}')"
@@ -196,6 +200,7 @@ class Contenir(Base):
     __tablename__ = 'contenir'
     id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedia.id_projets_transmedias'), primary_key=True, nullable=False)
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
+    verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Contenir('{self.id_projets_transmedias}'+{self.id_projets_medias}')"
