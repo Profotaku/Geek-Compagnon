@@ -1,4 +1,5 @@
 from datetime import timedelta
+import os
 
 
 DEBUG = True,  # some Flask specific configs
@@ -18,6 +19,7 @@ WTF_CSRF_SECRET_KEY = '&8mN%Ux%38#RC788^a2cDJL!L',
 JSON_AS_ASCII = False
 SESSION_TYPE = "filesystem"
 SESSION_FILE_THRESHOLD = 500
+SESSION_FILE_DIR = os.path.dirname(os.path.abspath(__file__)) + '/sessions'
 JWT_SESSION_COOKIE = False
 MAILJET_API_KEY = '2d3be8f255e5540a0cbd92caa1fe0fe9' # not the real key
 MAILJET_API_SECRET = 'efe3cd09bf3e40b93a181de471119033' # not the real key
