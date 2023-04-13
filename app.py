@@ -226,5 +226,5 @@ def bibliotheque(idtype, numstart, idfiltre=""):
 
 
 if __name__ == "__main__":
-    app.run(port=7777, ssl_context=("SSLcertificate.crt", "SSLprivatekey.key"), host="0.0.0.0", debug=True)
+    app.run(port=7777, ssl_context=(os.path.dirname(os.path.abspath(__file__)) + "/SSLcertificate.crt", os.path.dirname(os.path.abspath(__file__)) + "/SSLprivatekey.key"), host="0.0.0.0", debug=True)
 
