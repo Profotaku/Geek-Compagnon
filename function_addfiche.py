@@ -187,7 +187,7 @@ def ajouter_fiche_culturel(session):
             relative_path = os.path.join('static/images/fiches/', str(id_fiche), "visual.jpg")
 
         #create table Fiche
-        fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1, nom=nom_input, synopsis=synopsis_input, cmpt_note=0, moy_note=0, cmpt_favori=0, consultation=0, contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input, concepteur=concepteur_input, url_image=relative_path)
+        fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1, nom=nom_input, synopsis=synopsis_input, cmpt_favori=0, consultation=0, contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input, concepteur=concepteur_input, url_image=relative_path)
         session.add(fiche)
         session.commit()
 
@@ -211,7 +211,7 @@ def ajouter_fiche_culturel(session):
         #crete tables Etre_Identifie
 
         for ean_input in ean_inputs:
-            etre_identifie = Etre_Identifie(id_produits_culturels=produit_culturel.id_produits_culturels, ean13=ean_input)
+            etre_identifie = Etre_Identifie(id_produits_culturels=produit_culturel.id_produits_culturels, ean13=ean_input[0])
             session.add(etre_identifie)
             session.commit()
 
@@ -368,7 +368,7 @@ def ajouter_fiche_media(session):
         relative_path_fiche = os.path.join('static/images/fiches/', str(id_fiche), "visual.jpg") if os.path.isfile('static/images/fiches/'+ str(id_fiche)+"/visual.jpg") else None
         #create table Fiche
         fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0) + 1, nom=nom_input,
-                       synopsis=synopsis_input, cmpt_note=0, moy_note=0, cmpt_favori=0, consultation=0,
+                       synopsis=synopsis_input, cmpt_favori=0, consultation=0,
                        contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input,
                        concepteur=concepteur_input, url_image=relative_path_fiche)
         session.add(fiche)
@@ -540,7 +540,7 @@ def ajouter_fiche_transmedia(session):
         relative_path_fiche = os.path.join('static/images/fiches/', str(id_fiche), "visual.jpg") if os.path.isfile('static/images/fiches/'+ str(id_fiche)+"/visual.jpg") else None
         #create table Fiche
         fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0) + 1, nom=nom_input,
-                       synopsis=synopsis_input, cmpt_note=0, moy_note=0, cmpt_favori=0, consultation=0,
+                       synopsis=synopsis_input, cmpt_favori=0, consultation=0,
                        contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input,
                        concepteur=concepteur_input, url_image=relative_path_fiche)
         session.add(fiche)

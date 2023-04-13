@@ -16,7 +16,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart):
                 #transform idtype into a list
                 if type(idtype) != list:
                     idtype = [idtype]
-                if idfiltre == "" or idfiltre== "date-ajout":
+                if idfiltre == "" or idfiltre == "date-ajout":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte)\
                         .select_from(Produits_Culturels)\
                         .join(Types_Media)\
