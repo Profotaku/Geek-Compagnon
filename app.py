@@ -36,6 +36,7 @@ import function_login
 import function_register
 import function_addfiche
 import function_bibliotheque
+import function_collection
 import pyotp
 import pyqrcode
 
@@ -214,8 +215,13 @@ def ajouter_fiche():
 @app.route('/bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
 def bibliotheque(idtype, numstart, idfiltre=""):
     client = request.args.get('client')
-    if client == 'app':
-        return function_bibliotheque.bibliotheque_app(session, idtype, idfiltre, numstart)
+    return function_bibliotheque.bibliotheque_app(session, idtype, idfiltre, numstart, client)
+
+@app.route('/collection/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/collection/<idtype>/<int:numstart>', methods=['GET'])
+def collection(idtype, numstart, idfiltre=""):
+    client = request.args.get('client')
+    return function_collection.collection_app(session, idtype, idfiltre, numstart, client)
 
 
 

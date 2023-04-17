@@ -4,16 +4,15 @@ from sqlalchemy import orm, or_, and_, select, join, outerjoin, func, desc
 from config import *
 
 
-def bibliotheque_app(session, idtype, idfiltre, numstart):
-    #if idtype correspond to a type media in the database
+def bibliotheque_app(session, idtype, idfiltre, numstart, client):
     if type(numstart) == int:
+        # if idtype correspond to a type media in the database
         if session.query(Types_Media).filter_by(nom_types_media=idtype).first() is not None or idtype == "all":
             if idtype == "all":
-                #"all" joker for types media
                 idtype = session.execute(select(Types_Media.nom_types_media).select_from(Types_Media).distinct(Types_Media.nom_types_media)).all()
                 idtype = [row[0] for row in idtype]
             if idfiltre in ["", "date-ajout", "date-sortie", "top-consultation", "top-note", "top-favoris", "sur-mediatise", "sous-mediatise", "sur-note", "sous-note"]:
-                #transform idtype into a list
+                #transform idtype into a list for the query compatibility (based on filter all)
                 if type(idtype) != list:
                     idtype = [idtype]
                 if idfiltre == "" or idfiltre == "date-ajout":
@@ -55,7 +54,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart):
                         .filter(Produits_Culturels.verifie == True) \
                         .filter(Produits_Culturels.id_notes == Notes.id_notes) \
                         .filter(Types_Media.nom_types_media.in_(idtype)) \
-                        .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, Notes.note_0, Notes.note_1, Notes.note_2, Notes.note_3, Notes.note_4, Notes.note_5, Notes.note_6, Notes.note_7, Notes.note_8, Notes.note_9, Notes.note_10)
+                        .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, Notes.note_0, Notes.note_1, Notes.note_2, Notes.note_3, Notes.note_4, Notes.note_5, Notes.note_6, Notes.note_7, Notes.note_8, Notes.note_9, Notes.note_10)\
                         .order_by(desc('moyenne_notes'))\
                         .limit(10).offset(numstart))\
                         .all()
@@ -115,12 +114,14 @@ def bibliotheque_app(session, idtype, idfiltre, numstart):
                         .all()
                 else:
                     return make_response(jsonify({'message': 'filtre inconnu'}), 400)
-
-                return make_response(jsonify({'bibliotheque': [{'nom': b.nom, 'date': b.date_sortie, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'consultation': b.consultation if idfiltre == "top-consultation" else None, 'note': round(b.moyenne_notes, 2) if idfiltre == "top-note" else None, 'favoris': b.cmpt_favori if idfiltre == 'top-favoris' else None, 'sur-mediatise': b.trop_popularite if idfiltre == 'sur-mediatise' else None, 'sous-mediatise' : b.manque_popularite if idfiltre == 'sous-mediatise' else None, 'sur-note': b.trop_cote if idfiltre == 'sur-note' else None, 'sous-note': b.manque_cote if idfiltre == 'sous-note' else None} for b in bibliotheque]}), 200)
+                if client == "app":
+                    return make_response(jsonify({'bibliotheque': [{'nom': b.nom, 'date': b.date_sortie, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'consultation': b.consultation if idfiltre == "top-consultation" else None, 'note': round(b.moyenne_notes, 2) if idfiltre == "top-note" else None, 'favoris': b.cmpt_favori if idfiltre == 'top-favoris' else None, 'sur-mediatise': b.trop_popularite if idfiltre == 'sur-mediatise' else None, 'sous-mediatise' : b.manque_popularite if idfiltre == 'sous-mediatise' else None, 'sur-note': b.trop_cote if idfiltre == 'sur-note' else None, 'sous-note': b.manque_cote if idfiltre == 'sous-note' else None} for b in bibliotheque]}), 200)
+                else:
+                    return bibliotheque
             else:
                 return make_response(jsonify({'message': 'filtre inconnu'}), 400)
         else:
             return make_response(jsonify({'message': 'type inconnu'}), 400)
     else:
-        return make_response(jsonify({'message': 'numstart doit être un entier'}), 400)
+        return make_response(jsonify({'message': 'cette valeur doit être un nombre entier'}), 400)
 

@@ -14,10 +14,10 @@ Huey==2.4.5
 flask-ipban==1.1.5
 pg8000==1.29.4
 numpy==1.23.5
-sqlalchemy_utils==0.40.0
+sqlalchemy_utils==0.41.0
 scikit-learn==1.2.2
 pandas==2.0.0
-spacy==3.5.1
+spacy==3.5.2
 flask-pyjwt==1.0.0
 flask-talisman==1.0.0
 werkzeug==2.2.3

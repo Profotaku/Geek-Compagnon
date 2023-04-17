@@ -556,11 +556,11 @@ def ajouter_fiche_transmedia(session):
         #create table Projets_Medias
         #if succes is not referenced
         if titre_input is None and description_input is None:
-            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiche=fiche.id_fiches, id_avis=avis.id_avis, id_notes=notes.id_notes, titre=None)
+            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, id_avis=avis.id_avis, id_notes=notes.id_notes, titre=None)
             session.add(projet_tranmedia)
             session.commit()
         else:
-            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiche=fiche.id_fiches, id_avis=avis.id_avis, id_notes=notes.id_notes, titre=succes.titre)
+            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, id_avis=avis.id_avis, id_notes=notes.id_notes, titre=succes.titre)
             session.add(projet_tranmedia)
             session.commit()
 
