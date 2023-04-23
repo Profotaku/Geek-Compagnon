@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import flask
+from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_file, make_response
 from flask_caching import Cache
 import sqlalchemy as sa  # ORM
@@ -37,6 +38,7 @@ import function_register
 import function_addfiche
 import function_bibliotheque
 import function_collection
+import function_mybibliotheque
 import pyotp
 import pyqrcode
 
@@ -75,7 +77,22 @@ assets.register("css", css)
 css.build()
 app.secret_key = SECRET_KEY
 
+def web_or_app_auth(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        user = kwargs.get('user')
+        if user is None:
+            @login_required
+            @jwt_required(optional=True)
+            def inner_wrapper(*args, **kwargs):
+                if current_user.is_authenticated or get_jwt_identity():
+                    return fn(*args, **kwargs)
+                return jsonify({"message": "Unauthorized access"}), 401
 
+            return inner_wrapper(*args, **kwargs)
+        else:
+            return fn(*args, **kwargs)
+    return wrapper
 @app.errorhandler(413)
 def too_large(e):
     return "Fichier trop volumineux", 413
@@ -213,17 +230,27 @@ def ajouter_fiche():
 
 @app.route('/bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
 @app.route('/bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
-def bibliotheque(idtype, numstart, idfiltre=""):
+def bibliotheque(idtype="all", numstart=0, idfiltre=""):
     client = request.args.get('client')
     return function_bibliotheque.bibliotheque_app(session, idtype, idfiltre, numstart, client)
 
 @app.route('/collection/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
 @app.route('/collection/<idtype>/<int:numstart>', methods=['GET'])
-def collection(idtype, numstart, idfiltre=""):
+def collection(idtype="all", numstart=0, idfiltre=""):
     client = request.args.get('client')
     return function_collection.collection_app(session, idtype, idfiltre, numstart, client)
 
-
+@app.route('/my-bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/my-bibliotheque/<user>/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/my-bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/my-bibliotheque/<user>/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/my-bibliotheque/<user>/<idtype>/<idfiltre>', methods=['GET'])
+@app.route('/my-bibliotheque/<user>/<idtype>', methods=['GET'])
+@app.route('/my-bibliotheque/<user>/<idfiltre>', methods=['GET'])
+@app.route('/my-bibliotheque/<user>', methods=['GET'])
+def my_bibliotheque(idtype="all", numstart=0, idfiltre="", user=""):
+    client = request.args.get('client')
+    return function_mybibliotheque.mybibliotheque_app(session, idtype, idfiltre, numstart, client, user)
 
 
 

@@ -17,6 +17,7 @@ class Utilisateurs(Base, UserMixin):
     desactive = sa.Column(sa.Boolean, nullable=False, default=False)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
     otp_secret = sa.Column(sa.String, nullable=True)
+    profil_public = sa.Column(sa.Boolean, nullable=False, default=True)
 
     def __repr__(self):
         return f"Utilisateurs('{self.pseudo}')"
@@ -275,8 +276,9 @@ class Posseder_T(Base):
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), primary_key=True, nullable=False)
     favori = sa.Column(sa.Boolean, nullable=False, default=False)
     note = sa.Column(sa.SMALLINT, nullable=True)
-    avis_popularite = sa.Column(sa.String(7), nullable=True)
-    avis_cote = sa.Column(sa.String(7), nullable=True)
+    avis_popularite = sa.Column(sa.Boolean, nullable=True)
+    avis_cote = sa.Column(sa.Boolean, nullable=True)
+    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now().timestamp())
 
     def __repr__(self):
         return f"Posseder_T('{self.id_projets_transmedias}'+{self.pseudo}')"
@@ -287,8 +289,9 @@ class Posseder_M(Base):
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), primary_key=True, nullable=False)
     favori = sa.Column(sa.Boolean, nullable=False, default=False)
     note = sa.Column(sa.SMALLINT, nullable=True)
-    avis_popularite = sa.Column(sa.String(7), nullable=True)
-    avis_cote = sa.Column(sa.String(7), nullable=True)
+    avis_popularite = sa.Column(sa.Boolean, nullable=True)
+    avis_cote = sa.Column(sa.Boolean, nullable=True)
+    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now().timestamp())
 
     def __repr__(self):
         return f"Posseder_M('{self.id_projets_medias}'+{self.pseudo}')"
@@ -297,11 +300,15 @@ class Posseder_C(Base):
     __tablename__ = 'posseder_c'
     id_produits_culturels = sa.Column(sa.Integer, sa.ForeignKey('produits_culturels.id_produits_culturels'), primary_key=True, nullable=False)
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), primary_key=True, nullable=False)
+    physiquement = sa.Column(sa.Boolean, nullable=False, default=True)
     favori = sa.Column(sa.Boolean, nullable=False, default=False)
     note = sa.Column(sa.SMALLINT, nullable=True)
-    avis_popularite = sa.Column(sa.String(7), nullable=True)
-    avis_cote = sa.Column(sa.String(7), nullable=True)
+    avis_popularite = sa.Column(sa.Boolean, nullable=True)
+    avis_cote = sa.Column(sa.Boolean, nullable=True)
     souhaite = sa.Column(sa.Boolean, nullable=False, default=False)
+    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now().timestamp())
+    limite = sa.Column(sa.Boolean, nullable=False, default=False)
+    collector = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Posseder_C('{self.id_produits_culturels}'+{self.pseudo}')"
