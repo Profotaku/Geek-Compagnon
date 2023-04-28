@@ -1,7 +1,6 @@
 from datetime import timedelta
 import os
 
-
 DEBUG = True,  # some Flask specific configs
 CACHE_TYPE = "SimpleCache"  # Flask-Caching related configs
 CACHE_DEFAULT_TIMEOUT = 86400  # 24 hours cache timeout
@@ -17,7 +16,12 @@ JWT_ISSUER = "Geek-Compagnon"
 JWT_AUTHTYPE = "HS256"
 WTF_CSRF_SECRET_KEY = '&8mN%Ux%38#RC788^a2cDJL!L',
 JSON_AS_ASCII = False
-SESSION_TYPE = "filesystem"
+SESSION_TYPE = "sqlalchemy"
+SESSION_PERMANENT = True
+SESSION_USE_SIGNER = True
+SESSION_KEY_PREFIX = 'session:'
+SESSION_SQLALCHEMY_TABLE = 'sessions'
+PERMANENT_SESSION_LIFETIME = timedelta(days=1)
 SESSION_FILE_THRESHOLD = 500
 SESSION_FILE_DIR = os.path.dirname(os.path.abspath(__file__)) + '/sessions'
 JWT_SESSION_COOKIE = False

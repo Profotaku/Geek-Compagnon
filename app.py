@@ -21,13 +21,13 @@ from flask_assets import Bundle, Environment
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_pyjwt import AuthManager, require_token, current_token
 from flask_talisman import Talisman # security headers
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, \
+    verify_jwt_in_request
 from flask_session import Session
 from flask_dropzone import Dropzone
 from flask_squeeze import Squeeze
 import io
 import os
-
 
 from config import *
 import config
@@ -39,6 +39,7 @@ import function_addfiche
 import function_bibliotheque
 import function_collection
 import function_mybibliotheque
+import function_mycollection
 import pyotp
 import pyqrcode
 
@@ -47,7 +48,8 @@ login_manager = LoginManager()
 make_searchable(Base.metadata)  # this is needed for the search to work
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
-squeeze= Squeeze(app)
+app.app_context().push()
+squeeze = Squeeze(app)
 cache = Cache(app)
 engine = sa.create_engine(SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
 sa.orm.configure_mappers()
@@ -127,21 +129,35 @@ def contribuer():
     return render_template('public/ajout-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
-    title = "Haruhi"
-    #escape the user input to prevent sql injection
-    #search = request.form.get('search')
-
+    isadulte = False
+    title = "%Re%"
+    verify_jwt_in_request(optional=True)
+    if current_user.is_authenticated or get_jwt_identity() is not None:
+        if current_user.is_authenticated:
+            #check if user could access adult content
+            isadulte = current_user.adulte
+        elif get_jwt_identity() is not None:
+            #check if user could access adult content
+            isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
     if title == '':
         return render_template('public/base.html')
     else:
-        print(title)
-        result = session.execute(select((Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Noms_Alternatifs.nom_alternatif, Types_Media.nom_types_media, Etre_Compose.ordre, Projets_Medias.id_projets_medias, Projets_Medias.nom_types_media)\
-            .select_from(Produits_Culturels)\
-            .join(Types_Media)\
-            .outerjoin(Nommer_C, Noms_Alternatifs, Etre_Compose, Projets_Medias)\
-            .filter(or_(Fiches.nom.match(title), Noms_Alternatifs.nom_alternatif.match(title)))\
-            .filter(Produits_Culturels.id_fiches == Fiches.id_fiches) \
-            .distinct(Produits_Culturels.id_produits_culturels).all()))
+        title = title.title()
+        result = session.query(Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.adulte, Noms_Alternatifs.nom_alternatif, Types_Media.nom_types_media, Etre_Compose.ordre, Projets_Medias.id_projets_medias, Projets_Medias.nom_types_media)\
+        .select_from(Produits_Culturels)\
+        .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
+        .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
+        .outerjoin(Nommer_C, Nommer_C.id_produits_culturels == Produits_Culturels.id_produits_culturels)\
+        .outerjoin(Noms_Alternatifs, Noms_Alternatifs.nom_alternatif == Nommer_C.nom_alternatif) \
+        .outerjoin(Etre_Compose, Etre_Compose.id_produits_culturels == Produits_Culturels.id_produits_culturels)\
+        .outerjoin(Projets_Medias, Projets_Medias.id_projets_medias == Etre_Compose.id_projets_medias)\
+        .filter(or_(Fiches.nom.like(title), Noms_Alternatifs.nom_alternatif.like(title))) \
+        .distinct(Produits_Culturels.id_produits_culturels) \
+        .order_by(Produits_Culturels.id_produits_culturels)\
+        .all()
+        #ajouter resultat pour projet media et transmedia...
+        if isadulte == False:
+            result = [r for r in result if r[5] == False]
         for r in result:
             print(r)
         return "ok"
@@ -226,33 +242,57 @@ def ajouter_fiche():
     elif radio_type == "Transmédia":
         return function_addfiche.ajouter_fiche_transmedia(session)
     else:
-        return make_response(jsonify({'message': 'Type de fiche inconnu'}), 400)
+        return make_response(jsonify({'message': 'Type de fiche inconnu ou non saisi'}), 400)
 
 @app.route('/bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/bibliotheque/<idtype>/<idfiltre>', methods=['GET'])
 @app.route('/bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/bibliotheque/<int:numstart>', methods=['GET'])
+@app.route('/bibliotheque/', methods=['GET'])
+@app.route('/bibliotheque', methods=['GET'])
 def bibliotheque(idtype="all", numstart=0, idfiltre=""):
     client = request.args.get('client')
     return function_bibliotheque.bibliotheque_app(session, idtype, idfiltre, numstart, client)
 
 @app.route('/collection/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/collection/<idtype>/<idfiltre>', methods=['GET'])
 @app.route('/collection/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/collection/<int:numstart>', methods=['GET'])
+@app.route('/collection/', methods=['GET'])
+@app.route('/collection', methods=['GET'])
 def collection(idtype="all", numstart=0, idfiltre=""):
     client = request.args.get('client')
     return function_collection.collection_app(session, idtype, idfiltre, numstart, client)
 
-@app.route('/my-bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
-@app.route('/my-bibliotheque/<user>/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
-@app.route('/my-bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
-@app.route('/my-bibliotheque/<user>/<idtype>/<int:numstart>', methods=['GET'])
-@app.route('/my-bibliotheque/<user>/<idtype>/<idfiltre>', methods=['GET'])
-@app.route('/my-bibliotheque/<user>/<idtype>', methods=['GET'])
-@app.route('/my-bibliotheque/<user>/<idfiltre>', methods=['GET'])
-@app.route('/my-bibliotheque/<user>', methods=['GET'])
+@app.route('/ma-bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/ma-bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/ma-bibliotheque/<user>/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/ma-bibliotheque/<user>/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/ma-bibliotheque/<user>/<idtype>/<idfiltre>', methods=['GET'])
+@app.route('/ma-bibliotheque/<user>/<idtype>', methods=['GET'])
+@app.route('/ma-bibliotheque/<user>/<idfiltre>', methods=['GET'])
+@app.route('/ma-bibliotheque/<user>', methods=['GET'])
+@app.route('/ma-bibliotheque/<idtype>', methods=['GET'])
+@app.route('/ma-bibliotheque/', methods=['GET'])
+@app.route('/ma-bibliotheque', methods=['GET'])
 def my_bibliotheque(idtype="all", numstart=0, idfiltre="", user=""):
     client = request.args.get('client')
     return function_mybibliotheque.mybibliotheque_app(session, idtype, idfiltre, numstart, client, user)
 
-
+@app.route('/ma-collection/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/ma-collection/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/ma-collection/<user>/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
+@app.route('/ma-collection/<user>/<idtype>/<int:numstart>', methods=['GET'])
+@app.route('/ma-collection/<user>/<idtype>/<idfiltre>', methods=['GET'])
+@app.route('/ma-collection/<user>/<idtype>', methods=['GET'])
+@app.route('/ma-collection/<user>/<idfiltre>', methods=['GET'])
+@app.route('/ma-collection/<user>', methods=['GET'])
+@app.route('/ma-collection/<idtype>', methods=['GET'])
+@app.route('/ma-collection/', methods=['GET'])
+@app.route('/ma-collection', methods=['GET'])
+def my_collection(idtype="all", numstart=0, idfiltre="", user=""):
+    client = request.args.get('client')
+    return function_mycollection.mycollection_app(session, idtype, idfiltre, numstart, client, user)
 
 
 

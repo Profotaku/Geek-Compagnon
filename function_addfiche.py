@@ -18,7 +18,7 @@ def ajouter_fiche_culturel(session):
     media_type_input = request.form.get('media-type-input') if request.form.get('media-type-input') != "" else None
     current_user_id = None
     if current_user.is_authenticated:
-        current_user_id = current_user.id_utilisateurs
+        current_user_id = current_user.pseudo
 
     #check if nom_input is None
     if nom_input is None:
@@ -245,7 +245,7 @@ def ajouter_fiche_media(session):
 
     current_user_id = None
     if current_user.is_authenticated:
-        current_user_id = current_user.id_utilisateurs
+        current_user_id = current_user.pseudo
 
     #check if nom_input is None
     if nom_input is None:
@@ -424,7 +424,7 @@ def ajouter_fiche_transmedia(session):
 
     current_user_id = None
     if current_user.is_authenticated:
-        current_user_id = current_user.id_utilisateurs
+        current_user_id = current_user.pseudo
 
     #check if nom_input is None
     if nom_input is None:

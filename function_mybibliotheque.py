@@ -8,12 +8,15 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 
 def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
+    isadulte = False
     verify_jwt_in_request(optional=True)
     if user == "" and current_user.is_authenticated or get_jwt_identity() is not None:
         if current_user.is_authenticated:
             user = current_user.pseudo
+            isadulte = current_user.adulte
         else:
             user = get_jwt_identity()
+            isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
     if session.query(Utilisateurs).filter_by(pseudo=user).first() is not None or user is None:
         if session.query(Utilisateurs.profil_public).filter_by(pseudo=user).first()[0] or (user == current_user.pseudo if current_user.is_authenticated else False) or user == get_jwt_identity():
             if type(numstart) == int:
@@ -174,9 +177,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
 
                         else:
                             return make_response(jsonify({'message': 'filtre inconnu'}), 400)
-
+                        if isadulte:
+                            my_bibliotheque = [b for b in my_bibliotheque if b.adulte == False]
                         if client == "app":
-                            return make_response(jsonify({'mybibliotheque': [{'nom': b.nom, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'note': b.note, 'favori': b.favori, 'limite': b.limite, 'collector': b.collector,'date-ajout': b.date_ajout } for b in my_bibliotheque]}), 200)
+                            return make_response(jsonify({'mabibliotheque': [{'nom': b.nom, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'note': b.note, 'favori': b.favori, 'limite': b.limite, 'collector': b.collector,'date-ajout': b.date_ajout } for b in my_bibliotheque]}), 200)
 
                         return make_response(jsonify({'message': 'filtre inconnu'}), 400)
                 else:

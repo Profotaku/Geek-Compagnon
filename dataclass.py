@@ -18,6 +18,7 @@ class Utilisateurs(Base, UserMixin):
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
     otp_secret = sa.Column(sa.String, nullable=True)
     profil_public = sa.Column(sa.Boolean, nullable=False, default=True)
+    adulte = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Utilisateurs('{self.pseudo}')"

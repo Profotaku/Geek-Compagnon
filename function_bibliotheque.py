@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, make_response
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from dataclass import *
 from sqlalchemy import orm, or_, and_, select, join, outerjoin, func, desc
 from config import *
@@ -6,6 +8,12 @@ from config import *
 
 def bibliotheque_app(session, idtype, idfiltre, numstart, client):
     if type(numstart) == int:
+        isadulte = False
+        verify_jwt_in_request(optional=True)
+        if current_user.is_authenticated:
+            isadulte = current_user.is_adulte
+        if get_jwt_identity() is not None:
+            isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
         # if idtype correspond to a type media in the database
         if session.query(Types_Media).filter_by(nom_types_media=idtype).first() is not None or idtype == "all":
             if idtype == "all":
@@ -114,6 +122,8 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .all()
                 else:
                     return make_response(jsonify({'message': 'filtre inconnu'}), 400)
+                if isadulte:
+                    bibliotheque = [b for b in bibliotheque if b.adulte == False]
                 if client == "app":
                     return make_response(jsonify({'bibliotheque': [{'nom': b.nom, 'date': b.date_sortie, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'consultation': b.consultation if idfiltre == "top-consultation" else None, 'note': round(b.moyenne_notes, 2) if idfiltre == "top-note" else None, 'favoris': b.cmpt_favori if idfiltre == 'top-favoris' else None, 'sur-mediatise': b.trop_popularite if idfiltre == 'sur-mediatise' else None, 'sous-mediatise' : b.manque_popularite if idfiltre == 'sous-mediatise' else None, 'sur-note': b.trop_cote if idfiltre == 'sur-note' else None, 'sous-note': b.manque_cote if idfiltre == 'sous-note' else None} for b in bibliotheque]}), 200)
                 else:
