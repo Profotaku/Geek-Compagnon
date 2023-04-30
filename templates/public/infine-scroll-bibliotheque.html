@@ -1,0 +1,9 @@
+        {% for b in bibliotheque %}
+            <div>
+                {{ b.nom }}
+            </div>
+            <div>
+                {{ b.date_sortie }}
+            </div>
+            <img src="{{ b.url_image }}" alt="image">
+        {% endfor %}

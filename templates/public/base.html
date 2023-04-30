@@ -22,7 +22,7 @@
     {% block head %}
     {% endblock %}
 </head>
-<body style="overflow: hidden;" class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen">
 <nav class="bg-chartmagenta-400 dark:bg-chartmagenta-800 border-gray-200 px-2 sm:px-4 py-2.5">
     <div class="container flex flex-wrap items-center justify-between mx-auto text-white">
         {# Logo #}
@@ -187,9 +187,8 @@
         {# Fin searchbar #}
     </div>
 </nav>
-<div class="hero-body pub flex justify-center w-full h-full hidden">
-    <img src="" alt=""/>
-</div>
+{% block banner %}
+{% endblock %}
 <section class="w-full min-h-screen md:p-6">
 {% block content %}
 {% endblock %}

@@ -10,7 +10,7 @@ def collection_app(session, idtype, idfiltre, numstart, client):
         isadulte = False
         verify_jwt_in_request(optional=True)
         if current_user.is_authenticated:
-            isadulte = current_user.is_adulte
+            isadulte = current_user.adulte
         if get_jwt_identity() is not None:
             isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
         if session.query(Types_Media).filter_by(nom_types_media=idtype).first() is not None or idtype == "all":
@@ -186,7 +186,7 @@ def collection_app(session, idtype, idfiltre, numstart, client):
                 else:
                     return make_response(jsonify({'message': 'filtre inconnu'}), 400)
                 collection_reponse = []
-                if isadulte:
+                if not isadulte:
                     collection = [c for c in collection if c[4] == False]
                 if client == "app":
                     collection_reponse.append({'collection': [{'id': c[0], 'nom': c[1], 'url_image': c[2], 'adulte': c[4]} for c in collection]})

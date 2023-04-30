@@ -186,7 +186,7 @@ class Projets_Transmedias(Base):
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
     def __repr__(self):
-        return f"Projets_Medias('{self.ID_Projets_Transmedias}')"
+        return f"Projets_Transmedias('{self.ID_Projets_Transmedias}')"
 
 class Etre_Compose(Base):
     __tablename__ = 'etre_compose'
@@ -200,7 +200,7 @@ class Etre_Compose(Base):
 
 class Contenir(Base):
     __tablename__ = 'contenir'
-    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedia.id_projets_transmedias'), primary_key=True, nullable=False)
+    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedias.id_projets_transmedias'), primary_key=True, nullable=False)
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
 
@@ -209,7 +209,7 @@ class Contenir(Base):
 
 class Nommer_T(Base):
     __tablename__ = 'nommer_t'
-    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedia.id_projets_transmedias'), primary_key=True, nullable=False)
+    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedias.id_projets_transmedias'), primary_key=True, nullable=False)
     nom_alternatif = sa.Column(sa.String, sa.ForeignKey('noms_alternatifs.nom_alternatif'), primary_key=True, nullable=False)
 
     def __repr__(self):

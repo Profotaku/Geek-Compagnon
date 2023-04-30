@@ -57,13 +57,6 @@ def inscription_post(session):
         session.add(notes_utilisateurs)
         session.commit()
 
-
-
-
-
-
-
-
     #email confirmation
     token = generate_confirmation_token(email)
     confirm_url = url_for('confirm_mail', token=token, _external=True)

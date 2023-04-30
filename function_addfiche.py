@@ -185,6 +185,7 @@ def ajouter_fiche_culturel(session):
             saved_image.thumbnail((460, hsize), Image.LANCZOS)
             saved_image.save(f'static/images/fiches/{str(id_fiche)}/visual.jpg', optimize=True, quality=95, progressive=True)
             relative_path = os.path.join('static/images/fiches/', str(id_fiche), "visual.jpg")
+            relative_path = relative_path.replace("\\", "/")
 
         #create table Fiche
         fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1, nom=nom_input, synopsis=synopsis_input, cmpt_favori=0, consultation=0, contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input, concepteur=concepteur_input, url_image=relative_path)
@@ -366,6 +367,8 @@ def ajouter_fiche_media(session):
                 session.commit()
         #get the relative path of the image if exist
         relative_path_fiche = os.path.join('static/images/fiches/', str(id_fiche), "visual.jpg") if os.path.isfile('static/images/fiches/'+ str(id_fiche)+"/visual.jpg") else None
+        if relative_path_fiche is not None:
+            relative_path_fiche = relative_path_fiche.replace("\\", "/")
         #create table Fiche
         fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0) + 1, nom=nom_input,
                        synopsis=synopsis_input, cmpt_favori=0, consultation=0,
@@ -375,6 +378,8 @@ def ajouter_fiche_media(session):
         session.commit()
 
         relative_path_succes = os.path.join('static/images/fiches/', str(id_fiche), "success.jpg") if os.path.isfile('static/images/fiches/'+ str(id_fiche)+"/success.jpg") else None
+        if relative_path_succes is not None:
+            relative_path_succes = relative_path_succes.replace("\\", "/")
         # create table Succes if title and description are not empty
         if titre_input is not None and description_input is not None:
             succes = Succes(titre=titre_input, description=description_input, url_image=relative_path_succes)
@@ -538,6 +543,8 @@ def ajouter_fiche_transmedia(session):
                 session.commit()
         #get the relative path of the image if exist
         relative_path_fiche = os.path.join('static/images/fiches/', str(id_fiche), "visual.jpg") if os.path.isfile('static/images/fiches/'+ str(id_fiche)+"/visual.jpg") else None
+        if relative_path_fiche is not None:
+            relative_path_fiche = relative_path_fiche.replace("\\", "/")
         #create table Fiche
         fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0) + 1, nom=nom_input,
                        synopsis=synopsis_input, cmpt_favori=0, consultation=0,
@@ -547,6 +554,8 @@ def ajouter_fiche_transmedia(session):
         session.commit()
 
         relative_path_succes = os.path.join('static/images/fiches/', str(id_fiche), "success.jpg") if os.path.isfile('static/images/fiches/'+ str(id_fiche)+"/success.jpg") else None
+        if relative_path_succes is not None:
+            relative_path_succes = relative_path_succes.replace("\\", "/")
         # create table Succes if title and description are not empty
         if titre_input is not None and description_input is not None:
             succes = Succes(titre=titre_input, description=description_input, url_image=relative_path_succes)

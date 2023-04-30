@@ -11,7 +11,7 @@
                 {% with messages = get_flashed_messages() %}
                     {% if messages %}
                         {% for message in messages %}
-                            <div class="bg-red-800 text-white text-md font-bold p-2 col-span-1">
+                            <div class="{% if not twofa %}bg-red-800 {% else %}bg-blue-400 {% endif %}text-white text-md font-bold p-2 col-span-1">
                                 {{ message }}
                             </div>
                         {% endfor %}
@@ -20,17 +20,17 @@
                 <label for="pseudo" class="font-bold p-2 w-3/4 justify-self-center">
                     Username
                 </label>
-                <input type="text" placeholder="Entrez votre nom d'utilisateur" name="pseudo" class="mb-2 w-3/4 justify-self-center  font-orbitron" required>
+                <input type="text" placeholder="Entrez votre nom d'utilisateur" name="pseudo" class="mb-2 w-3/4 justify-self-center  font-orbitron" required {% if pseudo %} value="{{ pseudo }}" {% endif %}>
 
                 <label for="password" class="font-bold p-2 w-3/4 justify-self-center">
                     Password
                 </label>
-                <input type="password" placeholder="Entrez votre mot de passe" name="password" class="mb-2 w-3/4 justify-self-center  font-orbitron" required>
+                <input type="password" placeholder="Entrez votre mot de passe" name="password" class="mb-2 w-3/4 justify-self-center  font-orbitron" required {% if password %} value="{{ password }}" {% endif %}>
 
-                <label for="multifact" class="font-bold p-2 w-3/4 justify-self-center  hidden">
+                <label for="multifact" class="font-bold p-2 w-3/4 justify-self-center  {% if not twofa %}hidden{% endif %}">
                     Facteur de Double Authentification (Optionnel)
                 </label>
-                <input type="text" placeholder="Votre code temporaire" name="multifact" class="mb-2 w-3/4 justify-self-center  font-orbitron hidden">
+                <input type="text" placeholder="Votre code temporaire" name="multifact" class="mb-2 w-3/4 justify-self-center  font-orbitron {% if not twofa %}hidden{% endif %}">
 
                 <div class="mt-8 mb-1 flex justify-center">
                     <button type="submit"
@@ -53,7 +53,6 @@
                         </a>
                     </div>
                 </div>
-
             </div>
         </form>
     </div>

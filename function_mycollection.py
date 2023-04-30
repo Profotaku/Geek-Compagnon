@@ -197,7 +197,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                         else:
                             return make_response(jsonify({'message': 'filtre inconnu'}), 400)
                         mycollection_reponse = []
-                        if isadulte:
+                        if not isadulte:
                             my_collection = [c for c in my_collection if c[4] == False]
                         if client == "app":
                             mycollection_reponse.append({'macollection': [{'id': c[0], 'nom': c[1], 'url_image': c[2], 'adulte': c[4]} for c in my_collection]})

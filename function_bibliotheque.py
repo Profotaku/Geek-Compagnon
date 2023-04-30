@@ -11,7 +11,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
         isadulte = False
         verify_jwt_in_request(optional=True)
         if current_user.is_authenticated:
-            isadulte = current_user.is_adulte
+            isadulte = current_user.adulte
         if get_jwt_identity() is not None:
             isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
         # if idtype correspond to a type media in the database
@@ -122,12 +122,18 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .all()
                 else:
                     return make_response(jsonify({'message': 'filtre inconnu'}), 400)
-                if isadulte:
+                if not isadulte:
                     bibliotheque = [b for b in bibliotheque if b.adulte == False]
                 if client == "app":
                     return make_response(jsonify({'bibliotheque': [{'nom': b.nom, 'date': b.date_sortie, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'consultation': b.consultation if idfiltre == "top-consultation" else None, 'note': round(b.moyenne_notes, 2) if idfiltre == "top-note" else None, 'favoris': b.cmpt_favori if idfiltre == 'top-favoris' else None, 'sur-mediatise': b.trop_popularite if idfiltre == 'sur-mediatise' else None, 'sous-mediatise' : b.manque_popularite if idfiltre == 'sous-mediatise' else None, 'sur-note': b.trop_cote if idfiltre == 'sur-note' else None, 'sous-note': b.manque_cote if idfiltre == 'sous-note' else None} for b in bibliotheque]}), 200)
+                if len(idtype) > 1:
+                    idtype = "all"
                 else:
-                    return bibliotheque
+                    idtype = idtype[0]
+                if numstart == 0:
+                    return render_template('public/bibliotheque.html', bibliotheque=bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart, isadulte=isadulte)
+                else:
+                    return render_template('public/infine-scroll-bibliotheque.html', bibliotheque=bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart, isadulte=isadulte)
             else:
                 return make_response(jsonify({'message': 'filtre inconnu'}), 400)
         else:

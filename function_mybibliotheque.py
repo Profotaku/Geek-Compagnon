@@ -177,7 +177,7 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
 
                         else:
                             return make_response(jsonify({'message': 'filtre inconnu'}), 400)
-                        if isadulte:
+                        if not isadulte:
                             my_bibliotheque = [b for b in my_bibliotheque if b.adulte == False]
                         if client == "app":
                             return make_response(jsonify({'mabibliotheque': [{'nom': b.nom, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'note': b.note, 'favori': b.favori, 'limite': b.limite, 'collector': b.collector,'date-ajout': b.date_ajout } for b in my_bibliotheque]}), 200)

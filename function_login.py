@@ -29,11 +29,15 @@ def login_web_post(session):
         flash(
             "Ce compte a été désactivé suite à une demande de l'utilisateur ou pour non respect de nos condition générales d'utilisation. Veuillez contacter l'administrateur du site pour plus d'informations.")
         return redirect(url_for('login'))
-    elif user.otp_secret is not None:
+    elif user.otp_secret is not None and multifact not in ["", None]:
         multifact = multifact.replace(" ", "")
+        multifact = multifact.replace("-", "")
         if not pyotp.TOTP(user.otp_secret).verify(multifact):
             flash("Le code de vérification à deux facteurs est incorrect. Veuillez réessayer.")
             return redirect(url_for('login'))
+    elif user.otp_secret is not None and multifact in ["", None]:
+        flash("Veuillez entrer le code de vérification à deux facteurs.")
+        return render_template('public/login.html', pseudo=pseudo, twofa=True, password=password, remember=remember)
     login_user(user, remember=remember)
     return redirect(url_for('index'))
 

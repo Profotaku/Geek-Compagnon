@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 from flask_caching import Cache
 import sqlalchemy as sa  # ORM
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import orm, or_, and_, select, join, outerjoin
+from sqlalchemy import orm, or_, and_, select, join, outerjoin, text, func, desc
 from sqlalchemy_searchable import make_searchable, search
 from flask_wtf.csrf import CSRFProtect # CSRF protection
 from flask_mailman import Mail  # API for sending emails
@@ -29,6 +29,7 @@ from flask_squeeze import Squeeze
 import io
 import os
 
+import function_search
 from config import *
 import config
 from dataclass import *
@@ -78,6 +79,8 @@ css = Bundle("src/main.css", output="dist/main.css")
 assets.register("css", css)
 css.build()
 app.secret_key = SECRET_KEY
+
+#session.execute(text("""CREATE EXTENSION IF NOT EXISTS pg_trgm;"""))
 
 def web_or_app_auth(fn):
     @wraps(fn)
@@ -129,8 +132,8 @@ def contribuer():
     return render_template('public/ajout-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
+    title = request.args.get('q')
     isadulte = False
-    title = "%Re%"
     verify_jwt_in_request(optional=True)
     if current_user.is_authenticated or get_jwt_identity() is not None:
         if current_user.is_authenticated:
@@ -142,29 +145,11 @@ def livesearch():
     if title == '':
         return render_template('public/base.html')
     else:
-        title = title.title()
-        result = session.query(Produits_Culturels.id_produits_culturels, Fiches.nom, Fiches.synopsis, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.adulte, Noms_Alternatifs.nom_alternatif, Types_Media.nom_types_media, Etre_Compose.ordre, Projets_Medias.id_projets_medias, Projets_Medias.nom_types_media)\
-        .select_from(Produits_Culturels)\
-        .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-        .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-        .outerjoin(Nommer_C, Nommer_C.id_produits_culturels == Produits_Culturels.id_produits_culturels)\
-        .outerjoin(Noms_Alternatifs, Noms_Alternatifs.nom_alternatif == Nommer_C.nom_alternatif) \
-        .outerjoin(Etre_Compose, Etre_Compose.id_produits_culturels == Produits_Culturels.id_produits_culturels)\
-        .outerjoin(Projets_Medias, Projets_Medias.id_projets_medias == Etre_Compose.id_projets_medias)\
-        .filter(or_(Fiches.nom.like(title), Noms_Alternatifs.nom_alternatif.like(title))) \
-        .distinct(Produits_Culturels.id_produits_culturels) \
-        .order_by(Produits_Culturels.id_produits_culturels)\
-        .all()
-        #ajouter resultat pour projet media et transmedia...
-        if isadulte == False:
-            result = [r for r in result if r[5] == False]
-        for r in result:
-            print(r)
-        return "ok"
+        return function_search.search(title, isadulte, session)
 @app.route('/recommandation/<int:id_fiche>/', methods=['GET'])
 def recommandation(id_fiche):
     return recommandations.recommandations(id_fiche,5)
-@app.route('/connexion' , methods=['GET', 'POST'])
+@app.route('/connexion', methods=['GET', 'POST'])
 def login():
     client = request.args.get('client')
     method = request.method
@@ -248,6 +233,7 @@ def ajouter_fiche():
 @app.route('/bibliotheque/<idtype>/<idfiltre>', methods=['GET'])
 @app.route('/bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
 @app.route('/bibliotheque/<int:numstart>', methods=['GET'])
+@app.route('/bibliotheque/<idfiltre>', methods=['GET'])
 @app.route('/bibliotheque/', methods=['GET'])
 @app.route('/bibliotheque', methods=['GET'])
 def bibliotheque(idtype="all", numstart=0, idfiltre=""):
@@ -258,6 +244,7 @@ def bibliotheque(idtype="all", numstart=0, idfiltre=""):
 @app.route('/collection/<idtype>/<idfiltre>', methods=['GET'])
 @app.route('/collection/<idtype>/<int:numstart>', methods=['GET'])
 @app.route('/collection/<int:numstart>', methods=['GET'])
+@app.route('/collection/<idfiltre>', methods=['GET'])
 @app.route('/collection/', methods=['GET'])
 @app.route('/collection', methods=['GET'])
 def collection(idtype="all", numstart=0, idfiltre=""):
