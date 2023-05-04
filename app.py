@@ -181,6 +181,9 @@ def protected_route():
 @jwt_required(refresh=True)
 def renew_jwt():
     identity = get_jwt_identity()
+    #if user is deleted or banned, return 403
+    if session.execute(select(Utilisateurs.pseudo).where(and_(Utilisateurs.pseudo == identity, Utilisateurs.verifie is True, Utilisateurs.desactive is False))).scalar() is None:
+        return jsonify({"message": "Le token d'identification ne peut pas être renouvelé pour cause de désactivation du compte."}), 403
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
 
@@ -258,8 +261,6 @@ def collection(idtype="all", numstart=0, idfiltre=""):
 @app.route('/ma-bibliotheque/<user>/<idtype>/<idfiltre>', methods=['GET'])
 @app.route('/ma-bibliotheque/<user>/<idtype>', methods=['GET'])
 @app.route('/ma-bibliotheque/<user>/<idfiltre>', methods=['GET'])
-@app.route('/ma-bibliotheque/<user>', methods=['GET'])
-@app.route('/ma-bibliotheque/<idtype>', methods=['GET'])
 @app.route('/ma-bibliotheque/', methods=['GET'])
 @app.route('/ma-bibliotheque', methods=['GET'])
 def my_bibliotheque(idtype="all", numstart=0, idfiltre="", user=""):
@@ -273,8 +274,6 @@ def my_bibliotheque(idtype="all", numstart=0, idfiltre="", user=""):
 @app.route('/ma-collection/<user>/<idtype>/<idfiltre>', methods=['GET'])
 @app.route('/ma-collection/<user>/<idtype>', methods=['GET'])
 @app.route('/ma-collection/<user>/<idfiltre>', methods=['GET'])
-@app.route('/ma-collection/<user>', methods=['GET'])
-@app.route('/ma-collection/<idtype>', methods=['GET'])
 @app.route('/ma-collection/', methods=['GET'])
 @app.route('/ma-collection', methods=['GET'])
 def my_collection(idtype="all", numstart=0, idfiltre="", user=""):

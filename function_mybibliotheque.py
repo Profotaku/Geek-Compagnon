@@ -17,7 +17,7 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
         else:
             user = get_jwt_identity()
             isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
-    if session.query(Utilisateurs).filter_by(pseudo=user).first() is not None or user is None:
+    if session.query(Utilisateurs).filter_by(pseudo=user, desactive=False, verifie=True).first() is not None or user is None:
         if session.query(Utilisateurs.profil_public).filter_by(pseudo=user).first()[0] or (user == current_user.pseudo if current_user.is_authenticated else False) or user == get_jwt_identity():
             if type(numstart) == int:
                 if session.query(Types_Media).filter_by(nom_types_media=idtype).first() is not None or idtype == "all":
