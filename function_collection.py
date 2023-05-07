@@ -199,8 +199,14 @@ def collection_app(session, idtype, idfiltre, numstart, client):
                         collection_reponse[0]['collection'][i]['sur-note'] = collection[i][len(collection[i])-2] if idfiltre == "sur-note" else None
                         collection_reponse[0]['collection'][i]['sous-note'] = collection[i][len(collection[i])-2] if idfiltre == "sous-note" else None
                     return make_response(jsonify(collection_reponse), 200)
+                if len(idtype) > 1:
+                    idtype = "all"
                 else:
-                    return collection
+                    idtype = idtype[0]
+                if numstart == 0:
+                    return render_template('public/collection.html', collection=collection, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
+                else:
+                    return render_template('public/infine-scroll-collection.html', collection=collection, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
             else:
                 return make_response(jsonify({'message': 'filtre inconnu'}), 400)
         else:

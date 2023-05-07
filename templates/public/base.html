@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/fontawesome.min.css"
           integrity="sha512-cHxvm20nkjOUySu7jdwiUxgGy11vuVPE9YeK89geLMLMMEOcKFyS2i+8wo0FOwyQO/bL8Bvq1KMsqK4bbOsPnA=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/particles.min.js') }}"></script>
     <link href="{{ url_for('static',filename='css/main.css') }}" rel="stylesheet">
     <link href="{{ url_for('static',filename='css/custom.css') }}" rel="stylesheet">
@@ -176,6 +177,7 @@
             <input type="text" id="search-navbar"
                    class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                    placeholder="Search...">
+            <div id="search-results" class="search-results-container" style="display: none;"></div>
         </div>
         {#        <button data-collapse-toggle="navbar-search" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-search" aria-expanded="false">#}
         {#            <span class="sr-only">Open menu</span>#}
@@ -198,6 +200,7 @@
     {% block footer %}
     {% endblock %}
 </footer>
+    <script src="{{ url_for('static', filename='js/searchbar.js') }}"></script>
 {% block footerscript %}
 {% endblock %}
 </html>

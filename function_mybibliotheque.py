@@ -181,8 +181,14 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                             my_bibliotheque = [b for b in my_bibliotheque if b.adulte == False]
                         if client == "app":
                             return make_response(jsonify({'mabibliotheque': [{'nom': b.nom, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'note': b.note, 'favori': b.favori, 'limite': b.limite, 'collector': b.collector,'date-ajout': b.date_ajout } for b in my_bibliotheque]}), 200)
-
-                        return make_response(jsonify({'message': 'filtre inconnu'}), 400)
+                        if len(idtype) > 1:
+                            idtype = "all"
+                        else:
+                            idtype = idtype[0]
+                        if numstart == 0:
+                            return render_template('public/mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
+                        else:
+                            return render_template('public/infine-scroll-mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
                 else:
                     return make_response(jsonify({'message': 'type inconnu'}), 400)
             else:

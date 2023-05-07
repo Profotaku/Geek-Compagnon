@@ -3,7 +3,7 @@
                 {{ b.nom }}
             </div>
             <div>
-                {{ b.date_sortie }}
+                {{ b.date_sortie.strftime('%d-%m-%Y') }}
             </div>
-            <img src="{{ b.url_image }}" alt="image">
+            <img src="{{ url_for('static', filename=b.url_image.replace("static/", "")) }}" alt="image">
         {% endfor %}

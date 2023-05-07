@@ -1,0 +1,6 @@
+        {% for c in collection %}
+            <div>
+                {{ c[1] }}
+            </div>
+            <img src="{{ url_for('static', filename=c[2].replace("static/", "")) }}" alt="image">
+        {% endfor %}

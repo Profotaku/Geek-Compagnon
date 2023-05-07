@@ -1,12 +1,11 @@
 var offset = 0;
-const boxes = document.querySelectorAll('.box')
-
+const boxes = document.querySelectorAll('.box');
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 const slideDown = (box) => {
     let items = box.querySelector('.items')
@@ -20,7 +19,7 @@ const slideDown = (box) => {
         items.style.top = -offset + 'px'
     }
 
-}
+};
 
 const spin = (miliseconds) => {
     boxes.forEach(box => {
@@ -32,10 +31,10 @@ const spin = (miliseconds) => {
         }, getRandomInt(3, 5) * 1000)
     })
     
-}
+};
 
 
 document.querySelector('.spin').onclick = () => {
     spin(200)
     
-}
+};

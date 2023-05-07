@@ -1,0 +1,11 @@
+        {% for mc in my_collection %}
+            <div>
+                {{ mc[1] }}
+            </div>
+            <img src="{{ url_for('static', filename=mc[2].replace("static/", "")) }}" alt="image">
+            {% if mc[10] is not none %}
+            <div>
+                <span>{{mc[9]}} éléments possédés sur {{ mc[10] }}</span>
+            </div>
+            {% endif %}
+        {% endfor %}

@@ -263,8 +263,14 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             for i in range(len(mycollection_reponse[0]['macollection'])):
                                 mycollection_reponse[0]['macollection'][i]['date-ajout'] = my_collection[i][len(my_collection[i]) - 4] if idfiltre == "" or idfiltre == "date-ajout" else None
                             return make_response(jsonify(mycollection_reponse), 200)
+                        if len(idtype) > 1:
+                            idtype = "all"
                         else:
-                            return my_collection
+                            idtype = idtype[0]
+                        if numstart == 0:
+                            return render_template('public/mycollection.html', my_collection=my_collection, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
+                        else:
+                            return render_template('public/infine-scroll-mycollection.html', my_collection=my_collection, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
                     else:
                         return make_response(jsonify({'message': 'filtre inconnu'}), 400)
                 else:

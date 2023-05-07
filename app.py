@@ -130,6 +130,67 @@ def contribuer():
     default_message = config.DROPZONE_DEFAULT_MESSAGE
 
     return render_template('public/ajout-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
+
+@app.route('/add-ean/by_fiche/', methods=['POST'])
+@jwt_required(optional=False)
+def add_ean_by_fiche():
+    id_fiche = request.form.get('id_fiche')
+    ean = request.form.get('ean')
+    limite = request.form.get('limite')
+    collector = request.form.get('collector')
+    if id_fiche is None or ean is None or limite is None or collector is None:
+        return jsonify({"message": "Paramètres manquants"}), 400
+    #get the produit_culturel lnkked with this fiche and redirect
+    produit_culturel = session.execute(select(Produits_Culturels).where(Produits_Culturels.id_fiches == id_fiche)).scalar()
+    if produit_culturel is None or produit_culturel.id_produit_culturel is None:
+        return jsonify({"message": "Fiche introuvable"}), 404
+    else:
+        #redirect the post data to the add_ean_by_produit route
+        return redirect(url_for('add_ean_by_produit', id_produit=produit_culturel.id_produit_culturel, ean=ean, limite=limite, collector=collector))
+
+
+
+@app.route('/add-ean/by_produit/', methods=['POST'])
+@jwt_required(optional=False)
+def add_ean_by_produit():
+    #get the post data or get args if post data is empty
+    id_produit = request.form.get('id_produit') if request.form.get('id_produit') is not None else request.args.get('id_produit')
+    ean = request.form.get('ean') if request.form.get('ean') is not None else request.args.get('ean')
+    limite = request.form.get('limite') if request.form.get('limite') is not None else request.args.get('limite')
+    collector = request.form.get('collector') if request.form.get('collector') is not None else request.args.get('collector')
+    if id_produit is None or ean is None or limite is None or collector is None:
+        return jsonify({"message": "Paramètres manquants"}), 400
+    #check if ean is valid
+    if len(ean) == 10 and ean.isdigit():
+        # conversion de l'ISBN-10 en ISBN-13
+        ean = f'978{ean[:-1]}'
+        #recalcul de la clé de contrôle
+        ean += str((10 - (sum((3, 1)[i % 2] * int(c) for i, c in enumerate(ean))) % 10) % 10)
+    if len(ean) != 13 or not ean.isdigit():
+        return jsonify({"message": "EAN invalide"}), 400
+    #recheck checksum
+    if ean[:-1] != str((10 - (sum((3, 1)[i % 2] * int(c) for i, c in enumerate(ean))) % 10) % 10):
+        return jsonify({"message": "EAN invalide"}), 400
+    #check if the ean is already in the database
+    ean_exists = session.execute(select(EAN13).where(EAN13.ean13 == ean)).scalar()
+    if ean_exists is None:
+        #if not, create it
+        ean = EAN13(ean13=ean, limite=limite, collector=collector)
+        session.add(ean)
+        session.commit()
+    etre_identifie_exists = session.execute(select(Etre_Identifie).where(and_(Etre_Identifie.id_produits_culturels == id_produit, Etre_Identifie.ean13 == ean))).scalar()
+    if etre_identifie_exists is None:
+        etre_identifie = Etre_Identifie(id_produits_culturels=id_produit, ean13=ean)
+        session.add(etre_identifie)
+        session.commit()
+        return jsonify({"message": "EAN ajouté"}), 200
+    else:
+        return jsonify({"message": "EAN déjà ajouté pour ce produit"}), 400
+
+
+
+
+
 @app.route('/livesearch', methods=['GET','POST'])
 def livesearch():
     title = request.args.get('q')

@@ -1,0 +1,23 @@
+{% extends "public/base.html" %}
+{% block head %}
+    <script src="https://unpkg.com/htmx.org@1.9.2/dist/htmx.min.js"></script>
+{% endblock %}
+{% block banner %}
+{% endblock %}
+{% block content %}
+    <div class="grid grid-cols-1 flex justify-center mt-2 md:mt-0">
+    <div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/ma-collection/{{ current_user.pseudo + "/" }}{{ idtype + "/" if idtype != "all" else "all/"}}{{ idfiltre+"/" if idfiltre != ""}}{{ numstart + 10}}">
+        {% for mc in my_collection %}
+            <div>
+                {{ mc[1] }}
+            </div>
+            <img src="{{ url_for('static', filename=mc[2].replace("static/", "")) }}" alt="image">
+            {% if mc[10] is not none %}
+            <div>
+                <span>{{mc[9]}} éléments possédés sur {{ mc[10] }}</span>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    </div>
+{% endblock %}

@@ -6,13 +6,13 @@
 {% endblock %}
 {% block content %}
     <div class="grid grid-cols-1 flex justify-center mt-2 md:mt-0">
-    <div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/bibliotheque/{{ idtype + "/" if idtype != "all" }}{{ idfiltre+"/" if idfiltre != ""}}{{ numstart + 10}}">
-                {% for b in bibliotheque %}
+    <div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/bibliotheque/{{ idtype + "/" if idtype != "all" else "all/" }}{{ idfiltre+"/" if idfiltre != ""}}{{ numstart + 10}}">
+        {% for b in bibliotheque %}
             <div>
                 {{ b.nom }}
             </div>
             <div>
-                {{ b.date_sortie }}
+                {{ b.date_sortie.strftime('%d-%m-%Y') }}
             </div>
             <img src="{{ url_for('static', filename=b.url_image.replace("static/", "")) }}" alt="image">
         {% endfor %}

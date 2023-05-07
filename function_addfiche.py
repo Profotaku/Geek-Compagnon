@@ -79,15 +79,9 @@ def ajouter_fiche_culturel(session):
                 # la valeur saisie correspond à un code EAN-13 valide
                 ean = value
             elif len(value) == 10 and value.isdigit():
-
-                isbn = f'978{value}'
-
-                # conversion de l'ISBN-10 en ISBN-13
-                digits = [int(d) for d in isbn]
-                factor = [1, 3] * 6
-                sum_ = sum(d * f for d, f in zip(digits, factor))
-                check_digit = (10 - (sum_ % 10)) % 10
-                ean = isbn + str(check_digit)
+                ean = f'978{value[:-1]}'
+                # recalcul de la clé de contrôle
+                ean += str((10 - (sum((3, 1)[i % 2] * int(c) for i, c in enumerate(ean))) % 10) % 10)
             elif value == '':
                 continue
             else:

@@ -131,9 +131,9 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                 else:
                     idtype = idtype[0]
                 if numstart == 0:
-                    return render_template('public/bibliotheque.html', bibliotheque=bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart, isadulte=isadulte)
+                    return render_template('public/bibliotheque.html', bibliotheque=bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
                 else:
-                    return render_template('public/infine-scroll-bibliotheque.html', bibliotheque=bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart, isadulte=isadulte)
+                    return render_template('public/infine-scroll-bibliotheque.html', bibliotheque=bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
             else:
                 return make_response(jsonify({'message': 'filtre inconnu'}), 400)
         else:

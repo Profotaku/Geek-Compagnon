@@ -1,0 +1,14 @@
+        {% for mb in my_bibliotheque %}
+            <div>
+                {{ mb.nom }}
+            </div>
+            <div>
+                <span>Ajouté le {{ mb.date_ajout.strftime('%d-%m-%Y à %HH%M')}}</span>
+            </div>
+            {% if mb.note is not none %}
+                <div>
+                    {{ mb.note }}
+                </div>
+            {% endif %}
+            <img src="{{ url_for('static', filename=mb.url_image.replace("static/", "")) }}" alt="image">
+        {% endfor %}
