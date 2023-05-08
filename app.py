@@ -293,6 +293,76 @@ def ajouter_fiche():
     else:
         return make_response(jsonify({'message': 'Type de fiche inconnu ou non saisi'}), 400)
 
+@app.route('/ajouter-lien', methods=['GET', 'POST'])
+def ajouter_lien():
+    if request.method == 'POST':
+        radio_type = request.args.get('radio-type')
+        id_culturel = request.args.get('id_culturel') if request.args.get('id_culturel') is not None else ""
+        id_media = request.args.get('id_media') if request.args.get('id_media') is not None else ""
+        id_transmedia = request.args.get('id_transmedia') if request.args.get('id_transmedia') is not None else ""
+        ordre = request.args.get('ordre') if request.args.get('ordre') is not None else ""
+        if radio_type == "Culturel-Média":
+            if id_culturel == "" or id_media == "":
+                return make_response(jsonify({'message': 'Paramètres manquants'}), 400)
+            if ordre == "":
+                ordre = 1000 #arbitrary value, for placing not orderable at the end of the list
+            if not ordre.isdigit() or not id_culturel.isdigit() or not id_media.isdigit():
+                return make_response(jsonify({'message': 'Paramètres incorrects'}), 400)
+
+            # check if product and media exist
+            if session.execute(select(Produits_Culturels.id_produits_culturels).where(Produits_Culturels.id_produits_culturels == id_culturel)).scalar() is None:
+                return make_response(jsonify({'message': 'Le produit culturel n\'existe pas'}), 400)
+            if session.execute(select(Projets_Medias.id_projets_medias).where(Projets_Medias.id_projets_medias == id_media)).scalar() is None:
+                return make_response(jsonify({'message': 'Le projet média n\'existe pas'}), 400)
+            #check if link already exists
+            if session.execute(select(Etre_Compose.id_produits_culturels).where(and_(Etre_Compose.id_produits_culturels == id_culturel, Etre_Compose.id_projets_medias == id_media))).scalar() is not None:
+                return make_response(jsonify({'message': 'Le lien entre ces deux éléments existe déjà'}), 400)
+            etre_compose = Etre_Compose(id_produits_culturels=id_culturel, id_projets_medias=id_media, ordre=ordre, verifie=False)
+            session.add(etre_compose)
+            session.commit()
+            return make_response(jsonify({'message': 'Lien ajouté entre le produit et le média, il va être verifie par l\'équipe de modération'}), 200)
+
+        if radio_type == "Média-Transmédia":
+            if id_media == "" or id_transmedia == "":
+                return make_response(jsonify({'message': 'Paramètres manquants'}), 400)
+            if not id_media.isdigit() or not id_transmedia.isdigit():
+                return make_response(jsonify({'message': 'Paramètres incorrects'}), 400)
+            #check if media and transmedia exist
+            if session.execute(select(Projets_Medias.id_projets_medias).where(Projets_Medias.id_projets_medias == id_media)).scalar() is None:
+                return make_response(jsonify({'message': 'Le projet média n\'existe pas'}), 400)
+            if session.execute(select(Projets_Transmedias.id_projets_transmedias).where(Projets_Transmedias.id_projets_transmedias == id_transmedia)).scalar() is None:
+                return make_response(jsonify({'message': 'Le projet transmédia n\'existe pas'}), 400)
+            #check if link already exists
+            if session.execute(select(Contenir.id_projets_medias).where(and_(Contenir.id_projets_medias == id_media, Contenir.id_projets_transmedias == id_transmedia))).scalar() is not None:
+                return make_response(jsonify({'message': 'Le lien entre ces deux éléments existe déjà'}), 400)
+            contenir = Contenir(id_projets_medias=id_media, id_projets_transmedias=id_transmedia, verifie=False)
+            session.add(contenir)
+            session.commit()
+            return make_response(jsonify({'message': 'Lien ajouté entre le projet média et le projet transmedia, il va être verifie par l\'équipe de modération'}), 200)
+    if request.method == 'GET':
+        return render_template('public/ajouter-lien.html')
+
+
+@app.route('/fiche/<int:id_fiche>', methods=['GET'])
+def fiche(id_fiche):
+    client = request.args.get('client') if request.args.get('client') is not None else ""
+    #redirect to produit culturel, projet media or projet transmedia linked withe the id_fiche
+    if session.execute(select(Produits_Culturels.id_fiches).where(Produits_Culturels.id_fiches == id_fiche)).scalar() is not None:
+        id_produit_culturel = session.execute(select(Produits_Culturels.id_produits_culturels).where(Produits_Culturels.id_fiches == id_fiche)).scalar()
+        return redirect(f"{url_for(f'produit_culturel/{str(id_produit_culturel)}')}?client={client}")
+    elif session.execute(select(Projets_Medias.id_fiches).where(Projets_Medias.id_fiches == id_fiche)).scalar() is not None:
+        id_projet_media = session.execute(select(Projets_Medias.id_projets_medias).where(Projets_Medias.id_fiches == id_fiche)).scalar()
+        return redirect(f"{url_for(f'projet_media/{str(id_projet_media)}')}?client={client}")
+    elif session.execute(select(Projets_Transmedias.id_fiches).where(Projets_Transmedias.id_fiches == id_fiche)).scalar() is not None:
+        id_projet_transmedia = session.execute(select(Projets_Transmedias.id_projets_transmedias).where(Projets_Transmedias.id_fiches == id_fiche)).scalar()
+        return redirect(f"{url_for(f'projet_transmedia/{str(id_projet_transmedia)}')}?client={client}")
+    else:
+        if client == "":
+            return render_template('public/404.html')
+        else:
+            return jsonify({'message': 'La fiche n\'existe pas'}), 400
+
+
 @app.route('/bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
 @app.route('/bibliotheque/<idtype>/<idfiltre>', methods=['GET'])
 @app.route('/bibliotheque/<idtype>/<int:numstart>', methods=['GET'])
