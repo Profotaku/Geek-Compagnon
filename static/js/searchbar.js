@@ -1,5 +1,6 @@
 $(document).ready(function() {
   $("#search-navbar").on("input", function() {
+
     var query = $(this).val();
     
     if (query.length > 2) {
@@ -12,7 +13,7 @@ $(document).ready(function() {
         }
       });
     } else {
-      $("#search-results").hide();
+      $("#search-results").addClass('hidden');
     }
   });
 });
@@ -36,8 +37,12 @@ function displayResults(data) {
   });
 
   if (allResults.length > 0) {
+        console.log("result");
     resultsContainer.show();
+    resultsContainer.removeClass('hidden');
   } else {
+        console.log("no result");
     resultsContainer.hide();
+    resultsContainer.addClass('hidden');
   }
 }

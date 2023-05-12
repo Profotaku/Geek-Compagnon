@@ -86,7 +86,7 @@ def inscription_post(session):
     except:
         flash("Une erreur est survenue lors de l'envoi du mail de confirmation. Veuillez réessayer.")
         return redirect(url_for('register'))
-    flash("Votre compte a bien été créé. Veuillez cliquer sur le lien de validation dans le mail de confirmation d'inscription afin de pouvoir profiter de nos services.")
+    flash("<span class='bg-green-300'>Votre compte a bien été créé. Veuillez cliquer sur le lien de validation dans le mail de confirmation d'inscription afin de pouvoir profiter de nos services.</span>")
     return redirect(url_for('login'))
 
 

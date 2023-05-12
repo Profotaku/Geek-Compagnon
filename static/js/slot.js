@@ -33,7 +33,6 @@ const spin = (miliseconds) => {
     
 };
 
-
 document.querySelector('.spin').onclick = () => {
     spin(200)
     

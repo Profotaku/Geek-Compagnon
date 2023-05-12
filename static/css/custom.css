@@ -5,6 +5,16 @@
 
 body{
     background-image: url("../images/background.png");
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-image: url("../images/background-dark.png");
+        background-size: cover ;
+        background-attachment: fixed;
+    }
 }
 
 /*nav{*/
