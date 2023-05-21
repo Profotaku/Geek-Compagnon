@@ -135,15 +135,6 @@ def ajouter_fiche_culturel(session):
     insertion = session.begin()
 
     try:
-        #create table Avis
-        avis = Avis(id_avis=(session.query(func.max(Avis.id_avis)).scalar() or 0)+1, trop_popularite=0, neutre_popularite=0, manque_popularite=0, trop_cote=0, neutre_cote=0, manque_cote=0)
-        session.add(avis)
-        session.commit()
-
-        #create table Notes
-        notes = Notes(id_notes=(session.query(func.max(Notes.id_notes)).scalar() or 0)+1, note_0=0, note_1=0, note_2=0, note_3=0, note_4=0, note_5=0, note_6=0, note_7=0, note_8=0, note_9=0, note_10=0)
-        session.add(notes)
-        session.commit()
 
         #create tables EAN13
         for ean_input in ean_inputs:
@@ -182,12 +173,12 @@ def ajouter_fiche_culturel(session):
             relative_path = relative_path.replace("\\", "/")
 
         #create table Fiche
-        fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1, nom=nom_input, synopsis=synopsis_input, cmpt_favori=0, consultation=0, contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input, concepteur=concepteur_input, url_image=relative_path)
+        fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0)+1, nom=nom_input, synopsis=synopsis_input, consultation=0, contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input, concepteur=concepteur_input, url_image=relative_path)
         session.add(fiche)
         session.commit()
 
         #create table Produits_Culturels
-        produit_culturel = Produits_Culturels(id_produits_culturels=(session.query(func.max(Produits_Culturels.id_produits_culturels)).scalar() or 0)+1, date_sortie=date_sortie_input, id_notes=notes.id_notes, id_avis=avis.id_avis, nom_types_media=media_type_input, id_fiches=fiche.id_fiches)
+        produit_culturel = Produits_Culturels(id_produits_culturels=(session.query(func.max(Produits_Culturels.id_produits_culturels)).scalar() or 0)+1, date_sortie=date_sortie_input, nom_types_media=media_type_input, id_fiches=fiche.id_fiches)
         session.add(produit_culturel)
         session.commit()
 
@@ -339,18 +330,6 @@ def ajouter_fiche_media(session):
     session.close()
     insertion = session.begin()
     try:
-        # create table Avis
-        avis = Avis(id_avis=(session.query(func.max(Avis.id_avis)).scalar() or 0) + 1, trop_popularite=0,
-                    neutre_popularite=0, manque_popularite=0, trop_cote=0, neutre_cote=0, manque_cote=0)
-        session.add(avis)
-        session.commit()
-
-        # create table Notes
-        notes = Notes(id_notes=(session.query(func.max(Notes.id_notes)).scalar() or 0) + 1, note_0=0, note_1=0,
-                      note_2=0, note_3=0, note_4=0, note_5=0, note_6=0, note_7=0, note_8=0, note_9=0, note_10=0)
-        session.add(notes)
-        session.commit()
-
         # create tables Noms_Alternatifs
         for alternative_name in alternative_names:
             # check if alternative name already exist and not in the table
@@ -365,7 +344,7 @@ def ajouter_fiche_media(session):
             relative_path_fiche = relative_path_fiche.replace("\\", "/")
         #create table Fiche
         fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0) + 1, nom=nom_input,
-                       synopsis=synopsis_input, cmpt_favori=0, consultation=0,
+                       synopsis=synopsis_input, consultation=0,
                        contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input,
                        concepteur=concepteur_input, url_image=relative_path_fiche)
         session.add(fiche)
@@ -383,11 +362,11 @@ def ajouter_fiche_media(session):
         #create table Projets_Medias
         #if succes is not referenced
         if titre_input is None or description_input is None:
-            projet_media = Projets_Medias(id_projets_medias=(session.query(func.max(Projets_Medias.id_projets_medias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, id_notes=notes.id_notes, id_avis=avis.id_avis, titre=None, nom_types_media=media_type_input)
+            projet_media = Projets_Medias(id_projets_medias=(session.query(func.max(Projets_Medias.id_projets_medias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, titre=None, nom_types_media=media_type_input)
             session.add(projet_media)
             session.commit()
         else:
-            projet_media = Projets_Medias(id_projets_medias=(session.query(func.max(Projets_Medias.id_projets_medias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, id_notes=notes.id_notes, id_avis=avis.id_avis, titre=succes.titre, nom_types_media=media_type_input)
+            projet_media = Projets_Medias(id_projets_medias=(session.query(func.max(Projets_Medias.id_projets_medias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, titre=succes.titre, nom_types_media=media_type_input)
             session.add(projet_media)
             session.commit()
 
@@ -515,18 +494,6 @@ def ajouter_fiche_transmedia(session):
     insertion = session.begin()
 
     try:
-        # create table Avis
-        avis = Avis(id_avis=(session.query(func.max(Avis.id_avis)).scalar() or 0) + 1, trop_popularite=0,
-                    neutre_popularite=0, manque_popularite=0, trop_cote=0, neutre_cote=0, manque_cote=0)
-        session.add(avis)
-        session.commit()
-
-        # create table Notes
-        notes = Notes(id_notes=(session.query(func.max(Notes.id_notes)).scalar() or 0) + 1, note_0=0, note_1=0,
-                      note_2=0, note_3=0, note_4=0, note_5=0, note_6=0, note_7=0, note_8=0, note_9=0, note_10=0)
-        session.add(notes)
-        session.commit()
-
         # create tables Noms_Alternatifs
         for alternative_name in alternative_names:
             # check if alternative name already exist and not in the table
@@ -541,7 +508,7 @@ def ajouter_fiche_transmedia(session):
             relative_path_fiche = relative_path_fiche.replace("\\", "/")
         #create table Fiche
         fiche = Fiches(id_fiches=(session.query(func.max(Fiches.id_fiches)).scalar() or 0) + 1, nom=nom_input,
-                       synopsis=synopsis_input, cmpt_favori=0, consultation=0,
+                       synopsis=synopsis_input, consultation=0,
                        contributeur=current_user_id, adulte=adulte_checkbox, info=infos_input,
                        concepteur=concepteur_input, url_image=relative_path_fiche)
         session.add(fiche)
@@ -559,11 +526,11 @@ def ajouter_fiche_transmedia(session):
         #create table Projets_Medias
         #if succes is not referenced
         if titre_input is None and description_input is None:
-            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, id_avis=avis.id_avis, id_notes=notes.id_notes, titre=None)
+            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, titre=None)
             session.add(projet_tranmedia)
             session.commit()
         else:
-            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, id_avis=avis.id_avis, id_notes=notes.id_notes, titre=succes.titre)
+            projet_tranmedia = Projets_Transmedias(id_projets_transmedias=(session.query(func.max(Projets_Transmedias.id_projets_transmedias)).scalar() or 0) + 1, id_fiches=fiche.id_fiches, titre=succes.titre)
             session.add(projet_tranmedia)
             session.commit()
 

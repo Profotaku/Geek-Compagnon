@@ -59,195 +59,209 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
 
                         if idfiltre == "" or idfiltre == "date-ajout":
 
-                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media)\
+                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media)\
                             .select_from(Posseder_M)\
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Medias.id_fiches)\
-                            .join(Types_Media, Types_Media.nom_types_media == Projets_Medias.nom_types_media)\
-                            .filter(Types_Media.nom_types_media.in_(idtype))\
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .outerjoin(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
+                            .filter(Projets_Medias.nom_types_media.in_(idtype))\
                             .filter(Posseder_M.pseudo == user) \
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .distinct(Posseder_M.date_ajout, Posseder_M.id_projets_medias)\
-                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes ,Types_Media.nom_types_media) \
+                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media) \
                             .order_by(Posseder_M.date_ajout.desc(), Posseder_M.id_projets_medias.desc())
 
-                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
                             .select_from(Posseder_T) \
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches) \
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_T.pseudo, Notes.id_fiches == Fiches.id_fiches)) \
+                            .outerjoin(Avis, and_(Avis.pseudo == Posseder_T.pseudo, Avis.id_fiches == Fiches.id_fiches)) \
                             .filter(Posseder_T.pseudo == user) \
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .distinct(Posseder_T.date_ajout, Posseder_T.id_projets_transmedias) \
-                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
                             .order_by(Posseder_T.date_ajout.desc(), Posseder_T.id_projets_transmedias.desc())
 
                         elif idfiltre == "top-note":
 
-                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo,Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media)\
+                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media)\
                             .select_from(Posseder_M)\
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Medias.id_fiches)\
-                            .join(Types_Media, Types_Media.nom_types_media == Projets_Medias.nom_types_media)\
-                            .filter(Types_Media.nom_types_media.in_(idtype))\
+                            .join(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .outerjoin(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
+                            .filter(Projets_Medias.nom_types_media.in_(idtype))\
                             .filter(Posseder_M.pseudo == user)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
-                            .distinct(Posseder_M.note, Posseder_M.id_projets_medias)\
-                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media) \
-                            .order_by(Posseder_M.note.desc(), Posseder_M.id_projets_medias.desc())\
+                            .distinct(Notes.note, Posseder_M.id_projets_medias)\
+                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media) \
+                            .order_by(Notes.note.desc(), Posseder_M.id_projets_medias.desc())\
 
-                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo,Posseder_T.note,Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
+                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
+                            .join(Notes, and_(Notes.pseudo == Posseder_T.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .outerjoin(Avis, and_(Avis.pseudo == Posseder_T.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Posseder_T.pseudo == user) \
                             .outerjoin(sub_query_transmedia_possedes,sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
-                            .distinct(Posseder_T.note, Posseder_T.id_projets_transmedias)\
-                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
-                            .order_by(Posseder_T.note.desc(), Posseder_T.id_projets_transmedias.desc())\
+                            .distinct(Notes.note, Posseder_T.id_projets_transmedias)\
+                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            .order_by(Notes.note.desc(), Posseder_T.id_projets_transmedias.desc())\
 
                         elif idfiltre == "favori":
 
-                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo,Posseder_M.note,Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media)\
+                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media)\
                             .select_from(Posseder_M)\
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Medias.id_fiches)\
-                            .join(Types_Media, Types_Media.nom_types_media == Projets_Medias.nom_types_media)\
-                            .filter(Types_Media.nom_types_media.in_(idtype))\
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
+                            .filter(Projets_Medias.nom_types_media.in_(idtype))\
                             .filter(Posseder_M.pseudo == user)\
-                            .filter(Posseder_M.favori == True)\
+                            .filter(Avis.favori == True)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
-                            .distinct(Posseder_M.favori, Posseder_M.id_projets_medias) \
-                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes ,Types_Media.nom_types_media) \
+                            .distinct(Avis.favori, Posseder_M.id_projets_medias) \
+                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media) \
                             .order_by(Posseder_M.id_projets_medias.desc())
 
-                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo,Posseder_T.note,Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
+                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_T.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .join(Avis, and_(Avis.pseudo == Posseder_T.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Posseder_T.pseudo == user)\
-                            .filter(Posseder_T.favori == True)\
+                            .filter(Avis.favori == True)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
-                            .distinct(Posseder_T.favori, Posseder_T.id_projets_transmedias)\
-                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            .distinct(Avis.favori, Posseder_T.id_projets_transmedias)\
+                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
                             .order_by(Posseder_T.id_projets_transmedias.desc())
 
                         elif idfiltre == "sur-mediatise":
 
-                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo,Posseder_M.note,Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media)\
+                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media)\
                             .select_from(Posseder_M)\
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Medias.id_fiches)\
-                            .join(Types_Media, Types_Media.nom_types_media == Projets_Medias.nom_types_media)\
-                            .filter(Types_Media.nom_types_media.in_(idtype))\
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
+                            .filter(Projets_Medias.nom_types_media.in_(idtype))\
                             .filter(Posseder_M.pseudo == user)\
-                            .filter(Posseder_M.avis_popularite == True)\
+                            .filter(Avis.avis_popularite == 1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
-                            .distinct(Posseder_M.avis_popularite, Posseder_M.id_projets_medias) \
-                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes ,Types_Media.nom_types_media) \
+                            .distinct(Avis.avis_popularite, Posseder_M.id_projets_medias) \
+                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Avis.avis_popularite, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media) \
                             .order_by(Posseder_M.id_projets_medias.desc())
 
-                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo,Posseder_T.note,Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
+                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
                             .filter(Posseder_T.pseudo == user)\
-                            .filter(Posseder_T.avis_popularite == True)\
+                            .filter(Avis.avis_popularite == 1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
-                            .distinct(Posseder_T.avis_popularite, Posseder_T.id_projets_transmedias)\
-                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            .distinct(Avis.avis_popularite, Posseder_T.id_projets_transmedias)\
+                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Avis.avis_popularite, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
                             .order_by(Posseder_T.id_projets_transmedias.desc())
 
                         elif idfiltre == "sous-mediatise":
 
-                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo,Posseder_M.note,Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media)\
+                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media)\
                             .select_from(Posseder_M)\
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Medias.id_fiches)\
-                            .join(Types_Media, Types_Media.nom_types_media == Projets_Medias.nom_types_media)\
-                            .filter(Types_Media.nom_types_media.in_(idtype))\
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
+                            .filter(Projets_Medias.nom_types_media.in_(idtype))\
                             .filter(Posseder_M.pseudo == user)\
-                            .filter(Posseder_M.avis_popularite == False)\
+                            .filter(Avis.avis_popularite == -1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
-                            .distinct(Posseder_M.avis_popularite, Posseder_M.id_projets_medias) \
-                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes ,Types_Media.nom_types_media) \
+                            .distinct(Avis.avis_popularite, Posseder_M.id_projets_medias) \
+                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Avis.avis_popularite, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media) \
                             .order_by(Posseder_M.id_projets_medias.desc())
 
-                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo,Posseder_T.note,Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
+                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
                             .filter(Posseder_T.pseudo == user)\
-                            .filter(Posseder_T.avis_popularite == False)\
+                            .filter(Avis.avis_popularite == -1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
-                            .distinct(Posseder_T.avis_popularite, Posseder_T.id_projets_transmedias)\
-                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            .distinct(Avis.avis_popularite, Posseder_T.id_projets_transmedias)\
+                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Avis.avis_popularite, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
                             .order_by(Posseder_T.id_projets_transmedias.desc())
 
                         elif idfiltre == "sur-note":
 
-                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo,Posseder_M.note,Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media)\
+                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media)\
                             .select_from(Posseder_M)\
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Medias.id_fiches)\
-                            .join(Types_Media, Types_Media.nom_types_media == Projets_Medias.nom_types_media)\
-                            .filter(Types_Media.nom_types_media.in_(idtype))\
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
+                            .filter(Projets_Medias.nom_types_media.in_(idtype))\
                             .filter(Posseder_M.pseudo == user)\
-                            .filter(Posseder_M.avis_cote == True)\
+                            .filter(Avis.avis_cote == 1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
-                            .distinct(Posseder_M.avis_cote, Posseder_M.id_projets_medias) \
-                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes ,Types_Media.nom_types_media) \
+                            .distinct(Avis.avis_cote, Posseder_M.id_projets_medias) \
+                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Avis.avis_cote, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media) \
                             .order_by(Posseder_M.id_projets_medias.desc())
 
-                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo,Posseder_T.note,Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
+                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
                             .filter(Posseder_T.pseudo == user)\
-                            .filter(Posseder_T.avis_cote == True)\
+                            .filter(Avis.avis_cote == 1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
-                            .distinct(Posseder_T.avis_cote, Posseder_T.id_projets_transmedias)\
-                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            .distinct(Avis.avis_cote, Posseder_T.id_projets_transmedias)\
+                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Avis.avis_cote, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
                             .order_by(Posseder_T.id_projets_transmedias.desc())
 
                         elif idfiltre == "sous-note":
 
-                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo,Posseder_M.note,Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Types_Media.nom_types_media)\
+                            media_query = session.query(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media)\
                             .select_from(Posseder_M)\
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Medias.id_fiches)\
-                            .join(Types_Media, Types_Media.nom_types_media == Projets_Medias.nom_types_media)\
-                            .filter(Types_Media.nom_types_media.in_(idtype))\
+                            .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
+                            .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
+                            .filter(Projets_Medias.nom_types_media.in_(idtype))\
                             .filter(Posseder_M.pseudo == user)\
-                            .filter(Posseder_M.avis_cote == False)\
+                            .filter(Avis.avis_cote == -1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
-                            .distinct(Posseder_M.avis_cote, Posseder_M.id_projets_medias) \
-                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Posseder_M.note, Posseder_M.favori, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes ,Types_Media.nom_types_media) \
+                            .distinct(Avis.avis_cote, Posseder_M.id_projets_medias) \
+                            .group_by(Posseder_M.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_M.pseudo, Notes.note, Avis.favori, Avis.avis_cote, Posseder_M.date_ajout, sub_query_media_total.c.total_produits_culturels, sub_query_media_possedes.c.produits_culturels_possedes, Projets_Medias.nom_types_media) \
                             .order_by(Posseder_M.id_projets_medias.desc())
 
-                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo,Posseder_T.note,Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
-                            .select_from(Posseder_T) \
-                            .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
-                            .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches) \
-                            .filter(Posseder_T.pseudo == user) \
-                            .filter(Posseder_T.avis_cote == False) \
+                            transmedia_query = session.query(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes)\
+                            .select_from(Posseder_T)\
+                            .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
+                            .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
+                            .filter(Posseder_T.pseudo == user)\
+                            .filter(Avis.avis_cote == -1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
-                            .distinct(Posseder_T.avis_cote, Posseder_T.id_projets_transmedias) \
-                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Posseder_T.note, Posseder_T.favori, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
+                            .distinct(Avis.avis_cote, Posseder_T.id_projets_transmedias)\
+                            .group_by(Posseder_T.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Posseder_T.pseudo, Notes.note, Avis.favori, Avis.avis_cote, Posseder_T.date_ajout, sub_query_transmedia_total.c.total_projets_medias, sub_query_transmedia_possedes.c.projets_medias_possedes) \
                             .order_by(Posseder_T.id_projets_transmedias.desc())
+
                         else:
                             return make_response(jsonify({'message': 'filtre inconnu'}), 400)
                         # add column "type" to the query
@@ -259,7 +273,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                         if not isadulte:
                             my_collection = [c for c in my_collection if c[4] == False]
                         if client == "app":
-                            mycollection_reponse.append({'macollection': [{'id': c[0], 'nom': c[1], 'url_image': c[2], 'adulte': c[4], 'nombre_possession': c[9] if c[9] is not None else 0, 'nombre_total': c[10] if c[10] is not None else 0} for c in my_collection]})
+                            mycollection_reponse.append({'macollection': [{'id': c[0], 'nom': c[1], 'url_image': c[2], 'adulte': c[4], 'note': c[6] if c[6] is not None else None, 'favori': c[7] if c[7] is not None else False, 'nombre_possession': c[9] if c[9] is not None else 0, 'nombre_total': c[10] if c[10] is not None else 0} for c in my_collection]})
                             for i in range(len(mycollection_reponse[0]['macollection'])):
                                 mycollection_reponse[0]['macollection'][i]['date-ajout'] = my_collection[i][len(my_collection[i]) - 4] if idfiltre == "" or idfiltre == "date-ajout" else None
                             return make_response(jsonify(mycollection_reponse), 200)

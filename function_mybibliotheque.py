@@ -28,165 +28,185 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                         if type(idtype) != list:
                             idtype = [idtype]
                         if idfiltre == "" or idfiltre == "date-ajout":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
                                 .filter(Produits_Culturels.verifie == True) \
-                                .distinct(Posseder_C.date_ajout, Posseder_C.id_produits_culturels ) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.date_ajout.desc()) \
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "top-note":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .join(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
                                 .filter(Produits_Culturels.verifie == True) \
-                                .distinct(Posseder_C.note, Posseder_C.id_produits_culturels ) \
-                                .order_by(Posseder_C.note.desc()) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
+                                .order_by(Notes.note.desc()) \
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "favori":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note , Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.favori == True)\
+                                .filter(Avis.favori == True)\
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "sur-mediatise":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.avis_popularite == True)\
+                                .filter(Avis.avis_popularite == 1)\
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "sous-mediatise":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.avis_popularite == False)\
+                                .filter(Avis.avis_popularite == -1)\
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "sur-note":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.avis_cote == True)\
+                                .filter(Avis.avis_cote == 1)\
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "sous-note":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.avis_cote == False)\
+                                .filter(Avis.avis_cote == -1)\
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "physiquement":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
+                                .outerjoinjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
                                 .filter(Posseder_C.physiquement == True)\
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "virtuellement":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
-                                .select_from(Posseder_C)\
-                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
-                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.physiquement == False)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
+                                .select_from(Posseder_C) \
+                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
+                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
+                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.physiquement == False) \
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "souhaite":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
-                                .select_from(Posseder_C)\
-                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
-                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.souhaite == True)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
+                                .select_from(Posseder_C) \
+                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
+                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
+                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.souhaite == True) \
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "limite":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
-                                .select_from(Posseder_C)\
-                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
-                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.limite == True)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
+                                .select_from(Posseder_C) \
+                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
+                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
+                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.limite == True) \
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
                         elif idfiltre == "collector":
-                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout,Posseder_C.note,Posseder_C.favori, Posseder_C.limite, Posseder_C.collector)\
-                                .select_from(Posseder_C)\
-                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
-                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Types_Media, Types_Media.nom_types_media == Produits_Culturels.nom_types_media)\
-                                .filter(Types_Media.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
-                                .filter(Posseder_C.collector == True)\
+                            my_bibliotheque = session.execute(select(Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
+                                .select_from(Posseder_C) \
+                                .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
+                                .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
+                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.collector == True) \
                                 .filter(Produits_Culturels.verifie == True) \
+                                .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
                                 .order_by(Posseder_C.id_produits_culturels.desc()) \
                                 .limit(10).offset(numstart)).all()
-
-
                         else:
                             return make_response(jsonify({'message': 'filtre inconnu'}), 400)
                         if not isadulte:
                             my_bibliotheque = [b for b in my_bibliotheque if b.adulte == False]
                         if client == "app":
-                            return make_response(jsonify({'mabibliotheque': [{'nom': b.nom, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'note': b.note, 'favori': b.favori, 'limite': b.limite, 'collector': b.collector,'date-ajout': b.date_ajout } for b in my_bibliotheque]}), 200)
+                            return make_response(jsonify({'mabibliotheque': [{'nom': b.nom, 'url_image': b.url_image, 'id': b.id_produits_culturels, 'adulte': b.adulte, 'note': b.note if b.note else None, 'favori': b.favori if b.favori else False, 'limite': b.limite, 'collector': b.collector,'date-ajout': b.date_ajout } for b in my_bibliotheque]}), 200)
                         if len(idtype) > 1:
                             idtype = "all"
                         else:
                             idtype = idtype[0]
                         if numstart == 0:
-                            return render_template('public/mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
+                            return render_template('public/mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart, user=user)
                         else:
                             return render_template('public/infine-scroll-mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
                 else:

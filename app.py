@@ -349,18 +349,25 @@ def fiche(id_fiche):
     #redirect to produit culturel, projet media or projet transmedia linked withe the id_fiche
     if session.execute(select(Produits_Culturels.id_fiches).where(Produits_Culturels.id_fiches == id_fiche)).scalar() is not None:
         id_produit_culturel = session.execute(select(Produits_Culturels.id_produits_culturels).where(Produits_Culturels.id_fiches == id_fiche)).scalar()
-        return redirect(f"{url_for(f'produit_culturel/{str(id_produit_culturel)}')}?client={client}")
+        return redirect(f"{url_for('produit_culturel', id_produit_culturel=int(id_produit_culturel))}")
     elif session.execute(select(Projets_Medias.id_fiches).where(Projets_Medias.id_fiches == id_fiche)).scalar() is not None:
         id_projet_media = session.execute(select(Projets_Medias.id_projets_medias).where(Projets_Medias.id_fiches == id_fiche)).scalar()
-        return redirect(f"{url_for(f'projet_media/{str(id_projet_media)}')}?client={client}")
+        return redirect(f"{url_for(f'projet_media/{int(id_projet_media)}')}?client={client}")
     elif session.execute(select(Projets_Transmedias.id_fiches).where(Projets_Transmedias.id_fiches == id_fiche)).scalar() is not None:
         id_projet_transmedia = session.execute(select(Projets_Transmedias.id_projets_transmedias).where(Projets_Transmedias.id_fiches == id_fiche)).scalar()
-        return redirect(f"{url_for(f'projet_transmedia/{str(id_projet_transmedia)}')}?client={client}")
+        return redirect(f"{url_for(f'projet_transmedia/{int(id_projet_transmedia)}')}?client={client}")
     else:
         if client == "":
             return render_template('public/404.html')
         else:
             return jsonify({'message': 'La fiche n\'existe pas'}), 400
+
+@app.route('/produit_culturel/<int:id_produit_culturel>', methods=['GET'])
+@app.route('/produit_culturel/')
+def produit_culturel(id_produit_culturel):
+    client = request.args.get('client') if request.args.get('client') is not None else ""
+    id_produit_culturel = request.args.get('id_produit_culturel') if request.args.get('id_produit_culturel') is not None else id_produit_culturel
+    return "ok"
 
 
 @app.route('/bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])

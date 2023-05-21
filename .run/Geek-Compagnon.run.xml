@@ -11,7 +11,7 @@
       <env name="PYTHONUNBUFFERED" value="TRUE" />
     </envs>
     <option name="SDK_HOME" value="C:\Python310\python.exe" />
-    <option name="SDK_NAME" value="Python 3.10" />
+    <option name="SDK_NAME" value="Python 3.10 (Geek-Compagnon)" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="false" />
     <option name="ADD_CONTENT_ROOTS" value="true" />

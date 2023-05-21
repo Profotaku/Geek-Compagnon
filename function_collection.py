@@ -23,10 +23,9 @@ def collection_app(session, idtype, idfiltre, numstart, client):
                 if idfiltre == "" or idfiltre == "date-ajout":
                     media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Types_Media.nom_types_media)\
                         .select_from(Projets_Medias)\
-                        .join(Types_Media)\
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype))\
+                        .filter(Projets_Medias.nom_types_media.in_(idtype))\
                         .distinct(Projets_Medias.id_projets_medias)\
                         .order_by(Projets_Medias.id_projets_medias.desc())
                     transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte)\
@@ -43,10 +42,9 @@ def collection_app(session, idtype, idfiltre, numstart, client):
                 elif idfiltre == "top-consultation":
                     media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Fiches.consultation,  Types_Media.nom_types_media)\
                         .select_from(Projets_Medias)\
-                        .join(Types_Media)\
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype))\
+                        .filter(Projets_Medias.nom_types_media.in_(idtype))\
                         .order_by(Fiches.consultation.desc())
                     transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Fiches.consultation)\
                         .select_from(Projets_Transmedias)\
@@ -59,129 +57,141 @@ def collection_app(session, idtype, idfiltre, numstart, client):
                     collection_query = collection_query.order_by(collection_query.c.fiches_consultation.desc()).limit(10).offset(numstart)
                     collection = session.execute(collection_query).all()
                 elif idfiltre == "top-note":
-                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, Notes.note_0,  Notes.note_1, Notes.note_2, Notes.note_3, Notes.note_4, Notes.note_5, Notes.note_6, Notes.note_7, Notes.note_8, Notes.note_9, Notes.note_10, func.avg((Notes.note_0 + Notes.note_1 + Notes.note_2 + Notes.note_3 + Notes.note_4 + Notes.note_5 + Notes.note_6 + Notes.note_7 + Notes.note_8 + Notes.note_9 + Notes.note_10)/11).label('moyenne_notes'), Types_Media.nom_types_media)\
+                    moyenne_notes = func.avg(Notes.note).label('moyenne_notes')
+                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, moyenne_notes, Projets_Medias.nom_types_media)\
                         .select_from(Projets_Medias)\
-                        .join(Types_Media)\
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype)) \
-                        .filter(Projets_Medias.id_notes == Notes.id_notes)\
-                        .group_by(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, Notes.note_0, Notes.note_1, Notes.note_2, Notes.note_3, Notes.note_4, Notes.note_5, Notes.note_6, Notes.note_7, Notes.note_8, Notes.note_9, Notes.note_10, Types_Media.nom_types_media) \
-                        .order_by(desc('moyenne_notes'))
-                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, Notes.note_0,  Notes.note_1, Notes.note_2, Notes.note_3, Notes.note_4, Notes.note_5, Notes.note_6, Notes.note_7, Notes.note_8, Notes.note_9, Notes.note_10, func.avg((Notes.note_0 + Notes.note_1 + Notes.note_2 + Notes.note_3 + Notes.note_4 + Notes.note_5 + Notes.note_6 + Notes.note_7 + Notes.note_8 + Notes.note_9 + Notes.note_10)/11).label('moyenne_notes'))\
+                        .filter(Projets_Medias.nom_types_media.in_(idtype)) \
+                        .filter(Projets_Medias.id_fiches == Notes.id_fiches)\
+                        .group_by(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, Projets_Medias.nom_types_media) \
+                        .order_by(moyenne_notes.desc())
+                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, moyenne_notes)\
                         .select_from(Projets_Transmedias)\
                         .join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Transmedias.verifie == True) \
-                        .filter(Projets_Transmedias.id_notes == Notes.id_notes)\
-                        .group_by(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, Notes.note_0, Notes.note_1, Notes.note_2, Notes.note_3, Notes.note_4, Notes.note_5, Notes.note_6, Notes.note_7, Notes.note_8, Notes.note_9, Notes.note_10)\
-                        .order_by(desc('moyenne_notes'))
+                        .filter(Projets_Transmedias.id_fiches == Notes.id_fiches)\
+                        .group_by(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes)\
+                        .order_by(moyenne_notes.desc())
                     #add column "type" to the query
                     transmedia_query = transmedia_query.add_column(literal("all").label("nom_type_media"))
                     collection_query = union_all(media_query, transmedia_query)
                     collection_query = collection_query.order_by(collection_query.c.moyenne_notes.desc()).limit(10).offset(numstart)
                     collection = session.execute(collection_query).all()
                 elif idfiltre == "top-favoris":
-                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Fiches.cmpt_favori, Types_Media.nom_types_media)\
+                    nombre_favori = func.count(Avis.id_avis).filter(Avis.favori == True).label('nombre_favori')
+                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_favori, Projets_Medias.nom_types_media)\
                         .select_from(Projets_Medias)\
-                        .join(Types_Media)\
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches)\
+                        .filter(Projets_Medias.id_fiches == Avis.id_fiches)\
                         .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype)) \
-                        .order_by(Fiches.cmpt_favori.desc())
-                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Fiches.cmpt_favori)\
+                        .filter(Projets_Medias.nom_types_media.in_(idtype)) \
+                        .group_by(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, Projets_Medias.nom_types_media) \
+                        .order_by(nombre_favori.desc())
+                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_favori)\
                         .select_from(Projets_Transmedias)\
                         .join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Transmedias.id_fiches == Fiches.id_fiches)\
+                        .filter(Projets_Transmedias.id_fiches == Avis.id_fiches)\
                         .filter(Projets_Transmedias.verifie == True) \
-                        .order_by(Fiches.cmpt_favori.desc())
+                        .group_by(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis)\
+                        .order_by(nombre_favori.desc())
                     #add column "type" to the query
                     transmedia_query = transmedia_query.add_column(literal("all").label("nom_type_media"))
                     collection_query = union_all(media_query, transmedia_query)
-                    collection_query = collection_query.order_by(collection_query.c.fiches_cmpt_favori.desc()).limit(10).offset(numstart)
+                    collection_query = collection_query.order_by(collection_query.c.nombre_favori.desc()).limit(10).offset(numstart)
                     collection = session.execute(collection_query).all()
                 elif idfiltre == "sur-mediatise":
-                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.trop_popularite, Types_Media.nom_types_media)\
+                    nombre_sur_mediatise = func.count(Avis.id_avis).filter(Avis.avis_popularite == 1).label('nombre_sur_mediatise')
+                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sur_mediatise, Projets_Medias.nom_types_media)\
                         .select_from(Projets_Medias)\
-                        .join(Types_Media)\
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Medias.id_avis == Avis.id_avis) \
+                        .filter(Fiches.id_fiches == Avis.id_fiches) \
                         .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype)) \
-                        .order_by(Avis.trop_popularite.desc())
-                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.trop_popularite)\
+                        .filter(Projets_Medias.nom_types_media.in_(idtype)) \
+                        .group_by(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, Projets_Medias.nom_types_media) \
+                        .order_by(nombre_sur_mediatise.desc())
+                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sur_mediatise)\
                         .select_from(Projets_Transmedias)\
                         .join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Transmedias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Transmedias.id_avis == Avis.id_avis) \
+                        .filter(Fiches.id_fiches == Avis.id_fiches) \
                         .filter(Projets_Transmedias.verifie == True) \
-                        .order_by(Avis.trop_popularite.desc())
+                        .group_by(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis)\
+                        .order_by(nombre_sur_mediatise.desc())
                     #add column "type" to the query
                     transmedia_query = transmedia_query.add_column(literal("all").label("nom_type_media"))
                     collection_query = union_all(media_query, transmedia_query)
-                    collection_query = collection_query.order_by(collection_query.c.avis_trop_popularite.desc()).limit(10).offset(numstart)
+                    collection_query = collection_query.order_by(collection_query.c.nombre_sur_mediatise.desc()).limit(10).offset(numstart)
                     collection = session.execute(collection_query).all()
                 elif idfiltre == "sous-mediatise":
-                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.manque_popularite, Types_Media.nom_types_media)\
-                        .select_from(Projets_Medias)\
-                        .join(Types_Media)\
+                    nombre_sous_mediatise = func.count(Avis.id_avis).filter(Avis.avis_popularite == -1).label('nombre_sous_mediatise')
+                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sous_mediatise, Projets_Medias.nom_types_media) \
+                        .select_from(Projets_Medias) \
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Medias.id_avis == Avis.id_avis) \
-                        .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype)) \
-                        .order_by(Avis.manque_popularite.desc())
-                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.manque_popularite)\
-                        .select_from(Projets_Transmedias)\
-                        .join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches)\
+                        .filter(Fiches.id_fiches == Avis.id_fiches) \
+                        .filter(Projets_Medias.verifie == True) \
+                        .filter(Projets_Medias.nom_types_media.in_(idtype)) \
+                        .group_by(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, Projets_Medias.nom_types_media) \
+                        .order_by(nombre_sous_mediatise.desc())
+                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sous_mediatise) \
+                        .select_from(Projets_Transmedias) \
+                        .join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches) \
                         .filter(Projets_Transmedias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Transmedias.id_avis == Avis.id_avis) \
+                        .filter(Fiches.id_fiches == Avis.id_fiches) \
                         .filter(Projets_Transmedias.verifie == True) \
-                        .order_by(Avis.manque_popularite.desc())
+                        .group_by(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis) \
+                        .order_by(nombre_sous_mediatise.desc())
                     #add column "type" to the query
                     transmedia_query = transmedia_query.add_column(literal("all").label("nom_type_media"))
                     collection_query = union_all(media_query, transmedia_query)
-                    collection_query = collection_query.order_by(collection_query.c.avis_manque_popularite.desc()).limit(10).offset(numstart)
+                    collection_query = collection_query.order_by(collection_query.c.nombre_sous_mediatise.desc()).limit(10).offset(numstart)
                     collection = session.execute(collection_query).all()
                 elif idfiltre == "sur-note":
-                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.trop_cote,  Types_Media.nom_types_media)\
+                    nombre_sur_note = func.count(Avis.id_avis).filter(Avis.avis_cote == 1).label('nombre_sur_note')
+                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sur_note, Projets_Medias.nom_types_media)\
                         .select_from(Projets_Medias)\
-                        .join(Types_Media)\
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Medias.id_avis == Avis.id_avis) \
+                        .filter(Projets_Medias.id_fiches == Avis.id_fiches) \
                         .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype)) \
-                        .order_by(Avis.trop_cote.desc())
-                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.trop_cote)\
+                        .filter(Projets_Medias.nom_types_media.in_(idtype)) \
+                        .group_by(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, Projets_Medias.nom_types_media)\
+                        .order_by(nombre_sur_note.desc())
+                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sur_note)\
                         .select_from(Projets_Transmedias)\
                         .join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Transmedias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Transmedias.id_avis == Avis.id_avis) \
+                        .filter(Projets_Transmedias.id_fiches == Avis.id_fiches) \
                         .filter(Projets_Transmedias.verifie == True) \
-                        .order_by(Avis.trop_cote.desc())
+                        .group_by(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis)\
+                        .order_by(nombre_sur_note.desc())
                     #add column "type" to the query
                     transmedia_query = transmedia_query.add_column(literal("all").label("nom_type_media"))
                     collection_query = union_all(media_query, transmedia_query)
-                    collection_query = collection_query.order_by(collection_query.c.avis_trop_cote.desc()).limit(10).offset(numstart)
+                    collection_query = collection_query.order_by(collection_query.c.nombre_sur_note.desc()).limit(10).offset(numstart)
                     collection = session.execute(collection_query).all()
                 elif idfiltre == "sous-note":
-                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.manque_cote,  Types_Media.nom_types_media)\
+                    nombre_sous_note = func.count(Avis.id_avis).filter(Avis.avis_cote == -1).label('nombre_sous_note')
+                    media_query = session.query(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sous_note, Projets_Medias.nom_types_media)\
                         .select_from(Projets_Medias)\
-                        .join(Types_Media)\
                         .filter(Projets_Medias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Medias.id_avis == Avis.id_avis) \
+                        .filter(Projets_Medias.id_fiches == Avis.id_fiches) \
                         .filter(Projets_Medias.verifie == True)\
-                        .filter(Types_Media.nom_types_media.in_(idtype)) \
-                        .order_by(Avis.manque_cote.desc())
-                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.manque_cote)\
+                        .filter(Projets_Medias.nom_types_media.in_(idtype)) \
+                        .group_by(Projets_Medias.id_projets_medias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, Projets_Medias.nom_types_media)\
+                        .order_by(nombre_sous_note.desc())
+                    transmedia_query = session.query(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis, nombre_sous_note)\
                         .select_from(Projets_Transmedias)\
                         .join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches)\
                         .filter(Projets_Transmedias.id_fiches == Fiches.id_fiches) \
-                        .filter(Projets_Transmedias.id_avis == Avis.id_avis) \
+                        .filter(Projets_Transmedias.id_fiches == Avis.id_fiches) \
                         .filter(Projets_Transmedias.verifie == True) \
-                        .order_by(Avis.manque_cote.desc())
+                        .group_by(Projets_Transmedias.id_projets_transmedias, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis)\
+                        .order_by(nombre_sous_note.desc())
                     #add column "type" to the query
                     transmedia_query = transmedia_query.add_column(literal("all").label("nom_type_media"))
                     collection_query = union_all(media_query, transmedia_query)
-                    collection_query = collection_query.order_by(collection_query.c.avis_manque_cote.desc()).limit(10).offset(numstart)
+                    collection_query = collection_query.order_by(collection_query.c.nombre_sous_note.desc()).limit(10).offset(numstart)
                     collection = session.execute(collection_query).all()
                 else:
                     return make_response(jsonify({'message': 'filtre inconnu'}), 400)
