@@ -123,7 +123,7 @@ def recommandations(id_produit: int, nb_recommandations: int):
     # Récupérer les indices et les scores des k plus proches voisins
     nearest_neighbors = distances[1:nb_recommandations + 1]
 
-    # Récupérer les k plus proches voisins et leurs scores
+    # Récupérer les k plus proches voisins (delta le plus bas) et leurs scores
     recommandations = [{'id': df2.iloc[i[0]]['id'], 'score': i[1]} for i in nearest_neighbors]
 
     return jsonify({'recommandations': recommandations})

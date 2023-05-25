@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import flask
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_file, make_response
-from flask_caching import Cache
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_file, make_response, g
+from cache import cache
 import sqlalchemy as sa  # ORM
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import orm, or_, and_, select, join, outerjoin, text, func, desc
@@ -11,7 +11,7 @@ from flask_wtf.csrf import CSRFProtect # CSRF protection
 from flask_mailman import Mail  # API for sending emails
 from flask_cors import CORS  # prevent CORS attacks
 import bcrypt
-from flask_login import LoginManager  # user session management
+from flask_login import LoginManager, AnonymousUserMixin  # user session management
 from huey import RedisHuey, crontab  # task queue
 from flask_ipban import IpBan  # IP ban
 from sqlalchemy import literal_column
@@ -41,6 +41,7 @@ import function_bibliotheque
 import function_collection
 import function_mybibliotheque
 import function_mycollection
+import function_produit_culturel
 import pyotp
 import pyqrcode
 
@@ -51,7 +52,7 @@ app = Flask(__name__)
 app.config.from_pyfile("config.py")
 app.app_context().push()
 squeeze = Squeeze(app)
-cache = Cache(app)
+cache.init_app(app)
 engine = sa.create_engine(SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
 sa.orm.configure_mappers()
 ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
@@ -98,6 +99,18 @@ def web_or_app_auth(fn):
         else:
             return fn(*args, **kwargs)
     return wrapper
+
+class GuestUser(AnonymousUserMixin):
+    def __init__(self):
+        self.pseudo = 'guest'
+        self.adulte = False
+        self.admin = False
+        self.fondateur = False
+
+@app.before_request
+def load_user():
+    if not hasattr(g, 'user'):
+        g.user = GuestUser()
 @app.errorhandler(413)
 def too_large(e):
     return "Fichier trop volumineux", 413
@@ -367,7 +380,8 @@ def fiche(id_fiche):
 def produit_culturel(id_produit_culturel):
     client = request.args.get('client') if request.args.get('client') is not None else ""
     id_produit_culturel = request.args.get('id_produit_culturel') if request.args.get('id_produit_culturel') is not None else id_produit_culturel
-    return "ok"
+    return function_produit_culturel.produit_culturel_app(session, id_produit_culturel, client)
+
 
 
 @app.route('/bibliotheque/<idtype>/<idfiltre>/<int:numstart>', methods=['GET'])
