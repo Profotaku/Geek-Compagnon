@@ -3,7 +3,7 @@ $(document).ready(function() {
 
     var query = $(this).val();
     
-    if (query.length > 2) {
+    if (query.length > 3) {
       $.ajax({
         url: "/livesearch",
         data: { q: query },
@@ -39,10 +39,10 @@ function displayResults(data) {
   if (allResults.length > 0) {
         console.log("result");
     resultsContainer.show();
-    resultsContainer.removeClass('hidden');
+    //resultsContainer.removeClass('hidden');
   } else {
         console.log("no result");
     resultsContainer.hide();
-    resultsContainer.addClass('hidden');
+    //resultsContainer.addClass('hidden');
   }
 }
