@@ -248,7 +248,7 @@ class Etre_Commente_M(Base):
         return f"Etre_Comment_M('{self.id_projets_medias}'+{self.id_commentaires}')"
 
 class Etre_Commente_C(Base):
-    __tablename__ = 'etre_comment_c'
+    __tablename__ = 'etre_commente_c'
     id_produits_culturels = sa.Column(sa.Integer, sa.ForeignKey('produits_culturels.id_produits_culturels'), primary_key=True, nullable=False)
     id_commentaires = sa.Column(sa.Integer, sa.ForeignKey('commentaires.id_commentaires'), primary_key=True, nullable=False)
 

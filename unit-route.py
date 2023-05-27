@@ -154,3 +154,7 @@ def test_ma_collection_sur_note(client):
 def test_ma_collection_sous_note(client):
     response = client.get('/ma-collection/Breaker/all/sous-note/0?client=app')
     assert response.status_code == 200 or (response.status_code == 400 and response.data == b'{\n  "message": "le profil de cet utilisateur n\'est pas public, si ce compte vous appartient, connectez vous pour afficher vos informations"\n}\n')
+
+def test_get_by_ean(client):
+    response = client.get('/get-by-ean/9780201379624/?client=app')
+    assert response.status_code == 200

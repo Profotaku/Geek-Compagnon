@@ -201,6 +201,37 @@ def add_ean_by_produit():
         return jsonify({"message": "EAN déjà ajouté pour ce produit"}), 400
 
 
+@app.route('/get-by-ean/<ean>/', methods=['GET'])
+def get_ean(ean):
+    if len(ean) == 10 and ean.isdigit():
+        # conversion de l'ISBN-10 en ISBN-13
+        ean = f'978{ean[:-1]}'
+        #recalcul de la clé de contrôle
+        ean += str((10 - (sum((3, 1)[i % 2] * int(c) for i, c in enumerate(ean))) % 10) % 10)
+    if len(ean) != 13 or not ean.isdigit():
+        return jsonify({"message": "EAN invalide"}), 400
+    ean_exists = session.execute(select(EAN13).where(EAN13.ean13 == ean)).scalar()
+    if ean_exists is None:
+        return jsonify({"message": "EAN introuvable"}), 404
+    else:
+        produit_culturel = session.execute(select(Produits_Culturels.id_produits_culturels, Produits_Culturels.date_sortie, Produits_Culturels.nom_types_media, Fiches.nom, Fiches.adulte,Fiches.concepteur, Fiches.url_image, EAN13.limite, EAN13.collector)
+            .select_from(EAN13) \
+            .join(Etre_Identifie, Etre_Identifie.ean13 == EAN13.ean13) \
+            .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Etre_Identifie.id_produits_culturels) \
+            .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
+            .filter(EAN13.ean13 == ean) \
+            .group_by(Produits_Culturels.id_produits_culturels, Produits_Culturels.date_sortie, Produits_Culturels.nom_types_media, Fiches.nom, Fiches.adulte, Fiches.concepteur, Fiches.url_image, EAN13.limite, EAN13.collector) \
+            .order_by(desc(Produits_Culturels.id_produits_culturels))\
+            .limit(5)).all()
+
+        if produit_culturel is None:
+            return jsonify({"message": "Fiche liée introuvable"}), 404
+
+        else:
+            #return all product info
+            print(produit_culturel)
+            return make_response(jsonify({'produits': [{ 'date_sortie': p.date_sortie, 'nom_types_media': p.nom_types_media, 'nom': p.nom, 'adulte': p.adulte, 'concepteur': p.concepteur, 'url_image': p.url_image, 'limite': p.limite, 'collector': p.collector} for p in produit_culturel]}), 200)
+
 
 
 
