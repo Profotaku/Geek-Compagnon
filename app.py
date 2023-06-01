@@ -42,6 +42,8 @@ import function_collection
 import function_mybibliotheque
 import function_mycollection
 import function_produit_culturel
+import function_projet_media
+import function_projet_transmedia
 import pyotp
 import pyqrcode
 
@@ -393,13 +395,13 @@ def fiche(id_fiche):
     #redirect to produit culturel, projet media or projet transmedia linked withe the id_fiche
     if session.execute(select(Produits_Culturels.id_fiches).where(Produits_Culturels.id_fiches == id_fiche)).scalar() is not None:
         id_produit_culturel = session.execute(select(Produits_Culturels.id_produits_culturels).where(Produits_Culturels.id_fiches == id_fiche)).scalar()
-        return redirect(f"{url_for('produit_culturel', id_produit_culturel=int(id_produit_culturel))}")
+        return redirect(f"{url_for('produit_culturel', id_produit_culturel=int(id_produit_culturel), client=client)}")
     elif session.execute(select(Projets_Medias.id_fiches).where(Projets_Medias.id_fiches == id_fiche)).scalar() is not None:
         id_projet_media = session.execute(select(Projets_Medias.id_projets_medias).where(Projets_Medias.id_fiches == id_fiche)).scalar()
-        return redirect(f"{url_for(f'projet_media/{int(id_projet_media)}')}?client={client}")
+        return redirect(f"{url_for(f'projet_media', id_projet_media=int(id_projet_media), client=client)}")
     elif session.execute(select(Projets_Transmedias.id_fiches).where(Projets_Transmedias.id_fiches == id_fiche)).scalar() is not None:
         id_projet_transmedia = session.execute(select(Projets_Transmedias.id_projets_transmedias).where(Projets_Transmedias.id_fiches == id_fiche)).scalar()
-        return redirect(f"{url_for(f'projet_transmedia/{int(id_projet_transmedia)}')}?client={client}")
+        return redirect(f"{url_for(f'projet_transmedia', id_projet_transmedia=int(id_projet_transmedia), client=client)}")
     else:
         if client == "":
             return render_template('public/404.html')
@@ -410,8 +412,25 @@ def fiche(id_fiche):
 @app.route('/produit_culturel/')
 def produit_culturel(id_produit_culturel):
     client = request.args.get('client') if request.args.get('client') is not None else ""
+    user_agent = request.headers.get('User-Agent')
     id_produit_culturel = request.args.get('id_produit_culturel') if request.args.get('id_produit_culturel') is not None else id_produit_culturel
-    return function_produit_culturel.produit_culturel_app(session, id_produit_culturel, client)
+    return function_produit_culturel.produit_culturel_app(session, id_produit_culturel, client, user_agent)
+
+@app.route('/projet_media/<int:id_projet_media>', methods=['GET'])
+@app.route('/projet_media/')
+def projet_media(id_projet_media):
+    client = request.args.get('client') if request.args.get('client') is not None else ""
+    user_agent = request.headers.get('User-Agent')
+    id_projet_media = request.args.get('id_projet_media') if request.args.get('id_projet_media') is not None else id_projet_media
+    return function_projet_media.projet_media_app(session, id_projet_media, client, user_agent)
+
+@app.route('/projet_transmedia/<int:id_projet_transmedia>', methods=['GET'])
+@app.route('/projet_transmedia/')
+def projet_transmedia(id_projet_transmedia):
+    client = request.args.get('client') if request.args.get('client') is not None else ""
+    user_agent = request.headers.get('User-Agent')
+    id_projet_transmedia = request.args.get('id_projet_transmedia') if request.args.get('id_projet_transmedia') is not None else id_projet_transmedia
+    return function_projet_transmedia.projet_transmedia_app(session, id_projet_transmedia, client, user_agent)
 
 
 

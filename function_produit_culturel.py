@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, make_response, g
 from dataclass import *
-from sqlalchemy import orm, or_, and_, select, join, outerjoin, func, desc, union_all, literal, case, distinct, Float
+from sqlalchemy import orm, or_, and_, select, join, outerjoin, func, desc, union_all, literal, case, distinct, Float, \
+	cast, String
 from config import *
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, \
     verify_jwt_in_request
@@ -10,6 +11,10 @@ from cache import cache
 from sqlalchemy.sql.expression import case
 from sqlalchemy.dialects.postgresql import array_agg
 
+
+def is_request_from_bot(user_agent):
+	bot_identifiers = ['bot', 'spider', 'crawl', 'slurp', 'bingpreview', 'mediapartners-google']
+	return True if any(bot_identifier in user_agent.lower() for bot_identifier in bot_identifiers) else False
 @cache.memoize(timeout=24*60*60) # cache durée de 24 heures
 def get_objective_data(id_produit_culturel, session):
 	# Sous-requête pour obtenir l'id_fiche correspondant à l'id_produit_culturel
@@ -142,6 +147,20 @@ def get_objective_data(id_produit_culturel, session):
 		Nommer_C.id_produits_culturels
 	).subquery()
 
+	# Sous-requêtes pour la répartition des notes
+	subquery_repartition_notes = []
+	for i in range(11):  # 0 à 10
+		sub = session.query(
+			Notes.id_fiches,
+			(func.sum(case((Notes.note == i, 1), else_=0)) / func.coalesce(
+				func.sum(case((Notes.note != None, 1), else_=0)), 1).cast(Float)).label(
+				f"proportion_note_{i}")
+		).join(
+			subquery_fiche, Notes.id_fiches == subquery_fiche.c.id_fiches
+		).group_by(Notes.id_fiches).subquery()
+
+		subquery_repartition_notes.append(sub)
+
 	# Requête principale
 	produit = session.query(
 		Produits_Culturels.date_sortie,
@@ -153,21 +172,22 @@ def get_objective_data(id_produit_culturel, session):
 		Fiches.adulte,
 		Fiches.info,
 		Fiches.concepteur,
-		subquery_notes.c.nombre_notes,
-		subquery_notes.c.moyenne_notes,
-		subquery_favoris.c.nombre_favoris,
-		subquery_possession.c.nombre_possessions,
-		subquery_commentaires.c.nombre_commentaires,
-		subquery_rank_note.c.rank_note,
-		subquery_rank_favoris.c.rank_favoris,
-		subquery_rank_possession.c.rank_possession,
-		subquery_rank_consultations.c.rank_consultation,
+		func.coalesce(subquery_notes.c.nombre_notes, 0).label("nombre_notes"),
+		func.coalesce(subquery_notes.c.moyenne_notes, 0).label("moyenne_notes"),
+		func.coalesce(subquery_favoris.c.nombre_favoris, 0).label("nombre_favoris"),
+		func.coalesce(subquery_possession.c.nombre_possessions, 0).label("nombre_possessions"),
+		func.coalesce(subquery_commentaires.c.nombre_commentaires, 0).label("nombre_commentaires"),
+		func.coalesce(subquery_rank_note.c.rank_note, 0).label("rank_note"),
+		func.coalesce(subquery_rank_favoris.c.rank_favoris, 0).label("rank_favoris"),
+		func.coalesce(subquery_rank_possession.c.rank_possession, 0).label("rank_possession"),
+		func.coalesce(subquery_rank_consultations.c.rank_consultation, 0).label("rank_consultation"),
 		# Ajout des proportions de avis_popularite et avis_cote à la requête
-		*[sub.c[f"proportion_popularite_{i - 1}"] for i, sub in enumerate(subquery_popularite)],
+		*[sub.c[f"proportion_popularite_{i-1}"] for i, sub in enumerate(subquery_popularite)],
 		*[sub.c[f"proportion_cote_{i-1}"] for i, sub in enumerate(subquery_cote)],
 		subquery_genres.c.genres,
 		subquery_ean13.c.ean13,
-		subquery_noms_alternatifs.c.noms_alternatifs
+		subquery_noms_alternatifs.c.noms_alternatifs,
+		*[sub.c[f"proportion_note_{i}"] for i, sub in enumerate(subquery_repartition_notes)],
 	).join(
 		Fiches,
 		Produits_Culturels.id_fiches == Fiches.id_fiches
@@ -217,6 +237,11 @@ def get_objective_data(id_produit_culturel, session):
 			sub, Produits_Culturels.id_fiches == sub.c.id_fiches
 		)
 
+	for sub in subquery_repartition_notes:
+		produit = produit.outerjoin(
+			sub, Produits_Culturels.id_fiches == sub.c.id_fiches
+		)
+
 	produit = produit.filter(
 		Produits_Culturels.id_produits_culturels == id_produit_culturel,
 		Produits_Culturels.verifie == True
@@ -225,12 +250,13 @@ def get_objective_data(id_produit_culturel, session):
 	return produit
 
 
-def produit_culturel_app(session, id_produit_culturel, client):
+def produit_culturel_app(session, id_produit_culturel, client, user_agent):
+	info_user = None
+	isadulte = False
 	# check if produit culturel is in database
 	if not session.query(Produits_Culturels).filter_by(id_produits_culturels=id_produit_culturel, verifie=True).first():
 		return jsonify({"error": "La fiche produit exigée n'est pas présente dans nos données"}), 404
 
-	isadulte = False
 	verify_jwt_in_request(optional=True)
 	if current_user.is_authenticated or get_jwt_identity() is not None:
 		if current_user.is_authenticated:
@@ -243,7 +269,6 @@ def produit_culturel_app(session, id_produit_culturel, client):
 
 		info_user = session.query(
 			Avis.favori, Avis.avis_popularite, Avis.avis_cote, Notes.note,
-			Fiches.consultation,
 			Posseder_C.physiquement, Posseder_C.souhaite, Posseder_C.date_ajout,
 			Posseder_C.limite, Posseder_C.collector
 		).select_from(Produits_Culturels) \
@@ -260,13 +285,43 @@ def produit_culturel_app(session, id_produit_culturel, client):
 	# Get static data from cache
 	produit = get_objective_data(id_produit_culturel, session)
 
+	fiche = session.query(Fiches) \
+		.select_from(Produits_Culturels).join(Fiches) \
+		.filter(Produits_Culturels.id_fiches == Fiches.id_fiches) \
+		.filter(Produits_Culturels.id_produits_culturels == id_produit_culturel).first()
+	if not is_request_from_bot(user_agent):
+		if fiche is not None:
+			if fiche.consultation is None:
+				fiche.consultation = 1
+			else:
+				fiche.consultation += 1
+			session.commit()
+
+	commentaires = session.query(Commentaires.pseudo, Commentaires.contenu, cast(Commentaires.date_post, String), Commentaires.spoiler, Commentaires.adulte) \
+	.select_from(Produits_Culturels).outerjoin(Etre_Commente_C, Produits_Culturels.id_produits_culturels == Etre_Commente_C.id_produits_culturels) \
+	.outerjoin(Commentaires, Etre_Commente_C.id_commentaires == Commentaires.id_commentaires) \
+	.filter(Produits_Culturels.id_produits_culturels == id_produit_culturel)\
+	.filter(Commentaires.signale == False)\
+	.order_by(Commentaires.date_post.desc()).all()
+
 	produit_is_adulte = session.execute(select(Fiches.adulte).join(Fiches).select_from(Produits_Culturels).filter(Produits_Culturels.id_fiches == Fiches.id_fiches).filter(Produits_Culturels.id_produits_culturels == id_produit_culturel))
 
-	print(produit)
-	print(info_user if hasattr(info_user, 'favori') else None)
+	reponse = {
+		"commentaires": [{"pseudo": pseudo, "contenu": contenu, "date_post": date_post, "spoiler": spoiler, "adulte": adulte} for pseudo, contenu, date_post, spoiler, adulte in commentaires],
+		"produit": {column: getattr(produit, column) for column in produit._fields} if produit else None,
+		"info_user": {column: getattr(info_user, column) for column in info_user._fields} if info_user else None,
+		"consultation": fiche.consultation if fiche else None
+	}
+
 	if isadulte or produit_is_adulte or session.get('adulte', False):
-		return render_template("produit_culturel.html", activate_adulte_js_verification=False, produit=produit, info_user=info_user)
+		if client == 'app':
+			return jsonify(reponse)
+		else:
+			return render_template("produit_culturel.html", activate_adulte_js_verification=False, **reponse)
 	else:
-		return render_template("produit_culturel.html", activate_adulte_js_verification=True, produit=produit, info_user=info_user)
+		if client == 'app':
+			return jsonify(reponse)
+		else:
+			return render_template("produit_culturel.html", activate_adulte_js_verification=True, **reponse)
 
 

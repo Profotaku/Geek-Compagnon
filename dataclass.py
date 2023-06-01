@@ -232,20 +232,20 @@ class Etre_Defini(Base):
         return f"Etre_Defini('{self.id_produits_culturels}'+{self.nom_genres}')"
 
 class Etre_Commente_T(Base):
-    __tablename__ = 'etre_comment_t'
+    __tablename__ = 'etre_commente_t'
     id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedia.id_projets_transmedias'), primary_key=True, nullable=False)
     id_commentaires = sa.Column(sa.Integer, sa.ForeignKey('commentaires.id_commentaires'), primary_key=True, nullable=False)
 
     def __repr__(self):
-        return f"Etre_Comment_T('{self.id_projets_transmedias}'+{self.id_commentaires}')"
+        return f"Etre_Commente_T('{self.id_projets_transmedias}'+{self.id_commentaires}')"
 
 class Etre_Commente_M(Base):
-    __tablename__ = 'etre_comment_m'
+    __tablename__ = 'etre_commente_m'
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
     id_commentaires = sa.Column(sa.Integer, sa.ForeignKey('commentaires.id_commentaires'), primary_key=True, nullable=False)
 
     def __repr__(self):
-        return f"Etre_Comment_M('{self.id_projets_medias}'+{self.id_commentaires}')"
+        return f"Etre_Commente_M('{self.id_projets_medias}'+{self.id_commentaires}')"
 
 class Etre_Commente_C(Base):
     __tablename__ = 'etre_commente_c'
@@ -253,7 +253,7 @@ class Etre_Commente_C(Base):
     id_commentaires = sa.Column(sa.Integer, sa.ForeignKey('commentaires.id_commentaires'), primary_key=True, nullable=False)
 
     def __repr__(self):
-        return f"Etre_Comment_C('{self.id_produits_culturels}'+{self.id_commentaires}')"
+        return f"Etre_Commente_C('{self.id_produits_culturels}'+{self.id_commentaires}')"
 
 class Posseder_T(Base):
     __tablename__ = 'posseder_t'

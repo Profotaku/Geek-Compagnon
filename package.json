@@ -2,15 +2,24 @@
   "name": "n-app",
   "version": "1.0.0",
   "scripts": {
-    "watch": "tailwindcss -i ./static/src/main.css -o ./static/css/main.css --watch"
+    "watch": "tailwindcss -i ./static/src/main.css -o ./static/css/main.css --watch",
+    "build": "tailwindcss -i ./static/src/main.css -o ./static/css/main.css --build"
   },
   "devDependencies": {
     "tailwindcss": "^3.3.2"
   },
   "dependencies": {
-    "flowbite": "^1.6.3"
+    "@fullhuman/postcss-purgecss": "^5.0.0",
+    "acorn": "^8.8.2",
+    "autoprefixer": "^10.4.14",
+    "flowbite": "^1.6.3",
+    "npm": "^9.6.7",
+    "npm-run-all": "^4.1.5",
+    "postcss-cli": "^10.1.0",
+    "quick-lru": "^6.1.1",
+    "tailwind": "^4.0.0"
   },
-  "description": "SIte web de GK",
+  "description": "Site web de GK",
   "main": "tailwind.config.js",
   "repository": {
     "type": "git",
