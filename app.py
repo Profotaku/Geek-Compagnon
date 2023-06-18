@@ -11,6 +11,8 @@ from flask_wtf.csrf import CSRFProtect # CSRF protection
 from flask_mailman import Mail  # API for sending emails
 from flask_cors import CORS  # prevent CORS attacks
 import bcrypt
+from uuid import uuid4
+from PIL import Image
 from flask_login import LoginManager, AnonymousUserMixin  # user session management
 from huey import RedisHuey, crontab  # task queue
 from flask_ipban import IpBan  # IP ban
@@ -44,6 +46,8 @@ import function_mycollection
 import function_produit_culturel
 import function_projet_media
 import function_projet_transmedia
+import function_user_stats
+import function_user_settings
 import pyotp
 import pyqrcode
 
@@ -60,6 +64,7 @@ sa.orm.configure_mappers()
 ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
 ip_ban.init_app(app)
 ip_ban.ip_whitelist_add('127.0.0.1')
+ip_ban.ip_whitelist_add('37.65.130.28')
 session = orm.scoped_session(orm.sessionmaker(bind=engine))
 csp = {
     'default-src': '\'self\'',
@@ -278,7 +283,7 @@ def logout():
 
 #ceci est simplement un exemple de route protégée par un token jwt
 @app.route('/protected_route', methods=['GET', 'POST'])
-@jwt_required()
+@jwt_required(optional=False)
 def protected_route():
     #return userid in json
     current_u = get_jwt_identity()
@@ -481,6 +486,110 @@ def my_bibliotheque(idtype="all", numstart=0, idfiltre="", user=""):
 def my_collection(idtype="all", numstart=0, idfiltre="", user=""):
     client = request.args.get('client')
     return function_mycollection.mycollection_app(session, idtype, idfiltre, numstart, client, user)
+
+@app.route('/utilisateur/<user>/stats/<idtype>/', methods=['GET'])
+@app.route('/utilisateur/<user>/stats/<idtype>', methods=['GET'])
+def stats(user, idtype):
+    if user not in session.query(Utilisateurs.pseudo).filter(Utilisateurs.verifie == True, Utilisateurs.desactive == False, Utilisateurs.pseudo == user).first():
+        return make_response(jsonify({'error': 'Utilisateur inconnu'}), 404)
+    client = request.args.get('client')
+    return function_user_stats.stats(session, user, client, idtype)
+
+@app.route('/utilisateur/<user>/settings/', methods=['GET'])
+@app.route('/utilisateur/<user>/settings', methods=['GET'])
+@web_or_app_auth
+def settings(user):
+    client = request.args.get('client')
+    return function_user_settings.settings(session, user, client)
+
+@app.route('/activate_totp', methods=['POST'])
+@web_or_app_auth
+def activate_totp():
+    otp_code = request.form.get('code')
+    token = request.form.get('token')
+    secret = request.form.get('secret')
+    temp_secret = session.query(Temp_Secrets).get(token)
+    if not temp_secret:
+        return make_response(jsonify({'error': 'Invalid token'}), 400)
+    secret = temp_secret.secret
+    if pyotp.TOTP(secret).verify(otp_code):
+        # The OTP code is correct
+        current_user.otp_secret = secret
+        session.delete(temp_secret)  # Remove the secret from the table
+        session.commit()
+        # Update the user in the database and return success
+        user_to_update = session.query(Utilisateurs).filter(Utilisateurs.pseudo == current_user.pseudo).first()
+        user_to_update.otp_secret = secret
+        session.commit()
+        return make_response(jsonify({'status': 'ok'}), 200)
+    else:
+        # The OTP code is incorrect
+        return make_response(jsonify({'error': 'Invalid OTP code'}), 400)
+@app.route('/generate_otp', methods=['GET'])
+@web_or_app_auth
+def generate_otp():
+    secret = pyotp.random_base32()
+    token = uuid4()  # Function to generate a random token
+    temp_secret = Temp_Secrets(token, secret)
+    session.add(temp_secret)
+    session.commit()
+    return jsonify({'secret': secret, 'token': token})
+
+
+@app.route('/update_user', methods=['POST'])
+@web_or_app_auth
+def update_user():
+    user = session.query(Utilisateurs).filter(Utilisateurs.pseudo == current_user.pseudo).first()
+
+    # update regular form fields
+    user.notification = request.form.get('notification') == 'on'
+    user.profil_public = request.form.get('profil_public') == 'on'
+    user.adulte = request.form.get('adulte') == 'on'
+
+    session.commit()  # commit the changes
+
+    # process image
+    if 'dropz' in request.files:
+        url_image = request.files['dropz']
+        file_signature = url_image.read(8)
+
+        if not file_signature.startswith(Image_Signature.JPEG) and not file_signature.startswith(Image_Signature.PNG):
+            return make_response(jsonify({'message': "Le fichier n'est pas une image dans un format accepté"}), 400)
+
+        if file_signature.startswith(Image_Signature.PNG):
+            url_image = Image.open(url_image)
+            url_image = url_image.convert('RGB')
+        elif file_signature.startswith(Image_Signature.JPEG):
+            url_image = Image.open(url_image)
+
+        if url_image.height < 300 or url_image.width < 300:
+            return make_response(
+                jsonify({'message': "L'image est trop petite, elle doit faire au minimum 300x300 pixels"}), 400)
+
+        # ensure user image folder exists
+        image_folder = f'static/images/utilisateurs/{user.pseudo}'
+        if not os.path.exists(image_folder):
+            os.makedirs(image_folder)
+
+        url_image.seek(0)
+        url_image.save(f'{image_folder}/profile.jpg')
+
+        saved_image = Image.open(f'{image_folder}/profile.jpg')
+        wpercent = (460 / float(saved_image.size[0]))
+        hsize = int((float(saved_image.size[1]) * float(wpercent)))
+        saved_image.thumbnail((460, hsize), Image.LANCZOS)
+        saved_image.save(f'{image_folder}/profile.jpg', optimize=True, quality=95, progressive=True)
+
+        # update user image url
+        user.url_image = os.path.join('static', 'images', 'utilisateurs', user.pseudo, "profile.jpg").replace("\\", "/")
+
+        #add first slash if missing
+        if not user.url_image.startswith("/"):
+            user.url_image = "/" + user.url_image
+
+        session.commit()  # commit the changes again
+
+    return jsonify({'message': 'Profil mis à jour avec succès'}), 200
 
 
 

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page Media</title>
+</head>
+<body>
+    <h1>{{ media.nom }}</h1>
+    <h2>Concepteur : {{ media.concepteur }}</h2>
+    <p>Type de média : {{ media.nom_types_media }}</p>
+    <p>Synopsis : {{ media.synopsis }}</p>
+    <img src="{{ media.url_image }}" alt="Image du média">
+    <p>Nombre de consultations : {{ consultation }}</p>
+
+    <hr>
+
+    <h3>Info utilisateur:</h3>
+    {% if info_user.date_ajout %}
+        <p>Date d'ajout : {{ info_user.date_ajout }}</p>
+    {% endif %}
+    <!-- Afficher plus d'infos ici -->
+
+    <!-- attention, on ajoute un produit culturel mais les projet media/transmedia non (les colelction sont mise à jour en cascade,
+      par contre on peut noter/évaluer un projet), donc pas de bouton "Ajouter" mais un bouton "Evaluer" si l'utilisateur possède un produit
+       de la collection-->
+    <hr>
+        <!-- Ne pas oublier de faire les graph -->
+    <hr>
+
+    <h3>Commentaires:</h3>
+    {% for commentaire in commentaires %}
+        <p>Pseudo : {{ commentaire.pseudo }}</p>
+        <p>Contenu : {{ commentaire.contenu }}</p>
+        <p>Date de post : {{ commentaire.date_post }}</p>
+        <p>Spoiler : {{ commentaire.spoiler }}</p>
+        <p>Adulte : {{ commentaire.adulte }}</p>
+        <br>
+    {% endfor %}
+</body>
+</html>

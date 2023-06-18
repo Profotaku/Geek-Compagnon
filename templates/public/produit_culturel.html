@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page Produit Culturel</title>
+</head>
+<body>
+    <h1>{{ produit.nom }}</h1>
+    <h2>Concepteur : {{ produit.concepteur }}</h2>
+    <p>Genres : {{ produit.genres | join(', ') }}</p>
+    <p>Date de sortie : {{ produit.date_sortie }}</p>
+    <p>Synopsis : {{ produit.synopsis }}</p>
+    <img src="{{ produit.url_image }}" alt="Image du produit">
+    <p>Nombre de consultations : {{ consultation }}</p>
+    <!-- Afficher plus d'infos ici -->
+
+
+
+    <hr>
+
+    <h3>Info utilisateur:</h3>
+    <p>Date d'ajout : {{ info_user.date_ajout }}</p>
+
+
+    <hr>
+    <!-- Ne pas oublier de faire les graph -->
+    <hr>
+    <h3>Commentaires:</h3>
+    <p>Nombre de commentaires : {{ nb_commentaires or 0 }}</p>
+    {% for commentaire in commentaires %}
+        <p>Pseudo : {{ commentaire.pseudo }}</p>
+        <p>Contenu : {{ commentaire.contenu }}</p>
+        <p>Date de post : {{ commentaire.date_post }}</p>
+        <p>Spoiler : {{ commentaire.spoiler }}</p>
+        <p>Adulte : {{ commentaire.adulte }}</p>
+        <br>
+    {% endfor %}
+</body>
+</html>

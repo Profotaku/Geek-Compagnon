@@ -1,0 +1,150 @@
+{% extends "public/base.html" %}
+{% block head %}
+    <title>Paramètres de l'utilisateur</title>
+    <script src="{{ url_for('static', filename='js/jsOTP.js') }}"></script>
+    <link href="{{url_for('static',filename='css/main.css')}}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jquery.qrcode@1.0.3/jquery.qrcode.min.js" integrity="sha256-9MzwK2kJKBmsJFdccXoIDDtsbWFh8bjYK/C7UjB1Ay0=" crossorigin="anonymous"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.3/flowbite.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    {{ dropzone.load_css() }}
+    {{ dropzone.load_js() }}
+    <script>localStorage.setItem("eventListenerAdded", false);</script>
+{% endblock %}
+{% block banner %}
+{% endblock %}
+{% block content %}
+    {% from 'public/dropzonemacro.html' import dz %}
+<div class="container mx-auto px-4 py-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- User Information -->
+        <div class="border p-4 rounded-md">
+            <h2 class="font-bold text-lg mb-4">Informations de l'utilisateur</h2>
+            <p><strong>Pseudo :</strong> {{ user.pseudo }}</p>
+            <p><strong>Date de création :</strong> {{ user.date_creation }}</p>
+            {% if user.otp_enabled %}
+                <p><strong>OTP Activé, vous êtes à présent mieux protégé! </strong></p>
+                <p><img src="data:image/png;base64,{{ user.otp_secret_qr }}" alt="QR Code" /></p>
+            {% endif %}
+            {% if user.otp_enabled == false %}
+                <p><strong>OTP Désactivé, la double authentification permet de mieux protéger votre compte, nous vous recommandons de l'activer</strong></p>
+            {% endif %}
+        </div>
+
+        <!-- User Settings -->
+        <div class="border p-4 rounded-md">
+            <h2 class="font-bold text-lg mb-4">Paramètres de l'utilisateur</h2>
+            <form action="{{ url_for('update_user') }}" id="formfiche" method="post">
+                <div class="bg-red-200 rounded-md p-6" id="error-container" style="display: none">
+                  <h2 class="text-lg font-medium mb-4" id="error-title"></h2>
+                  <p class="text-gray-700 leading-relaxed" id="error-description"></p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="url_image">
+                        Image de profil:
+                    </label>
+                    <img src="{{ user.url_image }}" alt="Image de profil" class="w-16 h-16 rounded-full">
+                    {{ dz(url=url_for("update_user"), var_name="profil" , max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message, label="Changer d'image de profil", id="dropz", class="") }}
+                </div>
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="notification">
+                        Notifications :
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="notification" name="notification" type="checkbox" {% if user.notification %} checked {% endif %}>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="profil_public">
+                        Profil public :
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="profil_public" name="profil_public" type="checkbox" {% if user.profil_public %} checked {% endif %}>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="adulte">
+                        Afficher les produits destinés aux adultes, en cochant cette case, vous certifiez avoir plus de 18 ans :
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="adulte" name="adulte" type="checkbox" {% if user.adulte %} checked {% endif %}>
+                </div>
+                <div class="flex items-center justify-between">
+                <button class="mt-6 mb-6 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="upload-btn">Mettre à jour mon profil</button>
+                </div>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            </form>
+        <br>
+        <hr>
+            <div>
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="totp">
+                        Activer la double authentification :
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="totp" name="totp" type="checkbox" {% if user.otp_enabled %} checked {% endif %}>
+                    <div id="totpSetup" style="display: none;">
+                        <p>Scannez ce QR Code avec votre application d'authentification :</p>
+                        <div id="qrcode"></div>
+                        <p>Ou entrez ce secret manuellement :</p>
+                        <p id="secret"></p>
+                        <p>Entrez le code à 6 chiffres de votre application d'authentification, en validant ce code, vous serez déconnecté de tous vos appareils et votre profil utilisateur sera mis à jour :</p>
+                        <input type="text" id="code" />
+                        <button id="checkCode">Vérifier le code</button>
+                    </div>
+                </div>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" id="token" name="token">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block footerscript %}
+<script>
+$('#totp').change(function() {
+    if ($(this).is(':checked')) {
+        $.get("/generate_otp", function(data, status) {
+            var secret = data.secret;
+            var token = data.token;
+            $('#secret').text(secret);
+            $('#token').val(token);
+            generateQRCode(secret);
+            $('#totpSetup').show();
+        });
+    } else {
+        $('#totpSetup').hide();
+    }
+});
+
+function generateQRCode(secret) {
+    $('#qrcode').qrcode({
+        text: 'otpauth://totp/Geek Compagnon:' + encodeURIComponent("{{ user.pseudo }}") + '?secret=' + secret + '&issuer=Geek Compagnon',
+    });
+}
+
+$('#checkCode').click(function() {
+    var code = $('#code').val();
+    var secret = $('#secret').text();
+    var token = $('#token').val();
+
+    $.ajax(
+        {
+            url: "{{ url_for('activate_totp') }}",
+            type: "POST",
+            data: {
+                'csrf_token': "{{ csrf_token() }}",
+                'token': token,
+                'code': code,
+                'secret': secret
+            },
+            success: function (data) {
+                if (data.status === 'ok') {
+                    alert('The code is correct. The page will now reload.');
+                    location.reload();
+                } else {
+                    alert('The code is incorrect. Please try again.');
+                }
+            },
+            error: function (data) {
+                alert('An error occurred. Please try again.');
+            }
+        }
+    );
+});
+
+</script>
+{% endblock %}

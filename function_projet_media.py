@@ -171,11 +171,11 @@ def get_objective_data(id_projet_media, session):
 		func.coalesce(subquery_rank_favoris.c.rank_favoris, 0).label("rank_favoris"),
 		func.coalesce(subquery_rank_possession.c.rank_possession, 0).label("rank_possession"),
 		func.coalesce(subquery_rank_consultations.c.rank_consultation, 0).label("rank_consultation"),
-		# Ajout des proportions de avis_popularite et avis_cote à la requête
-		*[sub.c[f"proportion_popularite_{i-1}"] for i, sub in enumerate(subquery_popularite)],
-		*[sub.c[f"proportion_cote_{i-1}"] for i, sub in enumerate(subquery_cote)],
 		subquery_noms_alternatifs.c.noms_alternatifs,
-		*[sub.c[f"proportion_note_{i}"] for i, sub in enumerate(subquery_repartition_notes)],
+		# Ajout des proportions de avis_popularite et avis_cote à la requête
+		*[func.coalesce(sub.c[f"proportion_popularite_{i-1}"], 0).label(f"proportion_popularite_{i-1}") for i, sub in enumerate(subquery_popularite)],
+		*[func.coalesce(sub.c[f"proportion_cote_{i-1}"], 0).label(f"proportion_cote_{i-1}") for i, sub in enumerate(subquery_cote)],
+		*[func.coalesce(sub.c[f"proportion_note_{i}"], 0).label(f"proportion_note_{i}") for i, sub in enumerate(subquery_repartition_notes)],
 	).join(
 		Fiches,
 		Projets_Medias.id_fiches == Fiches.id_fiches
@@ -335,7 +335,7 @@ def projet_media_app(session, id_projet_media, client, user_agent):
 		if client == 'app':
 			return jsonify(reponse)
 		else:
-			return render_template("projet_media.html", activate_adulte_js_verification=False, **reponse)
+			return render_template("public/projet_media.html", activate_adulte_js_verification=False, **reponse)
 	else:
 		if client == 'app':
 			return jsonify(reponse)

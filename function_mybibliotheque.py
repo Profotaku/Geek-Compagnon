@@ -131,7 +131,7 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
                                 .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .outerjoinjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
                                 .filter(Posseder_C.pseudo == user)\
                                 .filter(Posseder_C.physiquement == True)\

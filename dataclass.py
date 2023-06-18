@@ -15,6 +15,7 @@ class Utilisateurs(Base, UserMixin):
     admin = sa.Column(sa.Boolean, nullable=False, default=False)
     fondateur = sa.Column(sa.Boolean, nullable=False, default=False)
     desactive = sa.Column(sa.Boolean, nullable=False, default=False)
+    date_desactive = sa.Column(sa.DateTime, nullable=True, default=datetime.datetime.utcnow)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
     otp_secret = sa.Column(sa.String, nullable=True)
     profil_public = sa.Column(sa.Boolean, nullable=False, default=True)
@@ -72,8 +73,8 @@ class Avis(Base):
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
     favori = sa.Column(sa.Boolean, nullable=False, default=False)
-    avis_popularite = sa.Column(sa.Integer, nullable=False, default=0) # 0 = neutre, 1 = like, 2 = dislike
-    avis_cote = sa.Column(sa.Integer, nullable=False, default=0) # 0 = neutre, 1 = like, 2 = dislike
+    avis_popularite = sa.Column(sa.Integer, nullable=False, default=0) # 0 = neutre, 1 = like, -1 = dislike
+    avis_cote = sa.Column(sa.Integer, nullable=False, default=0) # 0 = neutre, 1 = like, -1 = dislike
 
     def __repr__(self):
         return f"Avis('{self.ID_Avis}')"
@@ -285,3 +286,14 @@ class Posseder_C(Base):
 
     def __repr__(self):
         return f"Posseder_C('{self.id_produits_culturels}'+{self.pseudo}')"
+
+class Temp_Secrets(Base):
+    __tablename__ = 'tempsecrets'
+
+    token = sa.Column(sa.String, primary_key=True)
+    secret = sa.Column(sa.String, nullable=False)
+    timestamp = sa.Column(sa.DateTime, default=datetime.datetime.utcnow)
+
+    def __init__(self, token, secret):
+        self.token = token
+        self.secret = secret
