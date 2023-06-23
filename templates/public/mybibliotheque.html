@@ -9,7 +9,7 @@
     <div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/ma-bibliotheque/{{ current_user.pseudo + "/" }}{{ idtype + "/" if idtype != "all" else "all/" }}{{ idfiltre+"/" if idfiltre != ""}}{{ numstart + 10}}">
         {% if my_bibliotheque | length == 0 %}
         <div class="text-center">
-            <h1 class="text-2xl">Il semble que aucun résultat ne corresponde à vos critères</h1>
+            <h1 class="text-2xl">Il semble qu'aucun résultat ne corresponde à vos critères</h1>
         </div>
         {% endif %}
         {% for mb in my_bibliotheque %}

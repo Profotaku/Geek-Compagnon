@@ -149,7 +149,7 @@ def contribuer():
     accepted_files = config.DROPZONE_ALLOWED_FILE_TYPE
     default_message = config.DROPZONE_DEFAULT_MESSAGE
 
-    return render_template('public/ajout-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
+    return render_template('public/ajouter-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
 
 @app.route('/add-ean/by_fiche/', methods=['POST'])
 @jwt_required(optional=False)

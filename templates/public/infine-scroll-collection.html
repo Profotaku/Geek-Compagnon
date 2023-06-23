@@ -1,6 +1,11 @@
-        {% for c in collection %}
-            <div>
-                {{ c[1] }}
-            </div>
-            <img src="{{ url_for('static', filename=c[2].replace("static/", "")) }}" alt="image">
-        {% endfor %}
+<div class="bg-blue-400">
+<h1 class="col-span-4 text-center text-3xl p-6 bg-chartpurple-600 rounded-xl">Collection</h1>
+
+    {% for c in collection %}
+        <div>collection</div>
+        <div>
+            {{ c[1] }}
+        </div>
+        <img src="{{ url_for('static', filename=c[2].replace("static/", "")) }}" alt="image">
+    {% endfor %}
+</div>

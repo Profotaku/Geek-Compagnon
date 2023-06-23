@@ -1,9 +1,13 @@
-        {% for b in bibliotheque %}
-            <div>
-                {{ b.nom }}
-            </div>
-            <div>
-                {{ b.date_sortie.strftime('%d-%m-%Y') }}
-            </div>
-            <img src="{{ url_for('static', filename=b.url_image.replace("static/", "")) }}" alt="image">
-        {% endfor %}
+<div class="grid grid-cols-4 gap-4">
+{% for b in bibliotheque %}
+    <div class="col-span-1 p-6 flex flex-col bg-gradient-to-b from-chartblue-600 to-chartblue-200 rounded-lg">
+        <div class="font-orbitron font-bold text-xl">
+            {{ b.nom }}
+        </div>
+        <div class="py-2 text-lg">
+            Sortie le {{ b.date_sortie.strftime('%d-%m-%Y') }}
+        </div>
+        <img class="py-2" src="{{ url_for('static', filename=b.url_image.replace("static/", "")) }}" alt="image">
+    </div>
+{% endfor %}
+</div>

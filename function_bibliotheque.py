@@ -30,7 +30,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .distinct(Produits_Culturels.id_produits_culturels)\
                         .order_by(Produits_Culturels.id_produits_culturels.desc())\
-                        .limit(10).offset(numstart))\
+                        .limit(12).offset(numstart))\
                         .all()
                 elif idfiltre == "date-sortie":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte)\
@@ -39,7 +39,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.verifie == True) \
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .order_by(Produits_Culturels.date_sortie.desc())\
-                        .limit(10).offset(numstart))\
+                        .limit(12).offset(numstart))\
                         .all()
                 elif idfiltre == "top-consultation":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Fiches.consultation)\
@@ -48,7 +48,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.verifie == True) \
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .order_by(Fiches.consultation.desc())\
-                        .limit(10).offset(numstart))\
+                        .limit(12).offset(numstart))\
                         .all()
                 elif idfiltre == "top-note":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes, func.avg(Notes.note).label('moyenne_notes'))\
@@ -59,7 +59,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Notes.id_notes)\
                         .order_by(desc('moyenne_notes'))\
-                        .limit(10).offset(numstart))\
+                        .limit(12).offset(numstart))\
                         .all()
                 elif idfiltre == "top-favoris":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, func.count(Avis.id_avis).filter(Avis.favori == True).label('nombre_favori'))\
@@ -70,7 +70,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image,Fiches.id_fiches, Fiches.adulte, Avis.id_avis)\
                         .order_by(desc('nombre_favori'))\
-                        .limit(10).offset(numstart))\
+                        .limit(12).offset(numstart))\
                         .all()
                 elif idfiltre == "sur-mediatise":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, func.count(Avis.id_avis).filter(Avis.avis_popularite == 1).label('nombre_sur_mediatise'))\
@@ -81,7 +81,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image,Fiches.id_fiches, Fiches.adulte, Avis.id_avis) \
                         .order_by(desc('nombre_sur_mediatise'))\
-                        .limit(10).offset(numstart))\
+                        .limit(12).offset(numstart))\
                         .all()
                 elif idfiltre == "sous-mediatise":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, func.count(Avis.id_avis).filter(Avis.avis_popularite == -1).label('nombre_sous_mediatise')) \
@@ -92,7 +92,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis) \
                         .order_by(desc('nombre_sous_mediatise')) \
-                        .limit(10).offset(numstart)) \
+                        .limit(12).offset(numstart)) \
                         .all()
                 elif idfiltre == "sur-note":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, func.count(Avis.id_avis).filter(Avis.avis_cote == 1).label('nombre_sur_note'))\
@@ -103,7 +103,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis)\
                         .order_by(desc('nombre_sur_note'))\
-                        .limit(10).offset(numstart))\
+                        .limit(12).offset(numstart))\
                         .all()
                 elif idfiltre == "sous-note":
                     bibliotheque = session.execute(select(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, func.count(Avis.id_avis).filter(Avis.avis_cote == -1).label('nombre_sous_note')) \
@@ -114,7 +114,7 @@ def bibliotheque_app(session, idtype, idfiltre, numstart, client):
                         .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
                         .group_by(Produits_Culturels.id_produits_culturels, Fiches.nom, Produits_Culturels.date_sortie, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Avis.id_avis) \
                         .order_by(desc('nombre_sous_note')) \
-                        .limit(10).offset(numstart)) \
+                        .limit(12).offset(numstart)) \
                         .all()
                 else:
                     return make_response(jsonify({'message': 'filtre inconnu'}), 400)

@@ -1,5 +1,8 @@
-        {% for mc in my_collection %}
-            <div>
+<div id="myCollection" class="grid grid-cols-4 gap-4 bg-yellow-500">
+    <h3 class="col-span-4">Ma collection</h3>
+{% for mc in my_collection %}
+    <div class="col-span-1">
+            <div class="">
                 {{ mc[1] }}
             </div>
             <img src="{{ url_for('static', filename=mc[2].replace("static/", "")) }}" alt="image">
@@ -9,3 +12,5 @@
             </div>
             {% endif %}
         {% endfor %}
+    </div>
+</div>

@@ -1,4 +1,29 @@
-        {% for mb in my_bibliotheque %}
+ <div id="mybibliotheque" class="bg-purple-300">
+        <h2>Ma bibliothèque</h2>
+        <div id="mybibliotheque-content">
+            {% if my_bibliotheque is none %}
+                <div>Vous n'avez pas encore de livre dans votre bibliothèque</div>
+            {% else %}
+                {% for mb in my_bibliotheque %}
+                    <div>mybiblio</div>
+                    <div>
+                        {{ mb.nom }}
+                    </div>
+                    <div>
+                        <span>Ajouté le {{ mb.date_ajout.strftime('%d-%m-%Y à %HH%M')}}</span>
+                    </div>
+                    {% if mb.note is not none %}
+                        <div>
+                            {{ mb.note }}
+                        </div>
+                    {% endif %}
+                    <img src="{{ url_for('static', filename=mb.url_image.replace("static/", "")) }}" alt="image">
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% for mb in my_bibliotheque %}
+    <div>mybiblio</div>
             <div>
                 {{ mb.nom }}
             </div>
