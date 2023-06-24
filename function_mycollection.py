@@ -6,18 +6,18 @@ from flask_jwt_extended import JWTManager, create_access_token, create_refresh_t
     verify_jwt_in_request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
-def mycollection_app(session, idtype, idfiltre, numstart, client, user):
+def mycollection_app(session, idtype, idfiltre, numstart, client, requested_user):
     isadulte = False
     verify_jwt_in_request(optional=True)
-    if user == "" and current_user.is_authenticated or get_jwt_identity() is not None:
+    if requested_user == "" and (current_user.is_authenticated or get_jwt_identity() is not None):
         if current_user.is_authenticated:
-            user = current_user.pseudo
+            requested_user = current_user.pseudo
             isadulte = current_user.adulte
         else:
-            user = get_jwt_identity()
+            requested_user = get_jwt_identity()
             isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
-    if session.query(Utilisateurs).filter_by(pseudo=user, desactive=False, verifie=True).first() is not None or user is None:
-        if session.query(Utilisateurs.profil_public).filter_by(pseudo=user).first()[0] or (user == current_user.pseudo if current_user.is_authenticated else False) or user == get_jwt_identity():
+    if session.query(Utilisateurs).filter_by(pseudo=requested_user, desactive=False, verifie=True).first() is not None or requested_user is None:
+        if session.query(Utilisateurs.profil_public).filter_by(pseudo=requested_user).first()[0] or (requested_user == current_user.pseudo if current_user.is_authenticated else False) or requested_user == get_jwt_identity():
             if type(numstart) == int:
                 if session.query(Types_Media).filter_by(nom_types_media=idtype).first() is not None or idtype == "all":
                     if idtype == "all":
@@ -32,13 +32,13 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .group_by(Etre_Compose.id_projets_medias)\
                             .subquery()
 
-                        sub_query_media_possedes = session.query(Posseder_M.id_projets_medias, func.count(distinct(case((Posseder_C.pseudo == user, Posseder_C.id_produits_culturels)))).label('produits_culturels_possedes'))\
+                        sub_query_media_possedes = session.query(Posseder_M.id_projets_medias, func.count(distinct(case((Posseder_C.pseudo == requested_user, Posseder_C.id_produits_culturels)))).label('produits_culturels_possedes'))\
                             .select_from(Posseder_M) \
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Posseder_M.id_projets_medias) \
                             .join(Etre_Compose, Etre_Compose.id_projets_medias == Projets_Medias.id_projets_medias) \
                             .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Etre_Compose.id_produits_culturels) \
                             .join(Posseder_C, Posseder_C.id_produits_culturels == Produits_Culturels.id_produits_culturels) \
-                            .filter(Posseder_M.pseudo == user)\
+                            .filter(Posseder_M.pseudo == requested_user)\
                             .group_by(Posseder_M.id_projets_medias) \
                             .subquery()
 
@@ -47,13 +47,13 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .group_by(Contenir.id_projets_transmedias)\
                             .subquery()
 
-                        sub_query_transmedia_possedes = session.query(Posseder_T.id_projets_transmedias, func.count(distinct(case((Posseder_M.pseudo == user, Posseder_M.id_projets_medias)))).label('projets_medias_possedes'))\
+                        sub_query_transmedia_possedes = session.query(Posseder_T.id_projets_transmedias, func.count(distinct(case((Posseder_M.pseudo == requested_user, Posseder_M.id_projets_medias)))).label('projets_medias_possedes'))\
                             .select_from(Posseder_T) \
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .join(Contenir, Contenir.id_projets_transmedias == Projets_Transmedias.id_projets_transmedias) \
                             .join(Projets_Medias, Projets_Medias.id_projets_medias == Contenir.id_projets_medias) \
                             .join(Posseder_M, Posseder_M.id_projets_medias == Projets_Medias.id_projets_medias) \
-                            .filter(Posseder_T.pseudo == user)\
+                            .filter(Posseder_T.pseudo == requested_user)\
                             .group_by(Posseder_T.id_projets_transmedias) \
                             .subquery()
 
@@ -66,7 +66,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .outerjoin(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Projets_Medias.nom_types_media.in_(idtype))\
-                            .filter(Posseder_M.pseudo == user) \
+                            .filter(Posseder_M.pseudo == requested_user) \
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .distinct(Posseder_M.date_ajout, Posseder_M.id_projets_medias)\
@@ -79,7 +79,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches) \
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_T.pseudo, Notes.id_fiches == Fiches.id_fiches)) \
                             .outerjoin(Avis, and_(Avis.pseudo == Posseder_T.pseudo, Avis.id_fiches == Fiches.id_fiches)) \
-                            .filter(Posseder_T.pseudo == user) \
+                            .filter(Posseder_T.pseudo == requested_user) \
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .distinct(Posseder_T.date_ajout, Posseder_T.id_projets_transmedias) \
@@ -95,7 +95,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .join(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .outerjoin(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Projets_Medias.nom_types_media.in_(idtype))\
-                            .filter(Posseder_M.pseudo == user)\
+                            .filter(Posseder_M.pseudo == requested_user)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .distinct(Notes.note, Posseder_M.id_projets_medias)\
@@ -108,7 +108,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
                             .join(Notes, and_(Notes.pseudo == Posseder_T.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .outerjoin(Avis, and_(Avis.pseudo == Posseder_T.pseudo, Avis.id_fiches == Fiches.id_fiches))\
-                            .filter(Posseder_T.pseudo == user) \
+                            .filter(Posseder_T.pseudo == requested_user) \
                             .outerjoin(sub_query_transmedia_possedes,sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .distinct(Notes.note, Posseder_T.id_projets_transmedias)\
@@ -124,7 +124,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Projets_Medias.nom_types_media.in_(idtype))\
-                            .filter(Posseder_M.pseudo == user)\
+                            .filter(Posseder_M.pseudo == requested_user)\
                             .filter(Avis.favori == True)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
@@ -138,7 +138,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_T.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .join(Avis, and_(Avis.pseudo == Posseder_T.pseudo, Avis.id_fiches == Fiches.id_fiches))\
-                            .filter(Posseder_T.pseudo == user)\
+                            .filter(Posseder_T.pseudo == requested_user)\
                             .filter(Avis.favori == True)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
@@ -155,7 +155,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Projets_Medias.nom_types_media.in_(idtype))\
-                            .filter(Posseder_M.pseudo == user)\
+                            .filter(Posseder_M.pseudo == requested_user)\
                             .filter(Avis.avis_popularite == 1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
@@ -167,7 +167,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
-                            .filter(Posseder_T.pseudo == user)\
+                            .filter(Posseder_T.pseudo == requested_user)\
                             .filter(Avis.avis_popularite == 1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
@@ -184,7 +184,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Projets_Medias.nom_types_media.in_(idtype))\
-                            .filter(Posseder_M.pseudo == user)\
+                            .filter(Posseder_M.pseudo == requested_user)\
                             .filter(Avis.avis_popularite == -1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
@@ -196,7 +196,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
-                            .filter(Posseder_T.pseudo == user)\
+                            .filter(Posseder_T.pseudo == requested_user)\
                             .filter(Avis.avis_popularite == -1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
@@ -213,7 +213,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Projets_Medias.nom_types_media.in_(idtype))\
-                            .filter(Posseder_M.pseudo == user)\
+                            .filter(Posseder_M.pseudo == requested_user)\
                             .filter(Avis.avis_cote == 1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
@@ -225,7 +225,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
-                            .filter(Posseder_T.pseudo == user)\
+                            .filter(Posseder_T.pseudo == requested_user)\
                             .filter(Avis.avis_cote == 1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
@@ -242,7 +242,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .outerjoin(Notes, and_(Notes.pseudo == Posseder_M.pseudo, Notes.id_fiches == Fiches.id_fiches))\
                             .join(Avis, and_(Avis.pseudo == Posseder_M.pseudo, Avis.id_fiches == Fiches.id_fiches))\
                             .filter(Projets_Medias.nom_types_media.in_(idtype))\
-                            .filter(Posseder_M.pseudo == user)\
+                            .filter(Posseder_M.pseudo == requested_user)\
                             .filter(Avis.avis_cote == -1)\
                             .outerjoin(sub_query_media_possedes, sub_query_media_possedes.c.id_projets_medias == Posseder_M.id_projets_medias) \
                             .outerjoin(sub_query_media_total, sub_query_media_total.c.id_projets_medias == Posseder_M.id_projets_medias) \
@@ -254,7 +254,7 @@ def mycollection_app(session, idtype, idfiltre, numstart, client, user):
                             .select_from(Posseder_T)\
                             .join(Projets_Transmedias, Projets_Transmedias.id_projets_transmedias == Posseder_T.id_projets_transmedias)\
                             .join(Fiches, Fiches.id_fiches == Projets_Transmedias.id_fiches)\
-                            .filter(Posseder_T.pseudo == user)\
+                            .filter(Posseder_T.pseudo == requested_user)\
                             .filter(Avis.avis_cote == -1)\
                             .outerjoin(sub_query_transmedia_possedes, sub_query_transmedia_possedes.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \
                             .outerjoin(sub_query_transmedia_total, sub_query_transmedia_total.c.id_projets_transmedias == Posseder_T.id_projets_transmedias) \

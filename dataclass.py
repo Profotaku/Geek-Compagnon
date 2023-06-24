@@ -1,5 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy import orm
+from sqlalchemy.orm import relationship
+
 Base = sa.orm.declarative_base()
 import datetime
 from flask_login import UserMixin
@@ -20,6 +22,14 @@ class Utilisateurs(Base, UserMixin):
     otp_secret = sa.Column(sa.String, nullable=True)
     profil_public = sa.Column(sa.Boolean, nullable=False, default=True)
     adulte = sa.Column(sa.Boolean, nullable=False, default=False)
+    biographie = sa.Column(sa.String, nullable=True)
+    posseder_t = relationship("Posseder_T", backref="utilisateur", cascade="all, delete-orphan")
+    posseder_m = relationship("Posseder_M", backref="utilisateur", cascade="all, delete-orphan")
+    posseder_c = relationship("Posseder_C", backref="utilisateur", cascade="all, delete-orphan")
+    threads = relationship("Threads", backref="utilisateur", cascade="all, delete-orphan")
+    commentaires = relationship("Commentaires", backref="utilisateur", cascade="all, delete-orphan")
+    notes = relationship("Notes", backref="utilisateur", cascade="all, delete-orphan")
+    avis = relationship("Avis", backref="utilisateur", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"Utilisateurs('{self.pseudo}')"
@@ -39,6 +49,7 @@ class Notes(Base):
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
     note = sa.Column(sa.Integer, nullable=False, default=0)
+    fiche = relationship("Fiches", back_populates="notes", lazy='joined')
 
     def __repr__(self):
         return f"Notes('{self.id_notes}')"
@@ -54,6 +65,11 @@ class Fiches(Base):
     adulte = sa.Column(sa.Boolean, nullable=False, default=False)
     info = sa.Column(sa.String, nullable=False, default='')
     concepteur = sa.Column(sa.String, nullable=False, default='')
+    produits_culturels = relationship("Produits_Culturels", back_populates="fiche", lazy='joined')
+    projets_medias = relationship("Projets_Medias", back_populates="fiche", lazy='joined')
+    projets_transmedias = relationship("Projets_Transmedias", back_populates="fiche", lazy='joined')
+    notes = relationship("Notes", back_populates="fiche", lazy='joined')
+    avis = relationship("Avis", back_populates="fiche", lazy='joined')
 
     def __repr__(self):
         return f"Fiches('{self.nom}+{self.synopsis}')"
@@ -75,6 +91,7 @@ class Avis(Base):
     favori = sa.Column(sa.Boolean, nullable=False, default=False)
     avis_popularite = sa.Column(sa.Integer, nullable=False, default=0) # 0 = neutre, 1 = like, -1 = dislike
     avis_cote = sa.Column(sa.Integer, nullable=False, default=0) # 0 = neutre, 1 = like, -1 = dislike
+    fiche = relationship("Fiches", back_populates="avis", lazy='joined')
 
     def __repr__(self):
         return f"Avis('{self.ID_Avis}')"
@@ -118,7 +135,7 @@ class Threads(Base):
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
 
     def __repr__(self):
-        return f"Threads('{self.ID_Threads}')"
+        return f"Threads('{self.id_threads}')"
 
 class Commentaires(Base):
     __tablename__ = 'commentaires'
@@ -148,6 +165,8 @@ class Produits_Culturels(Base):
     nom_types_media = sa.Column(sa.String, sa.ForeignKey('types_media.nom_types_media'), nullable=False)
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
+    etre_compose = relationship("Etre_Compose", back_populates="produits_culturels", lazy='joined')
+    fiche = relationship("Fiches", back_populates="produits_culturels", lazy='joined')
 
     def __repr__(self):
         return f"Produits_Culturels('{self.ID_Produits_Culturels}')"
@@ -159,6 +178,9 @@ class Projets_Medias(Base):
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
     titre = sa.Column(sa.String, sa.ForeignKey('succes.titre'), nullable=False)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
+    etre_compose = relationship("Etre_Compose", back_populates="projets_medias", lazy='joined')
+    contenir = relationship("Contenir", back_populates="projets_medias", lazy='joined')
+    fiche = relationship("Fiches", back_populates="projets_medias", lazy='joined')
 
     def __repr__(self):
         return f"Projets_Medias('{self.id_projets_medias}')"
@@ -169,6 +191,8 @@ class Projets_Transmedias(Base):
     id_fiches = sa.Column(sa.Integer, sa.ForeignKey('fiches.id_fiches'), nullable=False)
     titre = sa.Column(sa.String, sa.ForeignKey('succes.titre'), nullable=False)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
+    contenir = relationship("Contenir", back_populates="projets_transmedias", lazy='joined')
+    fiche = relationship("Fiches", back_populates="projets_transmedias", lazy='joined')
 
     def __repr__(self):
         return f"Projets_Transmedias('{self.ID_Projets_Transmedias}')"
@@ -179,6 +203,9 @@ class Etre_Compose(Base):
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
     ordre = sa.Column(sa.Integer, nullable=True)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
+    produits_culturels = relationship("Produits_Culturels", back_populates="etre_compose", lazy='joined')
+    projets_medias = relationship("Projets_Medias", back_populates="etre_compose", lazy='joined')
+
 
     def __repr__(self):
         return f"Etre_Composes('{self.id_produits_culturels}'+{self.id_projets_medias}')"
@@ -188,6 +215,8 @@ class Contenir(Base):
     id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedias.id_projets_transmedias'), primary_key=True, nullable=False)
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
     verifie = sa.Column(sa.Boolean, nullable=False, default=False)
+    projets_medias = relationship("Projets_Medias", back_populates="contenir", lazy='joined')
+    projets_transmedias = relationship("Projets_Transmedias", back_populates="contenir", lazy='joined')
 
     def __repr__(self):
         return f"Contenir('{self.id_projets_transmedias}'+{self.id_projets_medias}')"
@@ -283,6 +312,7 @@ class Posseder_C(Base):
     date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now().timestamp())
     limite = sa.Column(sa.Boolean, nullable=False, default=False)
     collector = sa.Column(sa.Boolean, nullable=False, default=False)
+    produits_culturels = relationship("Produits_Culturels", backref="possessions", lazy='joined')
 
     def __repr__(self):
         return f"Posseder_C('{self.id_produits_culturels}'+{self.pseudo}')"

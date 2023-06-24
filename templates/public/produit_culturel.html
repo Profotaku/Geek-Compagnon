@@ -9,7 +9,7 @@
     <p>Genres : {{ produit.genres | join(', ') }}</p>
     <p>Date de sortie : {{ produit.date_sortie }}</p>
     <p>Synopsis : {{ produit.synopsis }}</p>
-    <img src="{{ produit.url_image }}" alt="Image du produit">
+    <img src="/{{ produit.url_image }}" alt="Image du produit">
     <p>Nombre de consultations : {{ consultation }}</p>
     <!-- Afficher plus d'infos ici -->
 

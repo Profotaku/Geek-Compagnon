@@ -1,0 +1,166 @@
+{% extends "public/base.html" %}
+{% block head %}
+    <script src="https://unpkg.com/htmx.org@1.9.2/dist/htmx.min.js"></script>
+<style>
+    ul {
+        list-style-type: none;
+        margin-left: 2em; /* Augmenter la marge gauche pour augmenter le décalage */
+    }
+    ul li ul li {
+        position: relative;
+        margin: 1em 0 1em 1em;
+    }
+    ul li ul li:before {
+        content: "";
+        position: absolute;
+        top:-1em;
+        left: -2em; /* Augmenter la valeur de gauche pour augmenter le décalage */
+        border-left: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+        width: 2em;
+        height: 1.5em;
+    }
+    ul li ul li:after {
+        position:absolute;
+        content:"";
+        top: 0.5em;
+        left: -2em;
+        border-left: 1px solid #ddd;
+        border-top:1px solid #ddd;
+        width: 2em;
+        height: 100%;
+    }
+    ul li ul li:last-child:after {
+        display: none;
+    }
+    .item {
+        display: block;
+        border: 1px solid #ddd;
+        padding: 1em;
+        text-decoration: none;
+        color: #888;
+    }
+    .item:hover,
+    .item:focus {
+        background: #eee;
+        color: #000;
+        border: 1px solid #aaa;
+    }
+    .item {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;  /* Bordure complète */
+            border-radius: 5px;  /* Bordures arrondies */
+            padding: 10px;  /* Espace à l'intérieur de la bordure */
+            margin-bottom: 20px;  /* Espace entre chaque item */
+            background-color: #3c3c3c;
+            width: 100%;
+        }
+        .item-image {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            width: 100%;  /* Utiliser toute la largeur disponible */
+        }
+        .item-title {
+            font-weight: bold;
+        }
+        .item-details {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;  /* Utiliser toute la largeur disponible */
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 70% 30%; /* ceci définit la largeur des colonnes */
+            column-gap: 20px; /* espace entre les colonnes */
+        }
+    </style>
+{% endblock %}
+{% block banner %}
+{% endblock %}
+{% block content %}
+<div class="grid-container">
+<ul>
+<div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/utilisateur/{{ user + "/" }}{{ numstart + 10}}">
+{% for produit in data %}
+    <li>
+        <div class="item">
+            <img src="{{ produit.url_image }}" alt="{{ produit.nom_produit }}" class="item-image">
+            <div class="item-info">
+                <div>Produit ajouté à votre bibliothèque:</div>
+                <div class="item-title">{{ produit.nom_produit }}</div>
+                <div class="item-details">
+                    <p>Note : {{ produit.note }}</p>
+                    <p>Favori : {{ produit.favori }}</p>
+                </div>
+            </div>
+        </div>
+        <ul>
+        {% for projet_media in produit.projet_media %}
+            <li>
+                <div class="item">
+                    <img src="{{ projet_media.url_image }}" alt="{{ projet_media.nom_projet_media }}" class="item-image">
+                    <div class="item-info">
+                        <div>Collection mise à jour:</div>
+                        <div class="item-title">{{ projet_media.nom_projet_media }}</div>
+                        <div class="item-details">
+                            <p>Note : {{ projet_media.note }}</p>
+                            <p>Favori : {{ projet_media.favori }}</p>
+                            <p>Taux de complétion : {{ projet_media.taux_completion }}</p>
+                        </div>
+                    </div>
+                </div>
+                <ul>
+                {% for projet_transmedia in projet_media.projet_transmedia %}
+                    <li>
+                        <div class="item">
+                            <img src="{{ projet_transmedia.url_image }}" alt="{{ projet_transmedia.nom_projet_transmedia }}" class="item-image">
+                            <div class="item-info">
+                                <div>Collection mise à jour:</div>
+                                <div class="item-title">{{ projet_transmedia.nom_projet_transmedia }}</div>
+                                <div class="item-details">
+                                    <p>Note : {{ projet_transmedia.note }}</p>
+                                    <p>Favori : {{ projet_transmedia.favori }}</p>
+                                    <p>Taux de complétion : {{ projet_transmedia.taux_completion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+</div>
+</ul>
+<div>
+    <h2>Favoris produits</h2>
+    {% for produit in favoris_produits %}
+        <a href="/fiche/{{ produit.fiche.id_fiches }}">
+            <img src="/{{ produit.fiche.url_image }}" alt="{{ produit.fiche.nom }}">
+        </a>
+    {% endfor %}
+
+    <h2>Favoris projets medias</h2>
+    {% for projet_media in favoris_projets_medias %}
+        <a href="/fiche/{{ projet_media.fiche.id_fiches }}">
+            <img src="/{{ projet_media.fiche.url_image }}" alt="{{ projet_media.fiche.nom }}">
+        </a>
+    {% endfor %}
+
+    <h2>Favoris projets transmedias</h2>
+    {% for projet_transmedia in favoris_projets_transmedias %}
+        <a href="/fiche/{{ projet_transmedia.fiche.id_fiches }}">
+            <img src="/{{ projet_transmedia.fiche.url_image }}" alt="{{ projet_transmedia.fiche.nom }}">
+        </a>
+    {% endfor %}
+</div>
+</div>
+{% endblock %}

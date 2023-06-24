@@ -3,9 +3,8 @@
     <title>Paramètres de l'utilisateur</title>
     <script src="{{ url_for('static', filename='js/jsOTP.js') }}"></script>
     <link href="{{url_for('static',filename='css/main.css')}}" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/jquery.qrcode@1.0.3/jquery.qrcode.min.js" integrity="sha256-9MzwK2kJKBmsJFdccXoIDDtsbWFh8bjYK/C7UjB1Ay0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.3/flowbite.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
     {{ dropzone.load_css() }}
     {{ dropzone.load_js() }}
     <script>localStorage.setItem("eventListenerAdded", false);</script>
@@ -33,6 +32,13 @@
         <!-- User Settings -->
         <div class="border p-4 rounded-md">
             <h2 class="font-bold text-lg mb-4">Paramètres de l'utilisateur</h2>
+            {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <span style="background-color: green">{{ message }}</span>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
             <form action="{{ url_for('update_user') }}" id="formfiche" method="post">
                 <div class="bg-red-200 rounded-md p-6" id="error-container" style="display: none">
                   <h2 class="text-lg font-medium mb-4" id="error-title"></h2>
@@ -89,6 +95,42 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" id="token" name="token">
             </div>
+            <div class="mb-4 mt-6">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="delete_user_notes">
+                    Supprimer mes notes :
+                </label>
+                <p class="text-red-500">Attention : Cette action est irréversible.</p>
+                <form action="{{ url_for('delete_user_notes') }}" method="GET" onsubmit="return confirm('Voulez-vous vraiment supprimer toutes vos notes? Cette action est irréversible.');">
+                    <button type="submit" class="mt-2 py-2 px-4 border border-red-500 bg-red-500 text-white rounded transition duration-200 hover:bg-red-700">Supprimer toutes mes notes</button>
+                </form>
+            </div>
+            <div class="mb-4 mt-6">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="delete_user_reviews">
+                    Supprimer mes avis :
+                </label>
+                <p class="text-red-500">Attention : Cette action est irréversible.</p>
+                <form action="{{ url_for('delete_user_avis') }}" method="GET" onsubmit="return confirm('Voulez-vous vraiment supprimer tous vos avis? Cette action est irréversible.');">
+                    <button type="submit" class="mt-2 py-2 px-4 border border-red-500 bg-red-500 text-white rounded transition duration-200 hover:bg-red-700">Supprimer tous mes avis</button>
+                </form>
+            </div>
+            <div class="mb-4 mt-6">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="delete_user_data">
+                    Réinitialiser mon compte :
+                </label>
+                <p class="text-red-500">Attention : Cette action est irréversible.</p>
+                <form action="{{ url_for('delete_user_data') }}" method="GET" onsubmit="return confirm('Voulez-vous vraiment supprimer toutes vos données? Cette action est irréversible.');">
+                    <button type="submit" class="mt-2 py-2 px-4 border border-red-500 bg-red-500 text-white rounded transition duration-200 hover:bg-red-700">Supprimer toutes mes données</button>
+                </form>
+            </div>
+            <div class="mb-4 mt-6">
+                <label class="block text-grey-darker text-sm font-bold mb-2" for="deactivate_account">
+                    Désactiver mon compte :
+                </label>
+                <p class="text-red-500">Attention : Vous ne pourrez pas réactiver votre compte par vous-même une fois celui-ci désactivé.</p>
+                <form action="{{ url_for('deactivate_account') }}" method="GET" onsubmit="return confirm('Voulez-vous vraiment désactiver votre compte? Vous ne pourrez pas le réactiver par vous-même.');">
+                    <button type="submit" class="mt-2 py-2 px-4 border border-red-500 bg-red-500 text-white rounded transition duration-200 hover:bg-red-700">Désactiver mon compte</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -102,8 +144,9 @@ $('#totp').change(function() {
             var token = data.token;
             $('#secret').text(secret);
             $('#token').val(token);
-            generateQRCode(secret);
             $('#totpSetup').show();
+            generateQRCode(secret);
+
         });
     } else {
         $('#totpSetup').hide();
@@ -111,10 +154,12 @@ $('#totp').change(function() {
 });
 
 function generateQRCode(secret) {
-    $('#qrcode').qrcode({
-        text: 'otpauth://totp/Geek Compagnon:' + encodeURIComponent("{{ user.pseudo }}") + '?secret=' + secret + '&issuer=Geek Compagnon',
-    });
+    var qrcode = new QRCode("qrcode");
+    var elText = document.getElementById("secret");
+
+    qrcode.makeCode('otpauth://totp/Geek Compagnon:' + "{{ user.pseudo }}" + '?secret=' + elText.textContent + '&issuer=Geek Compagnon',);
 }
+
 
 $('#checkCode').click(function() {
     var code = $('#code').val();

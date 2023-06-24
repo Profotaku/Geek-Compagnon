@@ -15,8 +15,6 @@ $(document).ready(
               displayResults(data);
             }
           });
-        } else {
-          $('#search-results').addClass('hidden');
         }
       }
     );
@@ -51,13 +49,10 @@ function displayResults(data) {
       resultsContainer.append(
         `<div class="search-result-item hover:bg-chartpink-400 min-w-full p-2">
                     <a href="#" class="w-full flex inline-flex no-underline text-gray-800">
-                        <img src="
-        ` + result.url_image + `" class="w-12 h-20 object-cover">
+                        <img src="/` + result.url_image + `" class="w-12 h-20 object-cover">
                         <div class="pl-2">
-                            <span class="items-baseline">
-        ` + result.nom + `</span>
-                            <p class="text-sm italic">
-        ` + troncateSynopsis + `[...]</p>
+                            <span class="items-baseline">` + result.nom + `</span>
+                            <p class="text-sm italic">` + troncateSynopsis + `[...]</p>
                         </div>
                     </a>
                 </div>
@@ -65,11 +60,9 @@ function displayResults(data) {
       )
     }
   );
-  if (allResults.length > 0) {
-    console.log('result');
+  if (allResults.length > 0 && $('#search-navbar').val().length > 3) {
     resultsContainer.show();
   } else {
-    console.log('no result');
     resultsContainer.hide();
   }
 }

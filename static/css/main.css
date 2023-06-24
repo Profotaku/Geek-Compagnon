@@ -1355,6 +1355,11 @@ input[type="range"]::-ms-fill-lower{
   border-color: rgb(156 163 175 / var(--tw-border-opacity));
 }
 
+.border-red-500{
+  --tw-border-opacity: 1;
+  border-color: rgb(240 82 82 / var(--tw-border-opacity));
+}
+
 .bg-blue-100{
   --tw-bg-opacity: 1;
   background-color: rgb(225 239 254 / var(--tw-bg-opacity));
@@ -1378,11 +1383,6 @@ input[type="range"]::-ms-fill-lower{
 .bg-blue-700{
   --tw-bg-opacity: 1;
   background-color: rgb(26 86 219 / var(--tw-bg-opacity));
-}
-
-.bg-chartblue-500{
-  --tw-bg-opacity: 1;
-  background-color: rgb(83 149 228 / var(--tw-bg-opacity));
 }
 
 .bg-chartmagenta-400{
@@ -1435,6 +1435,11 @@ input[type="range"]::-ms-fill-lower{
   background-color: rgb(251 213 213 / var(--tw-bg-opacity));
 }
 
+.bg-red-500{
+  --tw-bg-opacity: 1;
+  background-color: rgb(240 82 82 / var(--tw-bg-opacity));
+}
+
 .bg-red-800{
   --tw-bg-opacity: 1;
   background-color: rgb(155 28 28 / var(--tw-bg-opacity));
@@ -1474,15 +1479,9 @@ input[type="range"]::-ms-fill-lower{
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
-.from-green-300{
-  --tw-gradient-from: #84E1BC var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(132 225 188 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.from-chartmagenta-600{
-  --tw-gradient-from: #5f2666 var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(95 38 102 / 0) var(--tw-gradient-to-position);
+.from-chartblue-600{
+  --tw-gradient-from: #3e70ab var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(62 112 171 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -1490,17 +1489,6 @@ input[type="range"]::-ms-fill-lower{
   --tw-gradient-from: #5c659e var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(92 101 158 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.from-chartblue-600{
-  --tw-gradient-from: #3e70ab var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(62 112 171 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.via-blue-500{
-  --tw-gradient-to: rgb(63 131 248 / 0)  var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), #3F83F8 var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
 .via-chartmagenta-400{
@@ -1513,28 +1501,16 @@ input[type="range"]::-ms-fill-lower{
   --tw-gradient-stops: var(--tw-gradient-from), #7e3288 var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
+.to-chartblue-200{
+  --tw-gradient-to: #bad5f4 var(--tw-gradient-to-position);
+}
+
 .to-chartpurple-400{
   --tw-gradient-to: #959fdb var(--tw-gradient-to-position);
 }
 
 .to-chartpurple-500{
   --tw-gradient-to: #7a87d2 var(--tw-gradient-to-position);
-}
-
-.to-purple-600{
-  --tw-gradient-to: #7E3AF2 var(--tw-gradient-to-position);
-}
-
-.to-chartmagenta-400{
-  --tw-gradient-to: #985ba0 var(--tw-gradient-to-position);
-}
-
-.to-chartblue-400{
-  --tw-gradient-to: #75aae9 var(--tw-gradient-to-position);
-}
-
-.to-chartblue-200{
-  --tw-gradient-to: #bad5f4 var(--tw-gradient-to-position);
 }
 
 .object-cover{
@@ -1783,6 +1759,18 @@ input[type="range"]::-ms-fill-lower{
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
+.transition{
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.duration-200{
+  transition-duration: 200ms;
+}
+
 /*import font orbitron*/
 
 @font-face {
@@ -1952,6 +1940,11 @@ a:hover{
 .hover\:bg-gray-100:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-red-700:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(200 30 30 / var(--tw-bg-opacity));
 }
 
 .hover\:text-chartpink-200:hover{

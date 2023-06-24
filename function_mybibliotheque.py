@@ -7,18 +7,18 @@ from flask_jwt_extended import JWTManager, create_access_token, create_refresh_t
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 
-def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
+def mybibliotheque_app(session, idtype, idfiltre, numstart, client, requested_user):
     isadulte = False
     verify_jwt_in_request(optional=True)
-    if user == "" and current_user.is_authenticated or get_jwt_identity() is not None:
+    if requested_user == "" and (current_user.is_authenticated or get_jwt_identity() is not None):
         if current_user.is_authenticated:
-            user = current_user.pseudo
+            requested_user = current_user.pseudo
             isadulte = current_user.adulte
         else:
-            user = get_jwt_identity()
+            requested_user = get_jwt_identity()
             isadulte = session.execute(select(Utilisateurs.adulte).where(Utilisateurs.pseudo == get_jwt_identity())).scalar()
-    if session.query(Utilisateurs).filter_by(pseudo=user, desactive=False, verifie=True).first() is not None or user is None:
-        if session.query(Utilisateurs.profil_public).filter_by(pseudo=user).first()[0] or (user == current_user.pseudo if current_user.is_authenticated else False) or user == get_jwt_identity():
+    if session.query(Utilisateurs).filter_by(pseudo=requested_user, desactive=False, verifie=True).first() is not None or requested_user is None:
+        if session.query(Utilisateurs.profil_public).filter_by(pseudo=requested_user).first()[0] or (requested_user == current_user.pseudo if current_user.is_authenticated else False) or requested_user == get_jwt_identity():
             if type(numstart) == int:
                 if session.query(Types_Media).filter_by(nom_types_media=idtype).first() is not None or idtype == "all":
                     if idtype == "all":
@@ -32,10 +32,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Posseder_C.date_ajout.desc()) \
@@ -46,10 +46,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .join(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .join(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
                                 .order_by(Notes.note.desc()) \
@@ -60,10 +60,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Avis.favori == True)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
@@ -74,10 +74,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Avis.avis_popularite == 1)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
@@ -88,10 +88,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Avis.avis_popularite == -1)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
@@ -102,10 +102,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Avis.avis_cote == 1)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
@@ -116,10 +116,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .join(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Avis.avis_cote == -1)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
@@ -130,10 +130,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C)\
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels)\
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches)\
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user))\
-                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user))\
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user))\
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user))\
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype))\
-                                .filter(Posseder_C.pseudo == user)\
+                                .filter(Posseder_C.pseudo == requested_user)\
                                 .filter(Posseder_C.physiquement == True)\
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector)\
@@ -144,10 +144,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C) \
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
-                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user)) \
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
-                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.pseudo == requested_user) \
                                 .filter(Posseder_C.physiquement == False) \
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
@@ -158,10 +158,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C) \
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
-                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user)) \
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
-                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.pseudo == requested_user) \
                                 .filter(Posseder_C.souhaite == True) \
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
@@ -172,10 +172,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C) \
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
-                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user)) \
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
-                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.pseudo == requested_user) \
                                 .filter(Posseder_C.limite == True) \
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
@@ -186,10 +186,10 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                                 .select_from(Posseder_C) \
                                 .join(Produits_Culturels, Produits_Culturels.id_produits_culturels == Posseder_C.id_produits_culturels) \
                                 .join(Fiches, Fiches.id_fiches == Produits_Culturels.id_fiches) \
-                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == user)) \
-                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == user)) \
+                                .outerjoin(Notes, and_(Notes.id_fiches == Produits_Culturels.id_fiches, Notes.pseudo == requested_user)) \
+                                .outerjoin(Avis, and_(Avis.id_fiches == Produits_Culturels.id_fiches, Avis.pseudo == requested_user)) \
                                 .filter(Produits_Culturels.nom_types_media.in_(idtype)) \
-                                .filter(Posseder_C.pseudo == user) \
+                                .filter(Posseder_C.pseudo == requested_user) \
                                 .filter(Posseder_C.collector == True) \
                                 .filter(Produits_Culturels.verifie == True) \
                                 .group_by(Posseder_C.id_produits_culturels, Fiches.nom, Fiches.url_image, Fiches.id_fiches, Fiches.adulte, Produits_Culturels.nom_types_media, Posseder_C.id_produits_culturels, Posseder_C.pseudo, Posseder_C.date_ajout, Notes.note, Avis.favori, Posseder_C.limite, Posseder_C.collector) \
@@ -206,7 +206,7 @@ def mybibliotheque_app(session, idtype, idfiltre, numstart, client, user):
                         else:
                             idtype = idtype[0]
                         if numstart == 0:
-                            return render_template('public/mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart, user=user)
+                            return render_template('public/mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart, user=requested_user)
                         else:
                             return render_template('public/infine-scroll-mybibliotheque.html', my_bibliotheque=my_bibliotheque, idtype=idtype, idfiltre=idfiltre, numstart=numstart)
                 else:

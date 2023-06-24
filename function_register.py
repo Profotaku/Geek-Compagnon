@@ -9,7 +9,6 @@ from itsdangerous import URLSafeTimedSerializer
 import bcrypt
 from sqlalchemy import func
 
-
 def inscription_post(session):
     pseudo = request.form['pseudo']
     email = request.form['email']
@@ -28,7 +27,7 @@ def inscription_post(session):
         return redirect(url_for('inscription'))
     # Vérifier si la chaîne contient des caractères interdits (pour création de dossier)
     if not is_string_valid(pseudo):
-        flash("Le pseudo ou l'email contient des caractères non autorisés.")
+        flash("Le pseudo contient des caractères non autorisés.")
         return redirect(url_for('inscription'))
 
     hash_mdp = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -66,7 +65,7 @@ def inscription_post(session):
     except:
         flash("Une erreur est survenue lors de l'envoi du mail de confirmation. Veuillez réessayer.")
         return redirect(url_for('register'))
-    flash("<span class='bg-green-300'>Votre compte a bien été créé. Veuillez cliquer sur le lien de validation dans le mail de confirmation d'inscription afin de pouvoir profiter de nos services.</span>")
+    flash("Votre compte a bien été créé. Veuillez cliquer sur le lien de validation dans le mail de confirmation d'inscription afin de pouvoir profiter de nos services.", "success")
     return redirect(url_for('login'))
 
 
@@ -74,7 +73,7 @@ def inscription_get():
     return render_template('public/register.html')
 
 def is_string_valid(string):
-    regex = r"[<>:\"/\\|?*]"
+    regex = r"[#\%&\*\+/\\:<>\?\[\]\{\}\|\~\"\$\'\(\),;=]"
     match = re.search(regex, string)
     return match is None
 

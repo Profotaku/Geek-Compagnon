@@ -1,0 +1,51 @@
+        {% for produit in data %}
+            <li>
+                <div class="item">
+                    <img src="{{ produit.url_image }}" alt="{{ produit.nom_produit }}" class="item-image">
+                    <div class="item-info">
+                        <div>Produit ajouté à votre bibliothèque:</div>
+                        <div class="item-title">{{ produit.nom_produit }}</div>
+                        <div class="item-details">
+                            <p>Note : {{ produit.note }}</p>
+                            <p>Favori : {{ produit.favori }}</p>
+                        </div>
+                    </div>
+                </div>
+                <ul>
+                {% for projet_media in produit.projet_media %}
+                    <li>
+                        <div class="item">
+                            <img src="{{ projet_media.url_image }}" alt="{{ projet_media.nom_projet_media }}" class="item-image">
+                            <div class="item-info">
+                                <div>Collection mise à jour:</div>
+                                <div class="item-title">{{ projet_media.nom_projet_media }}</div>
+                                <div class="item-details">
+                                    <p>Note : {{ projet_media.note }}</p>
+                                    <p>Favori : {{ projet_media.favori }}</p>
+                                    <p>Taux de complétion : {{ projet_media.taux_completion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <ul>
+                        {% for projet_transmedia in projet_media.projet_transmedia %}
+                            <li>
+                                <div class="item">
+                                    <img src="{{ projet_transmedia.url_image }}" alt="{{ projet_transmedia.nom_projet_transmedia }}" class="item-image">
+                                    <div class="item-info">
+                                        <div>Collection mise à jour:</div>
+                                        <div class="item-title">{{ projet_transmedia.nom_projet_transmedia }}</div>
+                                        <div class="item-details">
+                                            <p>Note : {{ projet_transmedia.note }}</p>
+                                            <p>Favori : {{ projet_transmedia.favori }}</p>
+                                            <p>Taux de complétion : {{ projet_transmedia.taux_completion }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
