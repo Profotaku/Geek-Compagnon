@@ -84,6 +84,29 @@
 {% block banner %}
 {% endblock %}
 {% block content %}
+<div>
+    <h1>{{ user_info['pseudo'] }}</h1>
+    <h2>Biographie</h2>
+    <p>{{ user_info['biographie'] }}</p>
+    <h2>Succès obtenus</h2>
+    {% if user_info['admin'] %}
+        <img src="{{ url_for('static', filename='images/admin.png') }}" alt="admin">
+        <p>administrateur</p>
+    {% endif %}
+    {% if user_info['fondateur'] %}
+        <img src="{{ url_for('static', filename='images/fondateur.png') }}" alt="fondateur">
+        <p>fondateur</p>
+    {% endif %}
+    {% for succes in succes_obtenus %}
+        <div>
+            <img src="{{ succes.image_succes }}" alt="{{ succes.nom_succes }}">
+            <p>{{ succes.nom_succes }}</p>
+        </div>
+    {% endfor %}
+    {% if succes_obtenus|length == 0 %}
+        <p>Vous n'avez pas encore obtenu de succès</p>
+    {% endif %}
+</div>
 <div class="grid-container">
 <ul>
 <div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/utilisateur/{{ user + "/" }}{{ numstart + 10}}">

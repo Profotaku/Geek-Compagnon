@@ -2,6 +2,27 @@
 <html>
 <head>
     <title>Page Produit Culturel</title>
+    <style>
+        .range-field {
+    position: relative;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    width: 100%;
+    padding-left: 2%; /* to align the first label with the start of the range */
+    padding-right: 2%; /* to align the last label with the end of the range */
+    pointer-events: none; /* so the labels don't interfere with interacting with the range input */
+}
+
+.range-label {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+    </style>
 </head>
 <body>
     <h1>{{ produit.nom }}</h1>
@@ -15,13 +36,116 @@
 
 
 
-    <hr>
 
+
+    {% if info_user %}
+        <!--Si l'utilisateur a déjà ajouté le produit à sa collection ==> formulaire pré-rempli-->
+    <hr>
     <h3>Info utilisateur:</h3>
     <p>Date d'ajout : {{ info_user.date_ajout }}</p>
+    <form action=" {{ url_for('ajouter_produit') }} " method="post">
+        <input type="hidden" name="id_produit" value="{{ produit.id }}">
+
+        <!--Ajout des nouveaux champs avec valeurs préremplies -->
+        <label for="note">Note:</label>
+        <input type="range" id="note" name="note" min="0" max="10" value="{{ info_user.note or '' }}">
+
+        <label for="avis_popularite">Avis sur la popularité:</label>
+        <div class="range-field">
+            <input type="range" id="avis_popularite" name="avis_popularite" min="-1" max="1" step="1" value="{{ info_user.avis_popularite or '' }}">
+            <div class="range-labels">
+                <span class="range-label">Trop populaire</span>
+                <span class="range-label">Neutre</span>
+                <span class="range-label">Pas assez populaire</span>
+            </div>
+        </div>
+
+        <label for="avis_cote">Avis sur la cote:</label>
+        <div class="range-field">
+            <input type="range" id="avis_cote" name="avis_cote" min="-1" max="1" step="1" value="{{ info_user.avis_cote or '' }}">
+            <div class="range-labels">
+                <span class="range-label">Sur-coté</span>
+                <span class="range-label">Neutre</span>
+                <span class="range-label">Sous coté</span>
+            </div>
+        </div>
+
+        <label for="favoris">Mettre en favoris :</label>
+        <input type="checkbox" id="favoris" name="favoris" {{ 'checked' if info_user.favori }}>
+
+        <label for="physiquement">Physiquement :</label>
+        <input type="checkbox" id="physiquement" name="physiquement" {{ 'checked' if info_user.physiquement }}>
+
+        <label for="souhaite">Souhaite :</label>
+        <input type="checkbox" id="souhaite" name="souhaite" {{ 'checked' if info_user.souhaite }}>
+
+        <label for="limite">Limite :</label>
+        <input type="checkbox" id="limite" name="limite" {{ 'checked' if info_user.limite }}>
+
+        <label for="collector">Collector :</label>
+        <input type="checkbox" id="collector" name="collector" {{ 'checked' if info_user.collector }}>
 
 
-    <hr>
+        <input type="submit" value="Modifier">
+    </form>
+    <form action=" {{ url_for('supprimer_produit') }} " method="post">
+        <input type="hidden" name="id_produit" value="{{ produit.id }}">
+        <input type="submit" value="Supprimer">
+    </form>
+    {% elif info_user is none and current_user.is_authenticated %}
+        <!--Si l'utilisateur est connecté, mais n'a pas encore ajouté le produit à sa collection → formulaire vide -->
+    <form action=" {{ url_for('ajouter_produit') }} " method="post">
+        <input type="hidden" name="id_produit" value="{{ produit.id }}">
+
+        <!--Ajout des nouveaux champs avec valeurs par défaut-->
+        <label for="note">Note:</label>
+        <input type="range" id="note" name="note" min="0" max="10" value="5">
+
+        <label for="avis_popularite">Avis sur la popularité:</label>
+        <div class="range-field">
+            <input type="range" id="avis_popularite" name="avis_popularite" min="-1" max="1" step="1" value="0">
+            <div class="range-labels">
+                <span class="range-label">Trop populaire</span>
+                <span class="range-label">Neutre</span>
+                <span class="range-label">Pas assez populaire</span>
+            </div>
+        </div>
+
+        <label for="avis_cote">Avis sur la cote:</label>
+        <div class="range-field">
+            <input type="range" id="avis_cote" name="avis_cote" min="-1" max="1" step="1" value="0">
+            <div class="range-labels">
+                <span class="range-label">Sur-coté</span>
+                <span class="range-label">Neutre</span>
+                <span class="range-label">Sous coté</span>
+            </div>
+        </div>
+
+        <label for="favoris">Mettre en favoris :</label>
+        <input type="checkbox" id="favoris" name="favoris">
+
+        <label for="physiquement">Physiquement :</label>
+        <input type="checkbox" id="physiquement" name="physiquement">
+
+        <label for="souhaite">Souhaite :</label>
+        <input type="checkbox" id="souhaite" name="souhaite">
+
+        <label for="limite">Limite :</label>
+        <input type="checkbox" id="limite" name="limite">
+
+        <label for="collector">Collector :</label>
+        <input type="checkbox" id="collector" name="collector">
+
+        <input type="submit" value="Ajouter">
+    </form>
+    {% elif not current_user.is_authenticated  %}
+        <!--Si l'utilisateur n'est pas connecté → inviter à se connecter> -->
+        <p>Connectez-vous pour ajouter ce produit à votre collection</p>
+    {% endif %}
+
+
+
+
     <!-- Ne pas oublier de faire les graph -->
     <hr>
     <h3>Commentaires:</h3>

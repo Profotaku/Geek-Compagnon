@@ -22,10 +22,12 @@ SESSION_PERMANENT = True
 SESSION_USE_SIGNER = True
 SESSION_KEY_PREFIX = 'session:'
 SESSION_SQLALCHEMY_TABLE = 'sessions'
-PERMANENT_SESSION_LIFETIME = timedelta(days=1)
+PERMANENT_SESSION_LIFETIME = timedelta(days=30)
 SESSION_FILE_THRESHOLD = 500
 SESSION_FILE_DIR = os.path.dirname(os.path.abspath(__file__)) + '/sessions'
 JWT_SESSION_COOKIE = False
+JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
+JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 MAILJET_API_KEY = '2d3be8f255e5540a0cbd92caa1fe0fe9' # not the real key
 MAILJET_API_SECRET = 'efe3cd09bf3e40b93a181de471119033' # not the real key
 BCRYPT_UNIQUE_SALT = "$2b$12$43FaaT4owS0eDO2AbEpsn." # not the real salt

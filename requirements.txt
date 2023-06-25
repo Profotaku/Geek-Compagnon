@@ -37,3 +37,4 @@ tensorflow==2.12.0
 tensorflow_hub==0.13.0
 Flask-SQLAlchemy==3.0.5
 tb-nightly==2.14.0a20230601
+Flask-Limiter==3.3.1

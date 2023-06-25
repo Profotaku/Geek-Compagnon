@@ -8,6 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 from sqlalchemy.orm import joinedload
 from werkzeug.security import generate_password_hash
 
+import function_user
 from cache import cache
 import sqlalchemy as sa  # ORM
 from sqlalchemy.ext.declarative import declarative_base
@@ -34,6 +35,8 @@ from flask_jwt_extended import JWTManager, create_access_token, create_refresh_t
 from flask_session import Session
 from flask_dropzone import Dropzone
 from flask_squeeze import Squeeze
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import io
 import os
 
@@ -60,15 +63,6 @@ from apputils import make_cache_key
 from sqlalchemy.orm import aliased
 
 
-FichesProduits = aliased(Fiches)
-FichesProjetMedias = aliased(Fiches)
-FichesProjetTransmedias = aliased(Fiches)
-
-NotesProduits = aliased(Notes)
-NotesProjetMedias = aliased(Notes)
-NotesProjetTransmedias = aliased(Notes)
-
-
 Base = sqlalchemy.orm.declarative_base()
 login_manager = LoginManager()
 make_searchable(Base.metadata)  # this is needed for the search to work
@@ -78,11 +72,18 @@ app.app_context().push()
 squeeze = Squeeze(app)
 cache.init_app(app)
 engine = sa.create_engine(SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
+limiter = Limiter(
+	get_remote_address,
+	app=app,
+	default_limits=["200 per day", "50 per hour"],
+	storage_uri="memory://",
+)
 sa.orm.configure_mappers()
 ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
 ip_ban.init_app(app)
 ip_ban.ip_whitelist_add('127.0.0.1')
 ip_ban.ip_whitelist_add('37.65.130.28')
+ip_ban.load_nuisances()
 session = orm.scoped_session(orm.sessionmaker(bind=engine))
 csp = {
 	'default-src': '\'self\'',
@@ -106,35 +107,6 @@ assets.register("css", css)
 css.build()
 app.secret_key = SECRET_KEY
 
-def calculer_taux_completion_media(collection, pseudo):
-	total_produits = session.query(Produits_Culturels). \
-		join(Etre_Compose). \
-		join(Projets_Medias). \
-		filter_by(id_projets_medias=collection.id_projets_medias). \
-		count()
-	produits_possedes = session.query(Produits_Culturels). \
-		join(Etre_Compose). \
-		join(Projets_Medias). \
-		filter_by(id_projets_medias=collection.id_projets_medias). \
-		join(Posseder_C). \
-		filter_by(pseudo=pseudo). \
-		count()
-	return (produits_possedes,total_produits) if total_produits else (0,0)
-
-def calculer_taux_completion_transmedia(collection, pseudo):
-	total_collection = session.query(Projets_Medias). \
-		join(Contenir). \
-		join(Projets_Transmedias). \
-		filter_by(id_projets_transmedias=collection.id_projets_transmedias). \
-		count()
-	collections_possedes = session.query(Projets_Medias). \
-		join(Contenir). \
-		join(Projets_Transmedias). \
-		filter_by(id_projets_transmedias=collection.id_projets_transmedias). \
-		join(Posseder_M). \
-		filter_by(pseudo=pseudo). \
-		count()
-	return (collections_possedes,total_collection) if total_collection else (0,0)
 
 
 def web_or_app_auth(fn):
@@ -154,6 +126,19 @@ def web_or_app_auth(fn):
 			return fn(*args, **kwargs)
 	return wrapper
 
+@app.before_request
+def limit_static_file1():
+	if request.path.startswith('/static/'):
+		return
+@app.before_request
+def limit_static_file2():
+	if request.path.startswith('static/'):
+		return
+@app.before_request
+def limit_static_file3():
+	if request.path.startswith('/static'):
+		return
+
 class GuestUser(AnonymousUserMixin):
 	def __init__(self):
 		self.pseudo = 'guest'
@@ -169,6 +154,9 @@ def load_user():
 def too_large(e):
 	return "Fichier trop volumineux", 413
 
+@app.errorhandler(429)
+def ratelimit_handler(e):
+  return "Trop de requêtes", 429
 @login_manager.user_loader
 def load_user(pseudo):
 	return session.execute(select(Utilisateurs).where(Utilisateurs.pseudo == pseudo)).scalar()
@@ -207,7 +195,6 @@ def add_ean_by_fiche():
 	collector = request.form.get('collector')
 	if id_fiche is None or ean is None or limite is None or collector is None:
 		return jsonify({"message": "Paramètres manquants"}), 400
-	#get the produit_culturel lnkked with this fiche and redirect
 	produit_culturel = session.execute(select(Produits_Culturels).where(Produits_Culturels.id_fiches == id_fiche)).scalar()
 	if produit_culturel is None or produit_culturel.id_produit_culturel is None:
 		return jsonify({"message": "Fiche introuvable"}), 404
@@ -285,14 +272,13 @@ def get_ean(ean):
 			return jsonify({"message": "Fiche liée introuvable"}), 404
 
 		else:
-			#return all product info
-			print(produit_culturel)
 			return make_response(jsonify({'produits': [{ 'date_sortie': p.date_sortie, 'nom_types_media': p.nom_types_media, 'nom': p.nom, 'adulte': p.adulte, 'concepteur': p.concepteur, 'url_image': p.url_image, 'limite': p.limite, 'collector': p.collector} for p in produit_culturel]}), 200)
 
 
 
 
 @app.route('/livesearch', methods=['GET','POST'])
+@limiter.exempt
 def livesearch():
 	title = request.args.get('q')
 	isadulte = False
@@ -312,6 +298,7 @@ def livesearch():
 def recommandation(id_fiche):
 	return recommandations.recommandations(id_fiche,5)
 @app.route('/connexion', methods=['GET', 'POST'])
+@limiter.limit("12/hour")
 def login():
 	client = request.args.get('client')
 	method = request.method
@@ -331,15 +318,8 @@ def logout():
 	logout_user()
 	return redirect(url_for('index'))
 
-#ceci est simplement un exemple de route protégée par un token jwt
-@app.route('/protected_route', methods=['GET', 'POST'])
-@jwt_required(optional=False)
-def protected_route():
-	#return userid in json
-	current_u = get_jwt_identity()
-	return jsonify({'userid': current_u})
-
 @app.route('/renew_jwt', methods=['GET'])
+@limiter.exempt
 @jwt_required(refresh=True)
 def renew_jwt():
 	identity = get_jwt_identity()
@@ -369,6 +349,7 @@ def inscription():
 		return function_register.inscription_get()
 
 @app.route('/confirm_mail/<token>', methods=['GET'])
+@limiter.limit("1/day")
 def confirm_mail(token):
 	mail_checked = function_register.confirm_token(token)
 	if mail_checked is False:
@@ -546,11 +527,19 @@ def stats(user, idtype):
 	client = request.args.get('client')
 	return function_user_stats.stats(session, user, client, idtype)
 
+@app.route('/utilisateur/mon-compte/settings/', methods=['GET'])
+@app.route('/utilisateur/mon-compte/settings', methods=['GET'])
 @app.route('/utilisateur/<user>/settings/', methods=['GET'])
 @app.route('/utilisateur/<user>/settings', methods=['GET'])
 @web_or_app_auth
-def settings(user):
+def settings(user=""):
 	client = request.args.get('client')
+	verify_jwt_in_request(optional=True)
+	if client == "app":
+		user = get_jwt_identity()
+		user = session.query(Utilisateurs).filter(Utilisateurs.pseudo == user).first()
+	else:
+		user = session.query(Utilisateurs).filter(Utilisateurs.pseudo == current_user.pseudo).first()
 	return function_user_settings.settings(session, user, client)
 
 @app.route('/activate_totp', methods=['POST'])
@@ -590,7 +579,7 @@ def generate_otp():
 @web_or_app_auth
 def delete_user_data():
 	client = request.args.get('client')
-	verify_jwt_in_request()
+	verify_jwt_in_request(optional=True)
 	if client == "app":
 		user = get_jwt_identity()
 		user = session.query(Utilisateurs).filter(Utilisateurs.pseudo == user).first()
@@ -624,56 +613,64 @@ def delete_user_data():
 @app.route('/deactivate_account', methods=['GET'])
 @web_or_app_auth
 def deactivate_account():
+	error = False
+	client = request.args.get('client')
+	verify_jwt_in_request(optional=True)
+	if client == "app":
+		user = get_jwt_identity()
+		user = session.query(Utilisateurs).filter(Utilisateurs.pseudo == user).first()
+	else:
+		user = session.query(Utilisateurs).filter(Utilisateurs.pseudo == current_user.pseudo).first()
 	try:
 		# set the desactive attribute to True
-		current_user.desactive = True
-		current_user.verifie = False
+		user.desactive = True
+		user.verifie = False
 
 		# update the date_desactive attribute
-		current_user.date_desactive = datetime.datetime.utcnow()
+		user.date_desactive = datetime.datetime.utcnow()
 
 		# anonymize the pseudo, hash_mail and hash_mdp fields
 		anon_id = str(uuid.uuid4())  # generate a unique id for anonymization
 		anon_pseudo = f"anon_{anon_id}"
-		current_user.pseudo = anon_pseudo
-		current_user.hash_mail = generate_password_hash(f"anon_{anon_id}@geek-compagnon.io")
-		current_user.hash_mdp = generate_password_hash(f"anon_{anon_id}")
+		user.pseudo = anon_pseudo
+		user.hash_mail = generate_password_hash(f"anon_{anon_id}@geek-compagnon.io")
+		user.hash_mdp = generate_password_hash(f"anon_{anon_id}")
 
-		if current_user.biographie:
-			current_user.biographie = "Utilisateur désactivé"
+		if user.biographie:
+			user.biographie = "Utilisateur désactivé"
 
-		if current_user.otp_secret:
-			current_user.otp_secret = None
+		if user.otp_secret:
+			user.otp_secret = None
 
 		# replace user image by default image
-		current_user.url_image = '/static/images/default-profile.png'
+		user.url_image = '/static/images/default-profile.png'
 
 		# anonymize related data in Posseder_T table
-		for posseder_t in current_user.posseder_t:
+		for posseder_t in user.posseder_t:
 			posseder_t.pseudo = anon_pseudo
 
 		# anonymize related data in Posseder_M table
-		for posseder_m in current_user.posseder_m:
+		for posseder_m in user.posseder_m:
 			posseder_m.pseudo = anon_pseudo
 
 		# anonymize related data in Posseder_C table
-		for posseder_c in current_user.posseder_c:
+		for posseder_c in user.posseder_c:
 			posseder_c.pseudo = anon_pseudo
 
 		# anonymize related data in Threads table
-		for thread in current_user.threads:
+		for thread in user.threads:
 			thread.pseudo = anon_pseudo
 
 		# anonymize related data in Commentaires table
-		for commentaire in current_user.commentaires:
+		for commentaire in user.commentaires:
 			commentaire.pseudo = anon_pseudo
 
 		# anonymize related data in Notes table
-		for note in current_user.notes:
+		for note in user.notes:
 			note.pseudo = anon_pseudo
 
 		# anonymize related data in Avis table
-		for avis in current_user.avis:
+		for avis in user.avis:
 			avis.pseudo = anon_pseudo
 
 		# commit changes to the database
@@ -683,13 +680,17 @@ def deactivate_account():
 
 	except session as e:  # Utiliser SQLAlchemyError
 		session.rollback()
+		error = True
 		flash('An error occurred while deactivating your account.', 'error')
-		print(e)
 
 	logout_user()
 	resp = make_response(redirect(url_for('index')))
 	resp.set_cookie('remember_token', '', expires=0)
 
+	if client == "app":
+		if error:
+			return jsonify({'message': 'Une erreur s\'est produite lors de la désactivation de votre compte.'})
+		return jsonify({'message': 'Votre compte a été désactivé. Toutes vos données personnelles ont été anonymisées.'})
 	# redirect the user to the home page
 	return redirect(url_for('index'))
 @app.route('/update_user', methods=['POST'])
@@ -701,6 +702,7 @@ def update_user():
 	user.notification = request.form.get('notification') == 'on'
 	user.profil_public = request.form.get('profil_public') == 'on'
 	user.adulte = request.form.get('adulte') == 'on'
+	user.biographie = request.form.get('biographie')
 
 	session.commit()  # commit the changes
 
@@ -769,7 +771,6 @@ def delete_user_notes():
 
 	except Exception as e:
 		flash('Une erreur est survenue lors de la suppression de vos notes. Veuillez réessayer plus tard.', 'error')
-		print(e)
 	if client == 'app':
 		return jsonify({'message': 'Vos notes ont été supprimées avec succès.'}), 200
 
@@ -797,7 +798,6 @@ def delete_user_avis():
 
 	except Exception as e:
 		flash('Une erreur est survenue lors de la suppression de vos avis. Veuillez réessayer plus tard.', 'error')
-		print(e)
 
 	if client == 'app':
 		return jsonify({'message': 'Vos avis ont été supprimés avec succès.'}), 200
@@ -807,141 +807,21 @@ def delete_user_avis():
 @app.route('/utilisateur/<user>/<int:numstart>/', methods=['GET'])
 @app.route('/utilisateur/<user>/', methods=['GET'])
 @app.route('/utilisateur/<user>', methods=['GET'])
-@cache.cached(timeout=50)
+@cache.cached(timeout=50, query_string=True)
 def user(user, numstart=0):
 	client = request.args.get('client')
-	# Récupérez tous les projets transmedia pour l'utilisateur avec leurs collections associées
-	produits_culturels = (
-		session.query(Posseder_C)
-		.join(Produits_Culturels, Posseder_C.id_produits_culturels == Produits_Culturels.id_produits_culturels)
-		.join(FichesProduits, Produits_Culturels.id_fiches == FichesProduits.id_fiches)
-		.outerjoin(NotesProduits, FichesProduits.id_fiches == NotesProduits.id_fiches)
-		.join(Etre_Compose, Produits_Culturels.id_produits_culturels == Etre_Compose.id_produits_culturels)
-		.join(Projets_Medias, Etre_Compose.id_projets_medias == Projets_Medias.id_projets_medias)
-		.join(FichesProjetMedias, Projets_Medias.id_fiches == FichesProjetMedias.id_fiches)
-		.outerjoin(NotesProjetMedias, FichesProjetMedias.id_fiches == NotesProjetMedias.id_fiches)
-		.join(Contenir, Projets_Medias.id_projets_medias == Contenir.id_projets_medias)
-		.join(Projets_Transmedias, Contenir.id_projets_transmedias == Projets_Transmedias.id_projets_transmedias)
-		.join(FichesProjetTransmedias, Projets_Transmedias.id_fiches == FichesProjetTransmedias.id_fiches)
-		.outerjoin(NotesProjetTransmedias, FichesProjetTransmedias.id_fiches == NotesProjetTransmedias.id_fiches)
-		.filter(Posseder_C.pseudo == user)
-		.options(joinedload(Posseder_C.produits_culturels, innerjoin=True)
-				 .subqueryload(Produits_Culturels.etre_compose)
-				 .joinedload(Etre_Compose.projets_medias)
-				 .subqueryload(Projets_Medias.contenir)
-				 .joinedload(Contenir.projets_transmedias))
-		.order_by(Posseder_C.date_ajout.desc())
-		.limit(10).offset(numstart)
-		.all()
-	)
-
-	nombre_projets_transmedia = session.query(Contenir).filter(Contenir.id_projets_medias == Etre_Compose.id_projets_medias).count() #for keep cache, request is splited
-
-	# Récupérez les favoris de l'utilisateur
-
-	favoris_produits = (
-		session.query(Produits_Culturels)
-		.join(Fiches, Produits_Culturels.id_fiches == Fiches.id_fiches)
-		.join(Avis, Fiches.id_fiches == Avis.id_fiches)
-		.filter(Avis.pseudo == user, Avis.favori == True)
-		.all()
-	)
-
-	favoris_projets_medias = (
-		session.query(Projets_Medias)
-		.join(Fiches, Projets_Medias.id_fiches == Fiches.id_fiches)
-		.join(Avis, Fiches.id_fiches == Avis.id_fiches)
-		.filter(Avis.pseudo == user, Avis.favori == True)
-		.all()
-	)
-
-	favoris_projets_transmedias = (
-		session.query(Projets_Transmedias)
-		.join(Fiches, Projets_Transmedias.id_fiches == Fiches.id_fiches)
-		.join(Avis, Fiches.id_fiches == Avis.id_fiches)
-		.filter(Avis.pseudo == user, Avis.favori == True)
-		.all()
-	)
-
-	favoris_produits_data = [
-		{
-			'nom_produit': produit.fiche.nom,
-			'url_image': produit.fiche.url_image,
-			'favori': next((avis.favori for avis in produit.fiche.avis if avis.pseudo == user), False),
-		} for produit in favoris_produits
-	]
-
-	favoris_projets_medias_data = [
-		{
-			'nom_projet_media': projet_media.fiche.nom,
-			'url_image': projet_media.fiche.url_image,
-			'favori': next((avis.favori for avis in projet_media.fiche.avis if avis.pseudo == user), False),
-		} for projet_media in favoris_projets_medias
-	]
-
-	favoris_projets_transmedias_data = [
-		{
-			'nom_projet_transmedia': projet_transmedia.fiche.nom,
-			'url_image': projet_transmedia.fiche.url_image,
-			'favori': next((avis.favori for avis in projet_transmedia.fiche.avis if avis.pseudo == user), False),
-		} for projet_transmedia in favoris_projets_transmedias
-	]
-
-	data = []
-	for row in produits_culturels:
-		product_data = {
-			'nom_produit': row.produits_culturels.fiche.nom,
-			'url_image': row.produits_culturels.fiche.url_image,
-			'note': next((note.note for note in row.produits_culturels.fiche.notes if note.pseudo == user), ''),
-			'favori': next((avis.favori for avis in row.produits_culturels.fiche.avis if avis.pseudo == user), False),
-			'projet_media': []
-		}
-
-		for etre_compose in row.produits_culturels.etre_compose[:10]:
-			produits_possedes, total_produits = calculer_taux_completion_media(etre_compose.projets_medias, user)
-			collection_data = {
-				'nom_projet_media': etre_compose.projets_medias.fiche.nom,
-				'url_image': etre_compose.projets_medias.fiche.url_image,
-				'note': next((note.note for note in etre_compose.projets_medias.fiche.notes if note.pseudo == user), ''),
-				'favori': next((avis.favori for avis in etre_compose.projets_medias.fiche.avis if avis.pseudo == user), False),
-				'taux_completion': str(produits_possedes) + "/" + str(total_produits),
-				'truncated': len(etre_compose.projets_medias.contenir) > 10,
-				'projet_transmedia': []
-			}
-
-			for contenir in etre_compose.projets_medias.contenir[:10]:
-				collections_possedes, total_collection = calculer_taux_completion_transmedia(contenir.projets_transmedias, user)
-				collection_imbriquee_data = {
-					'nom_projet_transmedia': contenir.projets_transmedias.fiche.nom,
-					'url_image': contenir.projets_transmedias.fiche.url_image,
-					'note': next((note.note for note in contenir.projets_transmedias.fiche.notes if note.pseudo == user), ''),
-					'favori': next((avis.favori for avis in contenir.projets_transmedias.fiche.avis if avis.pseudo == user), False),
-					'taux_completion': str(collections_possedes) + "/" + str(total_collection),
-					'truncated': nombre_projets_transmedia > 10
-				}
-				collection_data['projet_transmedia'].append(collection_imbriquee_data)
-
-			product_data['projet_media'].append(collection_data)
-
-		data.append(product_data)
-
-	if client == "app":
-		# Ajouter les favoris à votre structure de données existante
-		data = {
-			'produits_culturels': data,  # Vos données existantes
-			'favoris_produits': favoris_produits_data,
-			'favoris_projets_medias': favoris_projets_medias_data,
-			'favoris_projets_transmedias': favoris_projets_transmedias_data,
-		}
-		return make_response(jsonify(data), 200)
-	else:
-		if numstart == 0:
-			return render_template('public/user.html', data=data, user=user, numstart=numstart, favoris_produits=favoris_produits, favoris_projets_medias=favoris_projets_medias, favoris_projets_transmedias=favoris_projets_transmedias)
-		else:
-			return render_template('public/infine-scroll-user.html', data=data, numstart=numstart)
+	return function_user.user(requested_user=user, numstart=numstart, client=client, session=session)
 
 
+@app.route('/ajouter_produit', methods=['GET', 'POST'])
+@web_or_app_auth
+def ajouter_produit():
+	pass
 
+@app.route('/supprimer_produit', methods=['GET', 'POST'])
+@web_or_app_auth
+def supprimer_produit():
+	pass
 
 
 

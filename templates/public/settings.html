@@ -53,6 +53,14 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-grey-darker text-sm font-bold mb-2" for="notification">
+                        Biographie :
+                    </label>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="biographie" name="biographie">
+                        {{ user.biographie }}
+                    </textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-grey-darker text-sm font-bold mb-2" for="notification">
                         Notifications :
                     </label>
                     <input class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" id="notification" name="notification" type="checkbox" {% if user.notification %} checked {% endif %}>

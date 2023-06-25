@@ -21,13 +21,14 @@ def create_qr(otp_secret, user):
 	qr_image.seek(0)
 	return qr_image
 def settings(session, user, client):
+
 	max_files = config.DROPZONE_MAX_FILES
 	max_file_size = config.DROPZONE_MAX_FILE_SIZE
 	accepted_files = config.DROPZONE_ALLOWED_FILE_TYPE
 	default_message = config.DROPZONE_DEFAULT_MESSAGE
 	qr = None
 	blob = None
-	result = session.query(Utilisateurs).filter(Utilisateurs.pseudo == user).first()
+	result = session.query(Utilisateurs).filter(Utilisateurs.pseudo == user.pseudo).first()
 	if not result or result.desactive:
 		return make_response(jsonify({'error': 'Utilisateur inconnu'}), 404)
 
@@ -41,6 +42,7 @@ def settings(session, user, client):
 		'date_creation': result.date_creation,
 		'profil_public': result.profil_public,
 		'adulte': result.adulte,
+		'biographie': result.biographie,
 		'otp_enabled': result.otp_secret is not None,  # Add this line
 		'otp_secret_qr': blob
 	}
