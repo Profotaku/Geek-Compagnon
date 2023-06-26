@@ -169,7 +169,7 @@ class Produits_Culturels(Base):
     fiche = relationship("Fiches", back_populates="produits_culturels", lazy='joined')
 
     def __repr__(self):
-        return f"Produits_Culturels('{self.ID_Produits_Culturels}')"
+        return f"Produits_Culturels('{self.id_produits_culturels}')"
 
 class Projets_Medias(Base):
     __tablename__ = 'projets_medias'
@@ -263,7 +263,7 @@ class Etre_Defini(Base):
 
 class Etre_Commente_T(Base):
     __tablename__ = 'etre_commente_t'
-    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedia.id_projets_transmedias'), primary_key=True, nullable=False)
+    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedias.id_projets_transmedias'), primary_key=True, nullable=False)
     id_commentaires = sa.Column(sa.Integer, sa.ForeignKey('commentaires.id_commentaires'), primary_key=True, nullable=False)
 
     def __repr__(self):
@@ -287,9 +287,9 @@ class Etre_Commente_C(Base):
 
 class Posseder_T(Base):
     __tablename__ = 'posseder_t'
-    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedia.id_projets_transmedias'), primary_key=True, nullable=False)
+    id_projets_transmedias = sa.Column(sa.Integer, sa.ForeignKey('projets_transmedias.id_projets_transmedias'), primary_key=True, nullable=False)
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), primary_key=True, nullable=False)
-    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now().timestamp())
+    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now())
 
     def __repr__(self):
         return f"Posseder_T('{self.id_projets_transmedias}'+{self.pseudo}')"
@@ -298,7 +298,7 @@ class Posseder_M(Base):
     __tablename__ = 'posseder_m'
     id_projets_medias = sa.Column(sa.Integer, sa.ForeignKey('projets_medias.id_projets_medias'), primary_key=True, nullable=False)
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), primary_key=True, nullable=False)
-    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now().timestamp())
+    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now())
 
     def __repr__(self):
         return f"Posseder_M('{self.id_projets_medias}'+{self.pseudo}')"
@@ -309,7 +309,7 @@ class Posseder_C(Base):
     pseudo = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), primary_key=True, nullable=False)
     physiquement = sa.Column(sa.Boolean, nullable=False, default=True)
     souhaite = sa.Column(sa.Boolean, nullable=False, default=False)
-    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now().timestamp())
+    date_ajout = sa.Column(sa.TIMESTAMP, nullable=False, default=datetime.datetime.now())
     limite = sa.Column(sa.Boolean, nullable=False, default=False)
     collector = sa.Column(sa.Boolean, nullable=False, default=False)
     produits_culturels = relationship("Produits_Culturels", backref="possessions", lazy='joined')

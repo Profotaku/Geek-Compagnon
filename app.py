@@ -57,6 +57,7 @@ import function_projet_media
 import function_projet_transmedia
 import function_user_stats
 import function_user_settings
+import function_produit
 import pyotp
 import pyqrcode
 from apputils import make_cache_key
@@ -813,10 +814,11 @@ def user(user, numstart=0):
 	return function_user.user(requested_user=user, numstart=numstart, client=client, session=session)
 
 
-@app.route('/ajouter_produit', methods=['GET', 'POST'])
+@app.route('/ajouter_produit', methods=['POST'])
 @web_or_app_auth
 def ajouter_produit():
-	pass
+	client = request.args.get('client')
+	return function_produit.ajouter_produit(session, client)
 
 @app.route('/supprimer_produit', methods=['GET', 'POST'])
 @web_or_app_auth

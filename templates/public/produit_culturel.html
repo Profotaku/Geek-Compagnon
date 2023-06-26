@@ -38,13 +38,22 @@
 
 
 
-    {% if info_user %}
+    {% if info_user.date_ajout %}
         <!--Si l'utilisateur a déjà ajouté le produit à sa collection ==> formulaire pré-rempli-->
     <hr>
     <h3>Info utilisateur:</h3>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if not twofa %}bg-red-800 {% else %}bg-blue-400 {% endif %}text-white text-md font-bold p-2 col-span-1">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <p>Date d'ajout : {{ info_user.date_ajout }}</p>
     <form action=" {{ url_for('ajouter_produit') }} " method="post">
-        <input type="hidden" name="id_produit" value="{{ produit.id }}">
+        <input type="hidden" name="id_produit" value="{{ produit.id_produits_culturels }}">
 
         <!--Ajout des nouveaux champs avec valeurs préremplies -->
         <label for="note">Note:</label>
@@ -84,18 +93,20 @@
 
         <label for="collector">Collector :</label>
         <input type="checkbox" id="collector" name="collector" {{ 'checked' if info_user.collector }}>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
 
         <input type="submit" value="Modifier">
     </form>
     <form action=" {{ url_for('supprimer_produit') }} " method="post">
         <input type="hidden" name="id_produit" value="{{ produit.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input type="submit" value="Supprimer">
     </form>
-    {% elif info_user is none and current_user.is_authenticated %}
+    {% elif info_user.date_ajout is none and current_user.is_authenticated %}
         <!--Si l'utilisateur est connecté, mais n'a pas encore ajouté le produit à sa collection → formulaire vide -->
     <form action=" {{ url_for('ajouter_produit') }} " method="post">
-        <input type="hidden" name="id_produit" value="{{ produit.id }}">
+        <input type="hidden" name="id_produit" value="{{ produit.id_produits_culturels }}">
 
         <!--Ajout des nouveaux champs avec valeurs par défaut-->
         <label for="note">Note:</label>
@@ -135,7 +146,7 @@
 
         <label for="collector">Collector :</label>
         <input type="checkbox" id="collector" name="collector">
-
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input type="submit" value="Ajouter">
     </form>
     {% elif not current_user.is_authenticated  %}

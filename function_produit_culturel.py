@@ -163,6 +163,7 @@ def get_objective_data(id_produit_culturel, session):
 
 	# Requête principale
 	produit = session.query(
+		Produits_Culturels.id_produits_culturels,
 		Produits_Culturels.date_sortie,
 		Produits_Culturels.nom_types_media,
 		Fiches.nom,
