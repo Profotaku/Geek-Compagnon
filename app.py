@@ -296,6 +296,7 @@ def livesearch():
 	else:
 		return function_search.search(title, isadulte, session)
 @app.route('/recommandation/<int:id_fiche>/', methods=['GET'])
+@cache.cached(timeout=50, query_string=True)
 def recommandation(id_fiche):
 	return recommandations.recommandations(id_fiche,5)
 @app.route('/connexion', methods=['GET', 'POST'])

@@ -5,11 +5,51 @@ from dataclass import *
 import sqlalchemy as sa
 import pandas as pd
 from sqlalchemy import orm
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-engine = sa.create_engine(SQLALCHEMY_DATABASE_URI , pool_size=30, max_overflow=0)
+engine = sa.create_engine(SQLALCHEMY_DATABASE_URI, pool_size=30, max_overflow=0)
 session = sa.orm.scoped_session(sa.orm.sessionmaker(bind=engine))
-from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
+import spacy
+nlp = spacy.load('fr_core_news_sm')
+import torch
+import numpy as np
+from annoy import AnnoyIndex
+
+# Chargez le tokenizer et le modèle BERT
+from transformers import AutoTokenizer, AutoModel
+tokenizer = AutoTokenizer.from_pretrained('huawei-noah/TinyBERT_General_4L_312D')
+model = AutoModel.from_pretrained('huawei-noah/TinyBERT_General_4L_312D')
+
+# Specify the dimensionality of your vectors. For TinyBERT, it's 312.
+f = 312
+t = AnnoyIndex(f, 'angular')
+
+# Function to preprocess text
+def preprocess(text):
+    # Créer un document spaCy
+    doc = nlp(text)
+
+    # Générer la liste des lemmes pour chaque mot du document
+    lemmas = [token.lemma_ for token in doc]
+
+    # Retourner les lemmes sous forme de chaîne de caractères
+    return ' '.join(lemmas)
+
+
+def bert_encode(text):
+    # Encode le texte avec le tokenizer BERT
+    encoded_input = tokenizer(text, padding=True, truncation=True, max_length=512, return_tensors='pt')
+
+    # Passez l'entrée encodée à travers le modèle BERT pour obtenir les vecteurs de caractéristiques
+    with torch.no_grad():
+        features = model(**encoded_input)
+
+    # Prenez la moyenne des embeddings pour obtenir une seule représentation vectorielle pour chaque texte
+    features = features[0].mean(dim=1)
+
+    # Squeeze pour supprimer les dimensions de taille 1
+    features = features.squeeze()
+
+    return features.numpy()
+
 
 def recommandations(id_produit: int, nb_recommandations: int):
     #create a content based recommandation algorithm
@@ -44,9 +84,9 @@ def recommandations(id_produit: int, nb_recommandations: int):
         )
         .select_from(Produits_Culturels)
         .join(Fiches)
-        .join(Etre_Defini)
+        .outerjoin(Etre_Defini)
         .join(Types_Media)
-        .join(Genres)
+        .outerjoin(Genres)
         .outerjoin(Nommer_C)
         .outerjoin(Noms_Alternatifs)
         .outerjoin(Notes)
@@ -63,6 +103,7 @@ def recommandations(id_produit: int, nb_recommandations: int):
     # Sélectionner les colonnes qui contiennent les features à utiliser pour la recommandation
     features = ['nom', 'concepteur', 'synopsis', 'nom_types_media', 'genres', 'noms_alternatifs', 'adulte', 'date_sortie', 'moyenne_notes', 'nombre_favori', 'ratio_sur_mediatise', 'ratio_sous_mediatise', 'ratio_neutre_mediatise', 'ratio_sur_note', 'ratio_sous_note', 'ratio_neutre_note']
     data = df[features]
+
 
     # Prétraiter les données ratio
 
@@ -97,34 +138,38 @@ def recommandations(id_produit: int, nb_recommandations: int):
     new_df = data['concepteur'] + data['synopsis'] + data['nom_types_media'] + data['genres'] + data['noms_alternatifs'] + data['adulte'] + data['date_sortie'] + data['moyenne_notes'] + data['nombre_favori'] + data['ratio_sur_mediatise'] + data['ratio_sous_mediatise'] + data['ratio_neutre_mediatise'] + data['ratio_sur_note'] + data['ratio_sous_note'] + data['ratio_neutre_note']
     new_df = new_df.apply(lambda x: ' '.join(x))
 
-    #create a new dataframe with pandas with 3 columns
-    df2 = pd.DataFrame(columns=['id', 'nom', 'features'])
+    #Créer un nouveau dataframe avec les colonnes id, nom, synopsis et features, les 3 premières étant à renvoyer à l'utilisateur et la dernière étant utilisée pour la recommandation
+    df2 = pd.DataFrame(columns=['id', 'nom', 'synopsis', 'features'])
     df2['id'] = df['id'].astype(str)
     df2['nom'] = df['nom']
+    df2['synopsis'] = df['synopsis']
     df2['features'] = new_df
 
+    # After creating the new_df and df2
     df2['features'] = df2['features'].apply(lambda x: x.lower())
+    df2['features'] = df2['features'].apply(preprocess)
+    df2['features'] = df2['features'].apply(bert_encode)
 
-    cv = CountVectorizer(max_features=5000, stop_words=list(fr_stop))
-    X = cv.fit_transform(df2['features']).toarray()
+    # Prepare Annoy index
+    f = len(df2['features'][0])  # Length of item vector that will be indexed
+    t = AnnoyIndex(f, 'angular')  # Length of item vector that will be indexed and metric
 
-    # Calculer la distance entre les produits culturels
-    cosine_sim = cosine_similarity(X)
+    for i, vector in enumerate(df2['features']):
+        t.add_item(i, vector)
 
-    # Récupérer l'index du produit culturel
+    t.build(10)  # 10 trees
+
+    # Get the index of the product
     index_cult = df2[df2['id'] == str(id_produit)].index[0]
 
-    # Récupérer les distances entre le produit culturel et les autres produits culturels
-    distances = list(enumerate(cosine_sim[index_cult]))
+    # Use Annoy to get nearest neighbors
+    nearest_neighbors = t.get_nns_by_item(index_cult, nb_recommandations)
 
-    # Trier les distances par ordre décroissant
-    distances = sorted(distances, key=lambda x: x[1], reverse=True)
 
-    # Récupérer les indices et les scores des k plus proches voisins
-    nearest_neighbors = distances[1:nb_recommandations + 1]
-
-    # Récupérer les k plus proches voisins (delta le plus bas) et leurs scores
-    recommandations = [{'id': df2.iloc[i[0]]['id'], 'score': i[1]} for i in nearest_neighbors]
+    # Construct recommendations
+    recommandations = [
+        {'id': df2.iloc[i]['id'], 'nom': df2.iloc[i]['nom'], 'score': 1 - float(t.get_distance(index_cult, i))} for i in
+        nearest_neighbors[1:]]
 
     return jsonify({'recommandations': recommandations})
 
