@@ -113,7 +113,7 @@
 {% for produit in data %}
     <li>
         <div class="item">
-            <img src="{{ produit.url_image }}" alt="{{ produit.nom_produit }}" class="item-image">
+            <img src="{{ url_for('static', filename= produit.url_image | replace("static/", "/") ) }}" alt="{{ produit.nom_produit }}" class="item-image">
             <div class="item-info">
                 <div>Produit ajouté à votre bibliothèque:</div>
                 <div class="item-title">{{ produit.nom_produit }}</div>

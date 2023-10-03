@@ -83,7 +83,6 @@ sa.orm.configure_mappers()
 ip_ban = IpBan(ban_count=30, ban_seconds=3600*24)
 ip_ban.init_app(app)
 ip_ban.ip_whitelist_add('127.0.0.1')
-ip_ban.ip_whitelist_add('37.65.130.28')
 ip_ban.load_nuisances()
 session = orm.scoped_session(orm.sessionmaker(bind=engine))
 csp = {
@@ -163,6 +162,7 @@ def load_user(pseudo):
 	return session.execute(select(Utilisateurs).where(Utilisateurs.pseudo == pseudo)).scalar()
 
 @app.route('/')
+@limiter.exempt
 def index():
 	nb_user = session.query(Utilisateurs).count()
 	return render_template('public/index.html', nb_user=nb_user)
@@ -185,7 +185,7 @@ def contribuer():
 	accepted_files = config.DROPZONE_ALLOWED_FILE_TYPE
 	default_message = config.DROPZONE_DEFAULT_MESSAGE
 
-	return render_template('public/ajout-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
+	return render_template('public/ajouter-fiche.html', etre_associes=etre_associes, typesmedia=typesmedia, max_files=max_files, max_file_size=max_file_size, accepted_files=accepted_files, default_message=default_message)
 
 @app.route('/add-ean/by_fiche/', methods=['POST'])
 @jwt_required(optional=False)
@@ -273,7 +273,7 @@ def get_ean(ean):
 			return jsonify({"message": "Fiche liée introuvable"}), 404
 
 		else:
-			return make_response(jsonify({'produits': [{ 'date_sortie': p.date_sortie, 'nom_types_media': p.nom_types_media, 'nom': p.nom, 'adulte': p.adulte, 'concepteur': p.concepteur, 'url_image': p.url_image, 'limite': p.limite, 'collector': p.collector} for p in produit_culturel]}), 200)
+			return make_response(jsonify({'produits': [{ 'id': p.id_produits_culturels, 'date_sortie': p.date_sortie, 'nom_types_media': p.nom_types_media, 'nom': p.nom, 'adulte': p.adulte, 'concepteur': p.concepteur, 'url_image': p.url_image, 'limite': p.limite, 'collector': p.collector} for p in produit_culturel]}), 200)
 
 
 
@@ -300,6 +300,7 @@ def livesearch():
 def recommandation(id_fiche):
 	return recommandations.recommandations(id_fiche,5)
 @app.route('/connexion', methods=['GET', 'POST'])
+@cache.cached(timeout=50, query_string=True)
 @limiter.limit("12/hour")
 def login():
 	client = request.args.get('client')
@@ -828,6 +829,6 @@ def supprimer_produit():
 
 
 
-if __name__ == "__main__":
-	app.run(port=7777, ssl_context=(os.path.dirname(os.path.abspath(__file__)) + "/SSLcertificate.crt", os.path.dirname(os.path.abspath(__file__)) + "/SSLprivatekey.key"), host="0.0.0.0", debug=True)
+#if __name__ == "__main__":
+#	app.run(port=7777, ssl_context=(os.path.dirname(os.path.abspath(__file__)) + "/SSLcertificate.crt", os.path.dirname(os.path.abspath(__file__)) + "/SSLprivatekey.key"), host="0.0.0.0", debug=True)
 

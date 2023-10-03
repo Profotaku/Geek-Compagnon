@@ -61,7 +61,7 @@ class Fiches(Base):
     synopsis = sa.Column(sa.String, nullable=False, default='TBA')
     consultation = sa.Column(sa.Integer, nullable=False, default=0)
     contributeur = sa.Column(sa.String, sa.ForeignKey('utilisateurs.pseudo'), nullable=False)
-    url_image = sa.Column(sa.String, nullable=False, default='/static/images/fiches/default.png')
+    url_image = sa.Column(sa.String, nullable=False, default='static/images/fiches/default.png')
     adulte = sa.Column(sa.Boolean, nullable=False, default=False)
     info = sa.Column(sa.String, nullable=False, default='')
     concepteur = sa.Column(sa.String, nullable=False, default='')

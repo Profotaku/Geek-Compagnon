@@ -6,7 +6,7 @@
 {% endblock %}
 {% block content %}
     <div class="grid grid-cols-1 flex justify-center mt-2 md:mt-0">
-    <div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/ma-bibliotheque/{{ current_user.pseudo + "/" }}{{ idtype + "/" if idtype != "all" else "all/" }}{{ idfiltre+"/" if idfiltre != ""}}{{ numstart + 10}}">
+    <div id="truc" hx-trigger="intersect once" hx-swap="afterend" hx-get="/ma-bibliotheque/{{ user + "/" }}{{ idtype + "/" if idtype != "all" else "all/" }}{{ idfiltre+"/" if idfiltre != ""}}{{ numstart + 10}}">
         {% if my_bibliotheque | length == 0 %}
         <div class="text-center">
             <h1 class="text-2xl">Il semble qu'aucun résultat ne corresponde à vos critères</h1>
